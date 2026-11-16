@@ -1023,25 +1023,25 @@ const UI = {
     const px = f.pos.x, pz = f.pos.z, yaw = f.input.yaw;
     c.save();
     c.beginPath(); c.arc(cx, cy, R, 0, TAU); c.clip();
-    c.fillStyle = '#d6c9a2'; c.fillRect(0, 0, W, H);
+    c.fillStyle = 'rgba(20,19,15,0.86)'; c.fillRect(0, 0, W, H);
     c.translate(cx, cy); c.rotate(yaw); c.scale(s, s);
     c.globalAlpha = 0.95;
     c.drawImage(mm.canvas, mm.x0 - px, mm.z0 - pz, mm.w, mm.h);
     c.globalAlpha = 1;
     const dot = (x, z, r, col) => { c.fillStyle = col; c.beginPath(); c.arc(x - px, z - pz, r / s, 0, TAU); c.fill(); };
-    if (G.mode.tags) for (const t of Tags.list) dot(t.x, t.z, 3.4, t.vt === f.team ? '#24406e' : '#a3241a');
+    if (G.mode.tags) for (const t of Tags.list) dot(t.x, t.z, 3.4, t.vt === f.team ? '#8fb0d8' : '#d0503e');
     if (G.mode.dom) MapSys.dom.forEach((d, i) => {
-      const st = G.match.dom[i], col = st.owner < 0 ? '#5a4c34' : st.owner === f.team ? '#24406e' : '#a3241a';
+      const st = G.match.dom[i], col = st.owner < 0 ? '#ece2c6' : st.owner === f.team ? '#8fb0d8' : '#d0503e';
       c.strokeStyle = col; c.lineWidth = 2 / s; c.beginPath(); c.arc(d.x - px, d.z - pz, d.r, 0, TAU); c.stroke();
       c.save(); c.translate(d.x - px, d.z - pz); c.rotate(-yaw); c.scale(1 / s, 1 / s); c.fillStyle = col; c.font = '700 12px "Barlow Condensed", sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(d.id, 0, 0); c.restore();
     });
     const jam = Streaks.jammed(f);
     for (const o of G.fighters) {
       if (o === f || !o.alive) continue;
-      if (!Rules.isEnemy(f, o)) dot(o.pos.x, o.pos.z, 3.4, '#24406e');
-      else if (!jam && (G.time - (o.lastLoudT ?? -9) < 1.6 || Streaks.revealed(f, o))) dot(o.pos.x, o.pos.z, 3.8, '#a3241a');
+      if (!Rules.isEnemy(f, o)) dot(o.pos.x, o.pos.z, 3.4, '#8fb0d8');
+      else if (!jam && (G.time - (o.lastLoudT ?? -9) < 1.6 || Streaks.revealed(f, o))) dot(o.pos.x, o.pos.z, 3.8, '#d0503e');
     }
-    for (const cr of Streaks.crates) if (cr.t > 1.6) dot(cr.x, cr.z, 3, '#3f5a24');
+    for (const cr of Streaks.crates) if (cr.t > 1.6) dot(cr.x, cr.z, 3, '#9fd07a');
     c.restore();
     if (jam) { // estática: el radar enemigo está interferido
       c.save(); c.beginPath(); c.arc(cx, cy, R, 0, TAU); c.clip();
@@ -1050,15 +1050,14 @@ const UI = {
     }
     // jugador al centro, mirando hacia arriba
     // 3.4.0: viñeta de papel viejo, flecha de tinta y rosa de los vientos grabada en el bisel de latón
-    const vg = c.createRadialGradient(cx, cy, R * 0.45, cx, cy, R); vg.addColorStop(0, 'rgba(60,40,15,0)'); vg.addColorStop(1, 'rgba(60,40,15,0.38)');
+    const vg = c.createRadialGradient(cx, cy, R * 0.45, cx, cy, R); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.45)');
     c.save(); c.beginPath(); c.arc(cx, cy, R, 0, TAU); c.clip(); c.fillStyle = vg; c.fillRect(0, 0, W, H); c.restore();
-    c.fillStyle = '#2a2219'; c.beginPath(); c.moveTo(cx, cy - 8); c.lineTo(cx + 5.5, cy + 6); c.lineTo(cx, cy + 2.5); c.lineTo(cx - 5.5, cy + 6); c.closePath(); c.fill();
-    c.strokeStyle = '#8a6a2c'; c.lineWidth = 5; c.beginPath(); c.arc(cx, cy, R - 1.5, 0, TAU); c.stroke();
-    c.strokeStyle = '#d6b25e'; c.lineWidth = 1.2; c.beginPath(); c.arc(cx, cy, R - 4.2, 0, TAU); c.stroke();
-    for (let i = 0; i < 16; i++) { const a = i * TAU / 16 - yaw, r0 = R - (i % 4 ? 3.2 : 0.2); c.strokeStyle = 'rgba(40,28,10,0.8)'; c.lineWidth = i % 4 ? 0.8 : 1.4; c.beginPath(); c.moveTo(cx + Math.sin(-a) * r0, cy - Math.cos(-a) * r0); c.lineTo(cx + Math.sin(-a) * (R - 0.5), cy - Math.cos(-a) * (R - 0.5)); c.stroke(); }
+    c.fillStyle = '#ece2c6'; c.beginPath(); c.moveTo(cx, cy - 8); c.lineTo(cx + 5.5, cy + 6); c.lineTo(cx, cy + 2.5); c.lineTo(cx - 5.5, cy + 6); c.closePath(); c.fill();
+    c.strokeStyle = 'rgba(214,178,94,.6)'; c.lineWidth = 1.2; c.beginPath(); c.arc(cx, cy, R - 0.8, 0, TAU); c.stroke();
+    for (let i = 0; i < 0; i++) { const a = i * TAU / 16 - yaw, r0 = R - (i % 4 ? 3.2 : 0.2); c.strokeStyle = 'rgba(214,178,94,0.75)'; c.lineWidth = i % 4 ? 0.8 : 1.4; c.beginPath(); c.moveTo(cx + Math.sin(-a) * r0, cy - Math.cos(-a) * r0); c.lineTo(cx + Math.sin(-a) * (R - 0.5), cy - Math.cos(-a) * (R - 0.5)); c.stroke(); }
     const nx = cx + (R - 13) * Math.sin(yaw), ny = cy - (R - 13) * Math.cos(yaw);
-    c.fillStyle = '#e6dcc3'; c.beginPath(); c.arc(nx, ny, 7, 0, TAU); c.fill(); c.strokeStyle = '#8a6a2c'; c.lineWidth = 1; c.stroke();
-    c.fillStyle = '#9c2b22'; c.font = '700 11px "Stardos Stencil", "Barlow Condensed", sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    
+    c.fillStyle = '#d0503e'; c.font = '700 11px "Stardos Stencil", "Barlow Condensed", sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
     c.fillText('N', nx, ny + 0.5);
   },
   drawCompass() {
@@ -1073,10 +1072,10 @@ const UI = {
     c.textAlign = 'center'; c.textBaseline = 'middle';
     for (let d = Math.floor((hd - 66) / 5) * 5; d <= hd + 66; d += 5) {
       const x = X(d * Math.PI / 180), dd = ((d % 360) + 360) % 360, big = dd % 45 === 0, mid = dd % 15 === 0;
-      c.strokeStyle = big ? 'rgba(42,34,25,.95)' : 'rgba(42,34,25,.55)'; c.lineWidth = big ? 2 : 1;
+      c.strokeStyle = big ? 'rgba(236,226,198,.95)' : 'rgba(236,226,198,.5)'; c.lineWidth = big ? 2 : 1;
       c.beginPath(); c.moveTo(x, H - 4); c.lineTo(x, H - 4 - (big ? 10 : mid ? 7 : 4)); c.stroke();
-      if (big) { c.font = '700 15px "Stardos Stencil", "Barlow Condensed", sans-serif'; c.fillStyle = dd % 90 === 0 ? '#9c2b22' : '#2a2219'; c.fillText(names[dd], x, H - 23); }
-      else if (dd % 30 === 0) { c.font = '10px "Special Elite", "Courier New", monospace'; c.fillStyle = 'rgba(42,34,25,.7)'; c.fillText(String(dd), x, H - 21); }
+      if (big) { c.font = '700 15px "Stardos Stencil", "Barlow Condensed", sans-serif'; c.fillStyle = dd % 90 === 0 ? '#d6b25e' : '#ece2c6'; c.fillText(names[dd], x, H - 23); }
+      else if (dd % 30 === 0) { c.font = '10px "Special Elite", "Courier New", monospace'; c.fillStyle = 'rgba(236,226,198,.6)'; c.fillText(String(dd), x, H - 21); }
     }
     // objetivos: puntos de Dominio, placas y cajas de suministro
     const mark = (x, z, label, col, r) => {
@@ -1090,7 +1089,7 @@ const UI = {
     if (G.mode.tags) { let n = 0; for (const t of Tags.list) { if (n++ > 6) break; mark(t.x, t.z, '', t.vt === f.team ? '#5ab8ff' : '#ff6a3a', 4); } }
     for (const cr of Streaks.crates) if (cr.t > 1.6) mark(cr.x, cr.z, '▣', '#8fe07a', 7);
     // centro: guía y rumbo
-    c.fillStyle = '#9c2b22'; c.beginPath(); c.moveTo(cx - 6, 0); c.lineTo(cx + 6, 0); c.lineTo(cx, 8); c.closePath(); c.fill();
+    c.fillStyle = '#d6b25e'; c.beginPath(); c.moveTo(cx - 6, 0); c.lineTo(cx + 6, 0); c.lineTo(cx, 8); c.closePath(); c.fill();
   },
   center(html, ms = 1200, cls = '') {
     const c = this.el['center-msg']; c.className = 'hud-pad ' + cls; c.innerHTML = html; clearTimeout(this._ct);
