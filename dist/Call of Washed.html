@@ -13752,7 +13752,8 @@ const SceneWalk = {
   start(S, o) {
     S.walk = { p: new THREE.Vector3(o.x, o.y || 0, o.z), on: true, boxes: o.boxes || [], floor: o.floor || ((x, z, y) => y), speed: o.speed || 2.1, h: o.h || 1.62, bob: 0, step: 0, vy: 0 };
     S.yaw = Input.state.yaw = S.yawC = o.yaw || 0; S.pitch = Input.state.pitch = o.pitch || 0; S.yawR = 9; S.pitchMin = -1.35; S.pitchMax = 1.2;
-    S.eye.set(o.x, (o.y || 0) + S.walk.h, o.z);
+    const W = S.walk;
+    S.eye.set(W.p.x, (o.y || 0) + W.h, W.p.z);
   },
   stop(S) { if (S.walk) S.walk.on = false; S.useT = null; if (Scenes.el.use) Scenes.el.use.hidden = true; },
   // mover sin atravesar cajas (radio 0.24 m), primero en x y luego en z
@@ -13771,8 +13772,9 @@ const SceneWalk = {
       let f = inp.mz, r = inp.mx; const n = Math.hypot(f, r); if (n > 1) { f /= n; r /= n; }
       const sp = W.speed * (Input.is && Input.is('sprint') ? 1.45 : 1), s = Math.sin(S.yaw), c = Math.cos(S.yaw);
       const dx = (-s * f + c * r) * sp * dt, dz = (-c * f - s * r) * sp * dt;
-      if (dx && !this.hit(W, W.p.x + dx, W.p.z)) W.p.x += dx;
-      if (dz && !this.hit(W, W.p.x, W.p.z + dz)) W.p.z += dz;
+      const stuck = this.hit(W, W.p.x, W.p.z);   // si ya está dentro de una caja, se le deja salir andando
+      if (dx && (stuck || !this.hit(W, W.p.x + dx, W.p.z))) W.p.x += dx;
+      if (dz && (stuck || !this.hit(W, W.p.x, W.p.z + dz))) W.p.z += dz;
       mv = Math.hypot(dx, dz) / Math.max(1e-4, dt);
     }
     // suelo: escaleras y pisos; sube suave y baja algo más rápido
