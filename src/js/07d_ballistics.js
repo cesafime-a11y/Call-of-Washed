@@ -103,15 +103,16 @@ const Ballistics = {
       const z = clamp((f.zero || BAL.zMin) + (inp.cycleDir < 0 ? BAL.zStep : -BAL.zStep), BAL.zMin, BAL.zMax);
       if (z !== f.zero) { f.zero = z; BUS.emit('zero', f); }
     }
-    const hold = scoped && inp.sprint && f.fatigueT <= 0 && f.breath > 0;
+    const hold = scoped && (inp.breath ?? inp.sprint) && f.fatigueT <= 0 && f.breath > 0;   // 3.3.0: tecla cruda (inp.sprint se borra en el primer paso del fotograma)
     if (aiming) inp.sprint = false;
     if (hold) { f.breath -= dt / BAL.hold; if (f.breath <= 0) { f.breath = 0; f.fatigueT = BAL.tired; BUS.emit('breathOut', f); } }
     else { if (f.fatigueT > 0) f.fatigueT -= dt; else f.breath = Math.min(1, f.breath + dt / BAL.rest); }
     f.holding = hold;
     if (scoped) {
       const t = G.time, D = (typeof Camp !== 'undefined' && G.mode && G.mode.campaign && Camp.diff) ? Camp.diff() : null;
-      const amp = 0.0025 * (hold ? 0.08 : f.fatigueT > 0 ? 2.2 : 1) * (f.prone ? 0.35 : f.crouching ? 0.65 : 1) * (W.bipod && (f.prone || f.crouching) ? 0.45 : 1) * (D ? D.sway : 1);
-      const bpm = f.fatigueT > 0 ? 112 : hold ? 62 : 74, ph = (t * bpm / 60) % 1, pulse = Math.exp(-ph * 14);
+      f.holdK = damp(f.holdK || 0, hold ? 1 : 0, 7, dt); f.tiredK = damp(f.tiredK || 0, f.fatigueT > 0 ? 1 : 0, 3, dt);
+      const amp = 0.0025 * lerp(lerp(1, 2.2, f.tiredK), 0.06, f.holdK) * (W.swayMul || 1) * (f.prone ? 0.35 : f.crouching ? 0.65 : 1) * (W.bipod && (f.prone || f.crouching) ? 0.45 : 1) * (D ? D.sway : 1);
+      const bpm = lerp(lerp(74, 112, f.tiredK), 62, f.holdK); f.pph = ((f.pph || 0) + dt * bpm / 60) % 1; const pulse = Math.exp(-f.pph * 14) * (1 - f.holdK * 0.7);
       f.pulse = pulse;
       ny = amp * (Math.sin(t * 0.9) + 0.5 * Math.sin(t * 2.3 + 1));
       np = amp * (0.75 * Math.sin(t * 1.3 + 2) + 0.35 * Math.sin(t * 0.5)) + amp * 0.6 * pulse;

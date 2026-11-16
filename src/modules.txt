@@ -27,6 +27,9 @@ data_mannequin.js
 09c_smallmaps.js
 09d_prison.js
 09e_furgon.js
+09f_sanjuan.js
+09g_novela_a.js
+09h_novela_b.js
 10_props.js
 11_ai.js
 12_rules.js

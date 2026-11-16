@@ -611,7 +611,7 @@ function weaponGeometry(id, vm = false, att = null) {
   // 3.1.2: línea de mira despejada en primera persona. Cualquier pieza gruesa (martillo, alza maciza, cajón, tapa) que asome
   // por encima de la línea de mira en el centro se baja o se recorta para que al apuntar se vea hacia delante; las cuchillas
   // finas de las miras (punto de mira y montantes del alza) se respetan.
-  if (vm && !proto && !['sniper', 'mk2', 'rocket', 'knife'].includes(id) && !['x2', 'x4', 'scope'].includes(att.optic)) clearSightLine(B, u.sightY);
+  if (vm && !proto && !['sniper', 'mk2', 'rocket', 'knife'].includes(id) && !['x2', 'x4', 'x8', 'scope'].includes(att.optic)) clearSightLine(B, u.sightY);
   B.tag = 'mag';
   if (att.mag === 'drum' && id === 'smg' && !proto) magExtra(u.mag);
   B.tag = null;

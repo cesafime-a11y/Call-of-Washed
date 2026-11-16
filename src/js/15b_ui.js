@@ -1423,21 +1423,34 @@ function mapThumb(id) {
   x.fillStyle = th[2]; x.fillRect(0, gy, W, H - gy);
   const sil = 'rgba(22,22,20,.86)', box = (a, b, w, h) => x.fillRect(a, gy - h, w, h);
   x.fillStyle = sil;
+  const roof = (a, w, h, hh) => { x.beginPath(); x.moveTo(a - 3, gy - h); x.lineTo(a + w / 2, gy - h - hh); x.lineTo(a + w + 3, gy - h); x.fill(); };
+  const house = (a, w, h, hh = 10) => { box(a, 0, w, h); roof(a, w, h, hh); };
+  const clockAt = (cx, cy, r) => { x.fillStyle = 'rgba(232,224,203,.95)'; x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); x.fill(); x.strokeStyle = sil; x.lineWidth = 1.5; x.beginPath(); x.moveTo(cx, cy); x.lineTo(cx - r * 0.5, cy - r * 0.3); x.moveTo(cx, cy); x.lineTo(cx + r * 0.4, cy - r * 0.6); x.stroke(); x.fillStyle = sil; };
+  // 3.3.0: siluetas de los mapas nuevos de la novela
   if (id === 'pueblo') {
-    box(10, 0, 46, 26); box(58, 0, 34, 34); box(150, 0, 40, 22); box(230, 0, 50, 30); box(282, 0, 30, 20);
-    box(108, 0, 18, 56); x.beginPath(); x.moveTo(104, gy - 56); x.lineTo(117, gy - 70); x.lineTo(130, gy - 56); x.fill();
-    x.fillStyle = 'rgba(30,26,22,.6)'; x.fillRect(0, gy, W, 6);
-    x.fillStyle = 'rgba(60,55,50,.5)'; for (let i = 0; i < 3; i++) { x.beginPath(); x.arc(200 + i * 9, gy - 40 - i * 10, 7 + i * 3, 0, Math.PI * 2); x.fill(); }
+    house(8, 34, 26); house(46, 30, 32); house(152, 36, 24); house(194, 28, 30);
+    box(96, 0, 40, 30); roof(96, 40, 30, 12); box(124, 0, 16, 60); roof(124, 16, 60, 14); clockAt(132, gy - 46, 5);
+    x.fillStyle = sil; x.lineWidth = 2; x.strokeStyle = sil;
+    x.beginPath(); x.moveTo(246, gy); x.lineTo(256, gy - 64); x.lineTo(268, gy - 64); x.lineTo(278, gy); x.stroke(); for (let k = 1; k < 5; k++) { x.beginPath(); x.moveTo(246 + k * 2.5, gy - k * 13); x.lineTo(278 - k * 2.5, gy - k * 13); x.stroke(); }
+    x.beginPath(); x.arc(262, gy - 68, 7, 0, Math.PI * 2); x.stroke(); x.fillRect(296, gy - 74, 7, 74); box(282, 0, 30, 30);
   } else if (id === 'base') {
-    box(90, 0, 110, 34); box(212, 0, 26, 46); x.fillRect(210, gy - 50, 30, 5); box(30, 0, 40, 16);
-    x.fillRect(262, gy - 30, 3, 30); x.fillRect(282, gy - 30, 3, 30); x.fillRect(258, gy - 34, 30, 6);
-    x.strokeStyle = sil; x.lineWidth = 1; for (let i = 0; i < W; i += 8) { x.beginPath(); x.moveTo(i, gy + 2); x.lineTo(i, gy - 8); x.stroke(); }
-    x.beginPath(); x.moveTo(0, gy - 6); x.lineTo(W, gy - 6); x.stroke();
+    house(16, 100, 30, 12); house(196, 100, 30, 12); house(124, 64, 36, 12); x.fillRect(158, gy - 72, 2, 36); x.fillStyle = 'rgba(150,40,30,.95)'; x.fillRect(160, gy - 72, 14, 9); x.fillStyle = sil;
+    x.fillStyle = 'rgba(60,90,110,.85)'; x.fillRect(0, gy + 10, W, H - gy - 10);
   } else if (id === 'muelle') {
-    const cols = ['rgba(120,40,30,.9)', 'rgba(40,70,100,.9)', 'rgba(80,90,40,.9)', 'rgba(150,100,30,.9)'];
-    for (let i = 0; i < 9; i++) { x.fillStyle = cols[i % 4]; const h = 12 + (i % 3) * 12; box(20 + i * 22, 0, 20, h); }
-    x.fillStyle = sil; x.fillRect(236, gy - 64, 5, 64); x.fillRect(290, gy - 64, 5, 64); x.fillRect(226, gy - 68, 80, 6); x.fillRect(262, gy - 62, 2, 26); box(256, 36, 14, 10);
-    x.fillStyle = 'rgba(50,70,80,.85)'; x.fillRect(0, gy + 8, W, H - gy - 8);
+    x.fillStyle = sil; box(30, 0, 150, 22); x.fillRect(176, gy - 22, 18, 12); box(90, 22, 34, 18); x.fillRect(104, gy - 62, 10, 22); x.fillRect(60, gy - 66, 3, 44); x.fillRect(150, gy - 66, 3, 44);
+    x.lineWidth = 3; x.strokeStyle = sil; x.beginPath(); x.moveTo(214, gy - 30); x.lineTo(244, gy - 62); x.stroke(); box(206, 0, 14, 34);
+    x.fillStyle = 'rgba(232,228,214,.95)'; x.fillRect(286, gy - 66, 10, 66); x.fillStyle = 'rgba(255,220,140,.95)'; x.fillRect(285, gy - 72, 12, 6); x.fillStyle = sil;
+    x.fillStyle = 'rgba(20,34,52,.9)'; x.fillRect(0, gy + 6, W, H - gy - 6);
+  } else if (id === 'estacion') {
+    box(20, 0, 110, 34); roof(20, 110, 34, 10); box(190, 0, 110, 34); roof(190, 110, 34, 10); box(130, 0, 60, 46); roof(130, 60, 46, 12);
+    box(148, 46, 24, 30); x.beginPath(); x.moveTo(146, gy - 90); x.lineTo(160, gy - 108); x.lineTo(174, gy - 90); x.fill(); x.fillRect(146, gy - 92, 28, 16); clockAt(160, gy - 82, 7);
+    x.fillStyle = 'rgba(30,30,32,.95)'; x.fillRect(30, gy - 10, 46, 10); x.beginPath(); x.arc(40, gy - 12, 6, 0, Math.PI * 2); x.fill(); x.fillRect(36, gy - 24, 4, 10);
+  } else if (id === 'corcovado') {
+    house(8, 30, 30); house(42, 26, 22); house(250, 30, 28); house(286, 28, 24);
+    x.fillStyle = 'rgba(62,90,94,.95)'; x.fillRect(80, gy, 160, H - gy); x.fillStyle = sil;
+    x.fillRect(74, gy - 14, 172, 6); x.lineWidth = 2; x.strokeStyle = sil; x.beginPath(); x.moveTo(74, gy - 34); x.lineTo(246, gy - 34);
+    for (let k = 0; k <= 8; k++) { x.moveTo(74 + k * 21.5, gy - 8); x.lineTo(74 + k * 21.5, gy - 34); if (k < 8) { x.moveTo(74 + k * 21.5, gy - 8); x.lineTo(95.5 + k * 21.5, gy - 34); } }
+    x.stroke(); x.fillRect(150, gy - 8, 20, 30);
   } else if (id === 'patio') {
     const cols = ['rgba(120,40,30,.92)', 'rgba(40,70,100,.92)', 'rgba(80,90,40,.92)', 'rgba(150,100,30,.92)'];
     for (let i = 0; i < 4; i++) { x.fillStyle = cols[i]; box(8 + i * 22, 0, 20, 22); box(16 + i * 22, 22, 20, 22); }
@@ -1451,12 +1464,11 @@ function mapThumb(id) {
     for (let i = 0; i < 5; i++) { box(8 + i * 12, 0, 10, 8); box(250 + i * 12, 0, 10, 8); }
     box(34, 8, 18, 10); box(270, 8, 18, 10);
   } else if (id === 'cruce') {
-    x.fillStyle = 'rgba(70,64,54,.9)'; x.fillRect(0, gy, W, 12);
-    x.fillStyle = 'rgba(210,200,150,.8)'; for (let i = 0; i < 8; i++) x.fillRect(6 + i * 42, gy + 5, 22, 2);
-    x.fillStyle = sil; box(10, 0, 70, 56); x.fillRect(8, gy - 60, 74, 5);
-    x.fillStyle = 'rgba(150,40,30,.95)'; x.fillRect(196, gy - 44, 110, 8); x.fillStyle = sil;
-    x.fillRect(204, gy - 44, 5, 44); x.fillRect(292, gy - 44, 5, 44); box(236, 0, 20, 10); box(262, 0, 12, 10);
-    box(170, 0, 22, 14); box(120, 0, 40, 30);
+    x.fillStyle = 'rgba(220,228,236,.95)'; x.fillRect(0, gy, W, H - gy); x.fillStyle = sil;
+    house(110, 70, 40, 14); x.fillStyle = 'rgba(230,236,242,.95)'; roof(110, 70, 40, 14); x.fillStyle = sil;
+    for (const [a, h] of [[16, 40], [52, 30], [236, 44], [282, 34]]) { x.beginPath(); x.moveTo(a, gy - h); x.lineTo(a - 12, gy); x.lineTo(a + 12, gy); x.fill(); }
+    x.fillStyle = 'rgba(176,42,34,.95)'; x.fillRect(196, gy - 18, 34, 3); x.fillStyle = sil; x.fillRect(194, gy - 20, 4, 20);
+    x.fillStyle = 'rgba(255,255,255,.8)'; for (let i = 0; i < 60; i++) x.fillRect((i * 53) % W, (i * 29) % gy, 1.5, 1.5);
   }
   // luz/tono final
   x.fillStyle = 'rgba(0,0,0,.12)'; x.fillRect(0, 0, W, H);

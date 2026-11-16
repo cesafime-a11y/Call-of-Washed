@@ -98,9 +98,9 @@ function periodGun(id, H) {
     // ---- fusil vardenés M-98 (7,92): más corto, manilla acodada, ranura de correa en la culata
     case 'dmr': boltRifle(H, { sight: { rear: 'v', front: 'barley', hood: 'wings' }, muzzle: -0.74, fullStock: true, bands: [-0.32, -0.5], bent: true, slot: true, fore: -0.34, wood: 0x56301c }); break;
     // ---- Ferrán M-32 con mira: el mismo Ferrán con mira corta fija y manilla acodada
-    case 'mk2': { boltRifle(H, { muzzle: -0.8, fullStock: true, bands: [-0.34, -0.56], bent: true, fore: -0.36, wood: 0x5e3b22 }); const sy = longScope(H, 0.075, -0.03, 0.2, 0.021); u.sightY = sy; u.adsDist = 0.16; break; }
+    case 'mk2': { boltRifle(H, { muzzle: -0.8, fullStock: true, bands: [-0.34, -0.56], bent: true, fore: -0.36, wood: 0x5e3b22 }); const sy = H.att.optic === 'x8' ? longScope(H, 0.075, -0.05, 0.3, 0.026) : longScope(H, 0.075, -0.03, 0.2, 0.021); u.sightY = sy; u.adsDist = 0.16; break; }
     // ---- Kehlmann de cerrojo con mira telescópica (7,92): la carabina del taller
-    case 'sniper': { boltRifle(H, { muzzle: -0.78, fullStock: true, bands: [-0.31, -0.5], bent: true, slot: true, cheek: true, fore: -0.34, wood: 0x4a2c18 }); const sy = longScope(H, 0.075, -0.04, 0.26, 0.026); u.sightY = sy; u.adsDist = 0.16; break; }
+    case 'sniper': { boltRifle(H, { muzzle: -0.78, fullStock: true, bands: [-0.31, -0.5], bent: true, slot: true, cheek: true, fore: -0.34, wood: 0x4a2c18 }); const sy = H.att.optic === 'x8' ? longScope(H, 0.075, -0.06, 0.34, 0.03) : longScope(H, 0.075, -0.04, 0.26, 0.026); u.sightY = sy; u.adsDist = 0.16; break; }
     // ---- Brenner M-43: semiautomático vardenés de finales de guerra (cargador de 10)
     case 'battle': boltRifle(H, { sight: { rear: 'ring', hood: 'wings' }, muzzle: -0.72, fullStock: false, bands: [-0.3], semi: true, hgTo: -0.36, fore: -0.3, wood: 0x5a3c26, rod: false }); break;
     // ---- subfusil atlántico M-28 (9 mm): cajón fresado, cañón con aletas, culata y empuñaduras de nogal

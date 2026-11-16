@@ -649,11 +649,13 @@ function makeBuilder(ms) {
       for (let i = 0; i < n; i++) {
         // colinas: su base nunca entra al área de juego ni a la franja de ruinas
         const a = (i / n) * TAU + rng.range(-0.1, 0.1), s = rng.range(14, 34), R = s * 1.25, r = Math.max(rng.range(r0, r1), R + 84);
+        if ((skip.includes('s') && Math.sin(a) > 0.35) || (skip.includes('n') && Math.sin(a) < -0.35)) continue;
         D.add(GEO.cone(1, 1, 5), Math.cos(a) * r, s * 0.3 - 2, Math.sin(a) * r, shade(color, rng.range(-0.1, 0.08)), { sx: R, sy: s * 0.7, sz: R, ry: rng.range(0, 3) });
       }
       for (let i = 0; i < 26; i++) {
         const a = rng.range(0, TAU), r = rng.range(66, 80), w = rng.range(3, 9), h = rng.range(3, 14);
         if (bd && skip.includes('n') && Math.sin(a) * r < bd.z0) continue;
+        if (bd && skip.includes('s') && Math.sin(a) * r > bd.z1) continue;
         D.add(GEO.box(1, 1, 1), Math.cos(a) * r, h / 2 - 1, Math.sin(a) * r, shade(color, rng.range(-0.25, -0.05)), { sx: w, sy: h, sz: rng.range(3, 8), ry: rng.range(0, 3) });
       }
     },

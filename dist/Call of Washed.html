@@ -1217,7 +1217,7 @@ import * as CANNON from 'cannon-es';
 const CONFIG = {
   GAME_NAME: 'CALL OF WASHED',
   GAME_TAG: { es: 'La Conflagración · 1939–1945', en: 'The Conflagration · 1939–1945' },
-  VERSION: '3.2.3', TITLE_EN: 'WarTime',
+  VERSION: '3.3.0', TITLE_EN: 'WarTime',
 
   SIM_HZ: 60,               // timestep fijo de la simulación
   PHYS_SUBSTEPS: 2,         // sub-pasos de cannon por tick (120 Hz efectivos)
@@ -1509,6 +1509,7 @@ const CONFIG = {
       iron: { es: 'Alza y punto de mira', en: 'Iron sights', d: { es: 'Las de fábrica: alza de hoja graduada y punto de mira con túnel.', en: 'Factory leaf sight and hooded front post.' }, lvl: 1 },
       x2: { es: 'Mira telescópica 2,5x', en: '2.5x telescopic sight', d: { es: 'Tubo de acero sobre anillas. Más aumento y precisión; apuntas más lento.', en: 'Steel tube on rings. More zoom and precision; slower to aim.' }, lvl: 10 },
       x4: { es: 'Mira telescópica 4x', en: '4x telescopic sight', d: { es: 'Largo alcance. Apuntas bastante más lento y pierdes visión periférica.', en: 'Long range. Noticeably slower to aim and a narrower view.' }, lvl: 30 },
+      x8: { es: 'Mira telescópica 8x', en: '8x telescopic sight', d: { es: 'Tubo largo de tirador de élite: ocho aumentos para el tiro lejano. Apuntas más lento y el pulso se nota más.', en: 'Long marksman\'s tube: eight power for long shots. Slower to aim and every heartbeat shows.' }, lvl: 18 },
       scope: { es: 'Mira telescópica fija', en: 'Fixed telescopic sight', d: { es: 'Retícula de tres postes y torreta de alza por clics de 100 m.', en: 'Three-post reticle and a 100 m-per-click elevation turret.' }, lvl: 1 },
       none: { es: 'De fábrica', en: 'Factory', d: { es: 'Sin modificar.', en: 'Unmodified.' }, lvl: 1 },
       comp: { es: 'Compensador de boca', en: 'Muzzle compensator', d: { es: 'Desvía los gases hacia arriba: menos retroceso vertical, fogonazo más grande.', en: 'Vents gas upward: less vertical recoil, bigger flash.' }, lvl: 2 },
@@ -1651,7 +1652,7 @@ CONFIG.CAMP_DIFF_ORDER = ['lectura', 'recluta', 'veterano', 'relojero'];
 (() => {
   const mk = (o) => ({ optic: ['iron'], muzzle: ['none'], barrel: ['none'], grip: ['none'], mag: ['std'], stock: ['none'], ammo: ['fmj'], ...o });
   const BOLT = { optic: ['iron', 'x2', 'x4'], muzzle: ['none', 'bayo', 'fhider', 'supp'], barrel: ['none', 'long', 'short', 'heavy'], grip: ['none', 'sling', 'bipod'], mag: ['std', 'fast'], stock: ['none', 'skel', 'pad'], ammo: ['fmj', 'ap', 'hp'] };
-  const SCOPED = { optic: ['scope'], muzzle: ['none', 'fhider', 'supp', 'brake'], barrel: ['none', 'long', 'heavy'], grip: ['none', 'sling', 'bipod'], mag: ['std', 'fast'], stock: ['none', 'pad'], ammo: ['fmj', 'ap', 'hp'] };
+  const SCOPED = { optic: ['scope', 'x8'], muzzle: ['none', 'fhider', 'supp', 'brake'], barrel: ['none', 'long', 'heavy'], grip: ['none', 'sling', 'bipod'], mag: ['std', 'fast'], stock: ['none', 'pad'], ammo: ['fmj', 'ap', 'hp'] };
   CONFIG.ATTACH.slots = {
     rifle: mk(BOLT), dmr: mk(BOLT),
     battle: mk({ optic: ['iron', 'x2', 'x4'], muzzle: ['none', 'fhider', 'bayo', 'supp'], barrel: ['none', 'long', 'short'], grip: ['none', 'sling'], mag: ['std', 'ext', 'fast'], stock: ['none', 'pad'], ammo: ['fmj', 'ap', 'hp'] }),
@@ -1980,7 +1981,7 @@ const Input = {
     const s = this.state;
     s.jump = this.is('jump');
     s.crouch = this.is('crouch');
-    s.sprint = this.is('sprint');
+    s.sprint = this.is('sprint'); s.breath = s.sprint;
     s.grenade = this.is('grenade');
     const now = performance.now(); let lean = 0;
     if (this.holdT.shoulder && now - this.holdT.shoulder > 170 && this.is('shoulder')) lean -= 1;
@@ -2015,7 +2016,7 @@ const Input = {
     if (edge(3)) { s.cycleDir = 1; s.cycleCount++; }
     if (edge(10)) this.padSprint = !this.padSprint;
     if (ly > -0.4) this.padSprint = false;
-    if (this.padSprint) s.sprint = true;
+    if (this.padSprint) { s.sprint = true; s.breath = true; }
     if (edge(11)) s.meleeCount++;
     if (b(4)) s.grenade = true;
     if (edge(5)) BUS.emit('swapShoulder');
@@ -4001,7 +4002,7 @@ const ATT_SLOTS = CONFIG.ATTACH.order;
 // aumento por mira y familia de arma
 const ZOOM_FAMILY = {
   rifle: { iron: 1.3, x2: 2.5, x4: 3.6 }, smg: { iron: 1.18 }, shotgun: { iron: 1.12 },
-  sniper: { scope: 4.0 }, mk2: { scope: 2.5 }, lmg: { iron: 1.3, x2: 2.3 },
+  sniper: { scope: 4.0, x8: 8.0 }, mk2: { scope: 2.5, x8: 8.0 }, lmg: { iron: 1.3, x2: 2.3 },
 };
 const ZOOM_OF = { rifle: 'rifle', dmr: 'rifle', battle: 'rifle', smg: 'smg', tsmg: 'smg', shotgun: 'shotgun', dbl: 'shotgun', sniper: 'sniper', mk2: 'mk2', lmg: 'lmg', mg2: 'lmg' };
 const OPTIC_ZOOM = new Proxy({}, { get: (_, id) => ZOOM_FAMILY[ZOOM_OF[id]] });
@@ -4038,6 +4039,7 @@ const ATT_FX = {
   // visor de tubo: al apuntar se mira por el ocular (pantalla de mira como los fusiles de tirador), no a través del tubo en 3D
   x2: (W) => { W.adsTime *= 1.22; W.ads *= 0.7; W.scope = true; },
   x4: (W) => { W.adsTime *= 1.42; W.ads *= 0.5; W.scope = true; W.moveMul = (W.moveMul || 1) * 0.98; W.fovNarrow = true; },
+  x8: (W) => { W.adsTime *= 1.2; W.scope = true; W.moveMul = (W.moveMul || 1) * 0.98; W.fovNarrow = true; W.swayMul = 1.25; },
   comp: (W) => { W.recoilV *= 0.78; W.recoilH *= 0.9; W.flash = (W.flash || 1) * 1.2; },
   supp: (W) => { W.suppressed = true; W.flash = (W.flash || 1) * 0.15; W.fall0 *= 0.85; W.fall1 *= 0.85; W.sound = 'supp'; W.adsTime *= 1.05; W.moveMul = (W.moveMul || 1) * 0.98; },
   fhider: (W) => { W.flash = (W.flash || 1) * 0.1; W.recoilV *= 0.95; },
@@ -4901,15 +4903,16 @@ const Ballistics = {
       const z = clamp((f.zero || BAL.zMin) + (inp.cycleDir < 0 ? BAL.zStep : -BAL.zStep), BAL.zMin, BAL.zMax);
       if (z !== f.zero) { f.zero = z; BUS.emit('zero', f); }
     }
-    const hold = scoped && inp.sprint && f.fatigueT <= 0 && f.breath > 0;
+    const hold = scoped && (inp.breath ?? inp.sprint) && f.fatigueT <= 0 && f.breath > 0;   // 3.3.0: tecla cruda (inp.sprint se borra en el primer paso del fotograma)
     if (aiming) inp.sprint = false;
     if (hold) { f.breath -= dt / BAL.hold; if (f.breath <= 0) { f.breath = 0; f.fatigueT = BAL.tired; BUS.emit('breathOut', f); } }
     else { if (f.fatigueT > 0) f.fatigueT -= dt; else f.breath = Math.min(1, f.breath + dt / BAL.rest); }
     f.holding = hold;
     if (scoped) {
       const t = G.time, D = (typeof Camp !== 'undefined' && G.mode && G.mode.campaign && Camp.diff) ? Camp.diff() : null;
-      const amp = 0.0025 * (hold ? 0.08 : f.fatigueT > 0 ? 2.2 : 1) * (f.prone ? 0.35 : f.crouching ? 0.65 : 1) * (W.bipod && (f.prone || f.crouching) ? 0.45 : 1) * (D ? D.sway : 1);
-      const bpm = f.fatigueT > 0 ? 112 : hold ? 62 : 74, ph = (t * bpm / 60) % 1, pulse = Math.exp(-ph * 14);
+      f.holdK = damp(f.holdK || 0, hold ? 1 : 0, 7, dt); f.tiredK = damp(f.tiredK || 0, f.fatigueT > 0 ? 1 : 0, 3, dt);
+      const amp = 0.0025 * lerp(lerp(1, 2.2, f.tiredK), 0.06, f.holdK) * (W.swayMul || 1) * (f.prone ? 0.35 : f.crouching ? 0.65 : 1) * (W.bipod && (f.prone || f.crouching) ? 0.45 : 1) * (D ? D.sway : 1);
+      const bpm = lerp(lerp(74, 112, f.tiredK), 62, f.holdK); f.pph = ((f.pph || 0) + dt * bpm / 60) % 1; const pulse = Math.exp(-f.pph * 14) * (1 - f.holdK * 0.7);
       f.pulse = pulse;
       ny = amp * (Math.sin(t * 0.9) + 0.5 * Math.sin(t * 2.3 + 1));
       np = amp * (0.75 * Math.sin(t * 1.3 + 2) + 0.35 * Math.sin(t * 0.5)) + amp * 0.6 * pulse;
@@ -5530,7 +5533,7 @@ function weaponGeometry(id, vm = false, att = null) {
   // 3.1.2: línea de mira despejada en primera persona. Cualquier pieza gruesa (martillo, alza maciza, cajón, tapa) que asome
   // por encima de la línea de mira en el centro se baja o se recorta para que al apuntar se vea hacia delante; las cuchillas
   // finas de las miras (punto de mira y montantes del alza) se respetan.
-  if (vm && !proto && !['sniper', 'mk2', 'rocket', 'knife'].includes(id) && !['x2', 'x4', 'scope'].includes(att.optic)) clearSightLine(B, u.sightY);
+  if (vm && !proto && !['sniper', 'mk2', 'rocket', 'knife'].includes(id) && !['x2', 'x4', 'x8', 'scope'].includes(att.optic)) clearSightLine(B, u.sightY);
   B.tag = 'mag';
   if (att.mag === 'drum' && id === 'smg' && !proto) magExtra(u.mag);
   B.tag = null;
@@ -5747,9 +5750,9 @@ function periodGun(id, H) {
     // ---- fusil vardenés M-98 (7,92): más corto, manilla acodada, ranura de correa en la culata
     case 'dmr': boltRifle(H, { sight: { rear: 'v', front: 'barley', hood: 'wings' }, muzzle: -0.74, fullStock: true, bands: [-0.32, -0.5], bent: true, slot: true, fore: -0.34, wood: 0x56301c }); break;
     // ---- Ferrán M-32 con mira: el mismo Ferrán con mira corta fija y manilla acodada
-    case 'mk2': { boltRifle(H, { muzzle: -0.8, fullStock: true, bands: [-0.34, -0.56], bent: true, fore: -0.36, wood: 0x5e3b22 }); const sy = longScope(H, 0.075, -0.03, 0.2, 0.021); u.sightY = sy; u.adsDist = 0.16; break; }
+    case 'mk2': { boltRifle(H, { muzzle: -0.8, fullStock: true, bands: [-0.34, -0.56], bent: true, fore: -0.36, wood: 0x5e3b22 }); const sy = H.att.optic === 'x8' ? longScope(H, 0.075, -0.05, 0.3, 0.026) : longScope(H, 0.075, -0.03, 0.2, 0.021); u.sightY = sy; u.adsDist = 0.16; break; }
     // ---- Kehlmann de cerrojo con mira telescópica (7,92): la carabina del taller
-    case 'sniper': { boltRifle(H, { muzzle: -0.78, fullStock: true, bands: [-0.31, -0.5], bent: true, slot: true, cheek: true, fore: -0.34, wood: 0x4a2c18 }); const sy = longScope(H, 0.075, -0.04, 0.26, 0.026); u.sightY = sy; u.adsDist = 0.16; break; }
+    case 'sniper': { boltRifle(H, { muzzle: -0.78, fullStock: true, bands: [-0.31, -0.5], bent: true, slot: true, cheek: true, fore: -0.34, wood: 0x4a2c18 }); const sy = H.att.optic === 'x8' ? longScope(H, 0.075, -0.06, 0.34, 0.03) : longScope(H, 0.075, -0.04, 0.26, 0.026); u.sightY = sy; u.adsDist = 0.16; break; }
     // ---- Brenner M-43: semiautomático vardenés de finales de guerra (cargador de 10)
     case 'battle': boltRifle(H, { sight: { rear: 'ring', hood: 'wings' }, muzzle: -0.72, fullStock: false, bands: [-0.3], semi: true, hgTo: -0.36, fore: -0.3, wood: 0x5a3c26, rod: false }); break;
     // ---- subfusil atlántico M-28 (9 mm): cajón fresado, cañón con aletas, culata y empuñaduras de nogal
@@ -9159,11 +9162,13 @@ function makeBuilder(ms) {
       for (let i = 0; i < n; i++) {
         // colinas: su base nunca entra al área de juego ni a la franja de ruinas
         const a = (i / n) * TAU + rng.range(-0.1, 0.1), s = rng.range(14, 34), R = s * 1.25, r = Math.max(rng.range(r0, r1), R + 84);
+        if ((skip.includes('s') && Math.sin(a) > 0.35) || (skip.includes('n') && Math.sin(a) < -0.35)) continue;
         D.add(GEO.cone(1, 1, 5), Math.cos(a) * r, s * 0.3 - 2, Math.sin(a) * r, shade(color, rng.range(-0.1, 0.08)), { sx: R, sy: s * 0.7, sz: R, ry: rng.range(0, 3) });
       }
       for (let i = 0; i < 26; i++) {
         const a = rng.range(0, TAU), r = rng.range(66, 80), w = rng.range(3, 9), h = rng.range(3, 14);
         if (bd && skip.includes('n') && Math.sin(a) * r < bd.z0) continue;
+        if (bd && skip.includes('s') && Math.sin(a) * r > bd.z1) continue;
         D.add(GEO.box(1, 1, 1), Math.cos(a) * r, h / 2 - 1, Math.sin(a) * r, shade(color, rng.range(-0.25, -0.05)), { sx: w, sy: h, sz: rng.range(3, 8), ry: rng.range(0, 3) });
       }
     },
@@ -9447,286 +9452,13 @@ function mirrorHouseZ(o) {
 function houseX(B, s, x0, z0, x1, z1, o) { if (s > 0) B.house(x0, z0, x1, z1, o); else B.house(-x1, z0, -x0, z1, mirrorHouseX(o)); }
 function houseZ(B, s, x0, z0, x1, z1, o) { if (s > 0) B.house(x0, z0, x1, z1, o); else B.house(x0, -z1, x1, -z0, mirrorHouseZ(o)); }
 
+const MAP_THEME0 = { skyTop: 0x56677a, skyMid: 0xaab3b3, skyBot: 0x868a80, fog: 0x99a09c, fogNear: 38, fogFar: 205, sun: 0xfff1da, sunI: 2.1, sunDir: [0.42, 0.72, -0.32], hemiTop: 0xd5dde0, hemiBot: 0x66665a, hemiI: 1.35, exposure: 1.05 };
 const MAPS = {
-  // -------------------------------------------------------------------
-  pueblo: {
-    name: { es: 'San Juan de las Minas', en: 'San Juan de las Minas' },
-    desc: { es: 'Pueblo minero de calle empedrada: camiones quemados, casas de dos pisos y un campanario para el tirador.', en: 'Mining town on a cobbled street: burnt trucks, two-storey houses and a bell tower for the marksman.' },
-    thumb: ['#4a5466', '#c9a27a', '#6e5d4a'],
-    theme: { skyTop: 0x46505f, skyMid: 0xc49c74, skyBot: 0x8a765e, fog: 0x9c8870, fogNear: 30, fogFar: 185, sun: 0xffcf9a, sunI: 2.4, sunDir: [-0.62, 0.42, 0.38], hemiTop: 0xd6c6ae, hemiBot: 0x6a5e4c, hemiI: 1.3, exposure: 1.05 },
-    build(B) {
-      const C = B.C, st = { pattern: PAT.CONCRETE, color: 0x8f8a80 };
-      B.bounds(-50, -34, 50, 34);
-      const street = [-50, -4.5, 50, 4.5], plaza = [-10, 6, 10, 19];
-      B.ground(-50, -34, 50, 34, { holes: [street, plaza], pattern: PAT.DIRT, color: 0x86765a });
-      B.ground(...street, { pattern: PAT.ASPHALT, color: C.asphalt });
-      B.ground(...plaza, { pattern: PAT.COBBLE, color: 0x8a8274 });
-      // aceras
-      B.box(-50, 0, -6, 50, 0.15, -4.5, st);
-      B.box(-50, 0, 4.5, -10, 0.15, 6, st); B.box(10, 0, 4.5, 50, 0.15, 6, st);
-      // líneas de la calle (decoración)
-      for (let x = -48; x < 48; x += 6) B.decoBox(x, 0.005, -0.08, x + 3, 0.02, 0.08, 0xb8b090);
-      // casas del norte y del sur, espejadas
-      for (const s of [-1, 1]) {
-        houseX(B, s, 38, -14, 46, -6.5, { floors: 2, stairs: { side: 'e', from: 'n' }, open: { s: [['door', 0.7, 0], ['win', 0.25, 0], ['win', 0.25, 1], ['win', 0.7, 1]], n: [['door', 0.5, 0], ['win', 0.5, 1]], w: [['win', 0.5, 0], ['win', 0.5, 1]], e: [['win', 0.4, 1]] } });
-        houseX(B, s, 27, -14, 35, -6.5, { floors: 1, ruin: true, open: { s: [['door', 0.5, 0], ['hole', 0.15, 0]], n: [['win', 0.6, 0]], w: [['hole', 0.4, 0]], e: [['door', 0.4, 0]] } });
-        houseX(B, s, 16, -15, 24, -6.5, { floors: 2, stairs: { side: 'n', from: 'e' }, open: { s: [['door', 0.35, 0], ['win', 0.75, 0], ['win', 0.75, 1], ['win', 0.3, 1]], w: [['door', 0.6, 0], ['win', 0.4, 1]], n: [['win', 0.5, 0]], e: [['win', 0.5, 1]] } });
-        houseX(B, s, 3, -15, 12, -6.5, { floors: 2, stairs: { side: 'w', from: 'n' }, open: { s: [['door', 0.5, 0], ['win', 0.8, 0], ['win', 0.2, 1], ['win', 0.5, 1], ['win', 0.8, 1]], e: [['door', 0.7, 0], ['win', 0.4, 1]], n: [['door', 0.5, 0], ['win', 0.5, 1]] } });
-        houseX(B, s, 38, 6.5, 46, 14, { floors: 1, open: { n: [['door', 0.5, 0], ['win', 0.2, 0], ['win', 0.8, 0]], s: [['door', 0.5, 0]], w: [['win', 0.5, 0]] } });
-        houseX(B, s, 25, 6.5, 35, 15, { floors: 2, stairs: { side: 's', from: 'e' }, open: { n: [['door', 0.65, 0], ['win', 0.25, 0], ['win', 0.7, 1], ['win', 0.25, 1]], s: [['door', 0.4, 0]], e: [['win', 0.5, 1]], w: [['door', 0.5, 0], ['win', 0.5, 1]] } });
-        houseX(B, s, 13, 6.5, 22, 14, { floors: 1, ruin: true, open: { n: [['hole', 0.7, 0], ['door', 0.3, 0]], w: [['door', 0.5, 0]], e: [['hole', 0.5, 0]] } });
-        // patios traseros: muros bajos de piedra, sacos, árboles
-        const X = (v) => s * v;
-        B.wall('x', Math.min(X(46), X(30)), Math.max(X(46), X(30)), -22, 0, 1.1, 0.45, { pattern: PAT.BRICK, color: 0x9a8a72, kind: 'cover', open: [{ type: 'door', at: X(38), w: 2 }] });
-        B.wall('x', Math.min(X(26), X(14)), Math.max(X(26), X(14)), -21, 0, 1.1, 0.45, { pattern: PAT.BRICK, color: 0x9a8a72, kind: 'cover', open: [{ type: 'door', at: X(20), w: 1.8 }] });
-        B.wall('x', Math.min(X(46), X(28)), Math.max(X(46), X(28)), 22, 0, 1.1, 0.45, { pattern: PAT.BRICK, color: 0x9a8a72, kind: 'cover', open: [{ type: 'door', at: X(34), w: 2 }] });
-        B.sandbags(X(30), -28, X(33), -28); B.sandbags(X(29.6), -27.4, X(29.6), -25.2);
-        B.tank(X(20), -28, 0);
-        B.tree(X(42), -26, 1.0); B.tree(X(36), -31, 0.9); B.deadTree(X(12), -24); B.tree(X(44), 28, 1.1); B.deadTree(X(24), 27);
-        B.car(X(30), 27, 1, 0x5a4a3a); B.crate(X(18), 0, 24, 1.2); B.crate(X(18.9), 0, 25.1, 1.0); B.crate(X(18.3), 1.2, 24.3, 0.9);
-        B.sandbags(X(14), 30, X(18), 30); B.wire(X(36), 30.5, X(46), 30.5);
-        B.wire(X(4), -31, X(12), -31);
-        // calle: autos quemados, barricadas, barriles
-        B.car(X(36), -2, 0, 0x5b4636); B.car(X(17), 2, 0, 0x3e4a52);
-        B.sandbags(X(24), -4.4, X(24), -0.4); B.wire(X(26), 0.4, X(26), 4.2);
-        B.barrel(X(34.5), 0, 2.6); B.barrel(X(35.2), 0, 3.2); B.barrel(X(10), 0, -3.6);
-        B.crate(X(12.5), 0, 3.4, 1.1); B.crate(X(42), 0, 3.8, 1.1);
-        for (const lx of [8, 20, 32, 44]) { B.lamp(X(lx), -5.4); }
-        B.rubble(X(30), -4.2, 1.0); B.rubble(X(8), 5.2, 0.8);
-        // aparición
-        const team = s < 0 ? 0 : 1, ex = X(46);
-        for (const [x, z] of [[47, -2], [47, 2], [45, -18], [45, 18], [47.5, -26], [47.5, 26], [43, -28], [43, 29], [48.8, -3.8], [48.8, 3.8]]) B.spawn(team, X(x), 0, z, s < 0 ? -Math.PI / 2 : Math.PI / 2);
-        void ex;
-      }
-      // plaza: fuente destruida, bancas, árboles
-      B.box(-1.8, 0, 12.4, 1.8, 0.75, 16, { pattern: PAT.CONCRETE, color: 0xa39d90, kind: 'cover' });
-      B.box(-0.4, 0.75, 13.8, 0.4, 1.9, 14.6, { pattern: PAT.CONCRETE, color: 0x9a948a, kind: 'cover' });
-      B.rubble(2.6, 15.2, 0.9);
-      B.sandbags(-6.5, 8.6, -3.5, 8.6); B.sandbags(3.5, 8.6, 6.5, 8.6);
-      B.deadTree(-7.5, 11); B.deadTree(7.5, 11);
-      B.box(-7.8, 0, 16.8, -5.2, 0.45, 17.4, { pattern: PAT.WOOD, color: 0x5a4430, kind: 'cover' }); B.box(5.2, 0, 16.8, 7.8, 0.45, 17.4, { pattern: PAT.WOOD, color: 0x5a4430, kind: 'cover' });
-      // iglesia en ruinas con campanario
-      B.house(-8, 19, 8, 31, { floors: 1, h: 8.0, ruin: true, pattern: PAT.BRICK, color: 0xa08c74, floorPat: PAT.COBBLE, floorColor: 0x7a7468,
-        open: { n: [['arch', 0.5, 0, 2.4, 0, 3.2]], s: [['door', 0.5, 0]], w: [['win', 0.25, 0, 1.3, 3.0, 5.2], ['win', 0.5, 0, 1.3, 3.0, 5.2], ['win', 0.75, 0, 1.3, 3.0, 5.2], ['door', 0.5, 0]], e: [['win', 0.25, 0, 1.3, 3.0, 5.2], ['win', 0.75, 0, 1.3, 3.0, 5.2], ['door', 0.5, 0]] } });
-      for (let i = 0; i < 4; i++) { B.box(-5.6, 0, 21.8 + i * 2, -1.2, 0.5, 22.3 + i * 2, { pattern: PAT.WOOD, color: 0x5a4430, kind: 'cover' }); B.box(1.2, 0, 21.8 + i * 2, 5.6, 0.5, 22.3 + i * 2, { pattern: PAT.WOOD, color: 0x5a4430, kind: 'cover' }); }
-      B.box(-2, 0, 29, 2, 1.0, 30.2, { pattern: PAT.CONCRETE, color: 0xb0a690, kind: 'cover' });
-      // campanario (plataforma a 6.3 m)
-      const TX0 = 9, TX1 = 13, TZ0 = 20, TZ1 = 24, TH = 11.5, tw = 0.3, stone = { pattern: PAT.BRICK, color: 0x9a8670 };
-      B.box(TX0 + tw, 0, TZ0 + tw, TX1 - tw, 6.05, TZ1 - tw, stone);
-      B.box(TX0 + tw, 6.05, TZ0 + tw, TX1 - tw, 6.3, TZ1 - tw, { pattern: PAT.WOOD, color: 0x5e4630, kind: 'floor' });
-      B.wall('x', TX0, TX1, TZ0 + tw / 2, 0, TH, tw, { ...stone, open: [{ type: 'arch', at: 11, w: 1.8, y0: 7.2, y1: 9.3 }] });
-      B.wall('x', TX0, TX1, TZ1 - tw / 2, 0, TH, tw, { ...stone, open: [{ type: 'door', at: 9.85, w: 1.1, y0: 6.3, y1: 8.6 }, { type: 'win', at: 12, w: 1.2, y0: 7.2, y1: 9.3 }] });
-      B.wall('z', TZ0 + tw, TZ1 - tw, TX0 + tw / 2, 0, TH, tw, { ...stone, open: [{ type: 'win', at: 22, w: 1.6, y0: 7.2, y1: 9.3 }] });
-      B.wall('z', TZ0 + tw, TZ1 - tw, TX1 - tw / 2, 0, TH, tw, { ...stone, open: [{ type: 'win', at: 22, w: 1.6, y0: 7.2, y1: 9.3 }] });
-      B.box(TX0 - 0.2, TH, TZ0 - 0.2, TX1 + 0.2, TH + 0.3, TZ1 + 0.2, { pattern: PAT.CONCRETE, color: 0x7e7466 });
-      B.deco(GEO.cone(3.1, 3.4, 4), 11, TH + 2.0, 22, 0x6a4a3a, { ry: Math.PI / 4 });
-      B.deco(GEO.cyl(0.45, 0.6, 0.8, 8), 11, 10.2, 22, 0x8a6a2a);
-      B.stairs(9.85, 31.2, '-z', 1.1, 0, 6.3, { pattern: PAT.CONCRETE, color: 0x8f8678 });
-      B.box(9.3, 6.05, 24.0, 10.4, 6.3, 24.5, { pattern: PAT.CONCRETE, color: 0x8f8678 });
-      // granero central del norte (lanzacohetes adentro)
-      B.house(-7, -31, 7, -21, { floors: 1, h: 4.6, pattern: PAT.WOOD, color: 0x6a5038, roofPat: PAT.ROOF, roofColor: 0x6e3e2e, parapet: false,
-        open: { s: [['big', 0.5, 0, 3.6]], n: [['big', 0.5, 0, 3.6]], w: [['win', 0.5, 0]], e: [['win', 0.5, 0]] } });
-      B.crate(-4.5, 0, -28.5, 1.2); B.crate(-4.5, 1.2, -28.5, 1.0); B.crate(4.4, 0, -23.4, 1.2); B.crate(5.4, 0, -23.6, 1.0);
-      B.box(-3.0, 0, -26.6, 3.0, 0.9, -25.4, { pattern: PAT.WOOD, color: 0x7a6040, kind: 'cover' });
-      B.sandbags(-4, -19.5, 4, -19.5);
-      B.car(-14, 30, 0, 0x40362c);
-      // ambiente: humo lejano y paisaje
-      B.smoke(-70, -60, 1.1); B.smoke(80, 40, 1.4); B.smoke(20, -90, 1.0);
-      B.horizon(0x7f705a, 22, 95, 150, { groundColor: 0x76694e });
-      // A / B / C y armas
-      B.dom('A', -30, 0, 0); B.dom('B', 0, 0, 9.5); B.dom('C', 30, 0, 0);
-      B.stand(11, 6.3, 21.4, 'sniper'); B.stand(0, 0, -23.6, 'lmg');   // 3.2.3: el tubo antitanque queda fuera del juego por ahora B.stand(-7.5, 0.06, -8.4, 'shotgun'); B.stand(7.5, 0.06, -8.4, 'shotgun');
-      // aparición libre (todos contra todos)
-      for (const [x, z] of [[-42, 0], [42, 0], [0, -29.5], [0, 27], [-20, -24.5], [20, -24.5], [-22, 26], [22, 26], [-40, -24], [40, 24], [-12, 1], [12, -1], [-31, -10], [31, 10]]) B.spawn('ffa', x, 0, z);
-      B.prop('tire', -14, 0, 2.5); B.prop('tire', 14.2, 0, -2.8); B.prop('can', 2.2, 0, 7.5); B.prop('can', -26.5, 0, 3.4); B.prop('bucket', -3.2, 0.06, -8.9);
-    },
-  },
-
-  // -------------------------------------------------------------------
-  base: {
-    name: { es: 'Cuartel Tres Cruces', en: 'Tres Cruces Barracks' },
-    desc: { es: 'Hangar de aeródromo al centro, torre de vigía, nido de ametralladora y trincheras con sacos terreros y alambrada.', en: 'An airfield hangar in the middle, a watchtower, a machine-gun nest and trenches with sandbags and barbed wire.' },
-    thumb: ['#5d6b78', '#a9b2b2', '#5e6248'],
-    theme: { skyTop: 0x56677a, skyMid: 0xaab3b3, skyBot: 0x868a80, fog: 0x99a09c, fogNear: 38, fogFar: 205, sun: 0xfff1da, sunI: 2.1, sunDir: [0.42, 0.72, -0.32], hemiTop: 0xd5dde0, hemiBot: 0x66665a, hemiI: 1.35, exposure: 1.05 },
-    build(B) {
-      const C = B.C;
-      B.bounds(-48, -40, 48, 40);
-      // trincheras (oeste) y búnker: huecos en el terreno
-      const trench = [[-38, -16, -35, 16], [-35, -1.5, -31, 1.5], [-41, -9, -38, -6], [-41, 6, -38, 9]];
-      const bunker = [-31, -3.5, -25, 3.5];
-      const apron = [-16, -14, 16, 14];
-      B.ground(-48, -40, 48, 40, { holes: [...trench, bunker, apron], pattern: PAT.GRASS, color: 0x6b6e48 });
-      B.ground(...apron, { pattern: PAT.CONCRETE, color: 0x8e8c84 });
-      for (const r of [...trench, bunker]) B.box(r[0], -2.2, r[1], r[2], -1.4, r[3], { pattern: PAT.DIRT, color: 0x6e5c44, kind: 'floor' });
-      // revestimiento de tablas en las paredes de la trinchera
-      B.decoBox(-38.02, -1.4, -16, -37.98, 0, 16, 0x5a4630); B.decoBox(-35.02, -1.4, -16, -34.98, 0, -1.5, 0x5a4630); B.decoBox(-35.02, -1.4, 1.5, -34.98, 0, 16, 0x5a4630);
-      for (const s of [-1, 1]) B.stairs(-36.5, s * 14.4, s > 0 ? '+z' : '-z', 3, -1.4, 0, { pattern: PAT.DIRT, color: 0x6e5c44 });
-      // escalones de tiro dentro de la trinchera (para asomarse por encima del borde)
-      const dirt = { pattern: PAT.DIRT, color: 0x6e5c44, kind: 'floor' };
-      B.box(-35.7, -1.4, -14.4, -35, -0.65, -1.6, dirt); B.box(-35.7, -1.4, 1.6, -35, -0.65, 14.4, dirt);
-      for (const [a, b] of [[-14.4, -9.2], [-5.8, 5.8], [9.2, 14.4]]) B.box(-38, -1.4, a, -37.3, -0.65, b, dirt);
-      // búnker hundido: piso a -1.4, escalón de tiro y troneras a la altura de los ojos
-      const bc = { pattern: PAT.CONCRETE, color: 0x8a877e, kind: 'wall' };
-      B.wall('x', -31, -25, -3.35, -1.4, 3.8, 0.3, { ...bc, open: [{ type: 'slit', at: -27.5, w: 3.4, y0: 2.3, y1: 2.85 }] });
-      B.wall('x', -31, -25, 3.35, -1.4, 3.8, 0.3, { ...bc, open: [{ type: 'slit', at: -27.5, w: 3.4, y0: 2.3, y1: 2.85 }] });
-      B.wall('z', -3.2, 3.2, -25.15, -1.4, 3.8, 0.3, { ...bc, open: [{ type: 'slit', at: 0, w: 4, y0: 2.3, y1: 2.85 }] });
-      B.box(-29.3, -1.4, -3.2, -25.3, -0.35, 3.2, { pattern: PAT.CONCRETE, color: 0x7d7a72, kind: 'floor' });
-      B.stairs(-30.6, 0, '+x', 1.6, -1.4, -0.35, { pattern: PAT.CONCRETE, color: 0x7d7a72 });
-      B.wall('z', -3.2, 3.2, -30.85, -1.4, 3.8, 0.3, { ...bc, open: [{ type: 'door', at: 0, w: 1.6, y0: 0, y1: 2.3 }] });
-      B.box(-31.2, 2.4, -3.7, -24.8, 2.9, 3.7, { pattern: PAT.CONCRETE, color: 0x7d7a72 });
-      B.sandbags(-31.6, -4, -24.4, -4, { y: 0, h: 0.5 }); B.sandbags(-31.6, 4, -24.4, 4, { y: 0, h: 0.5 });
-      // parapetos de sacos sobre la trinchera y alambre al frente
-      for (const s of [-1, 1]) {
-        B.sandbags(-34.6, s * 3, -34.6, s * 15, { h: 0.75 }); B.sandbags(-38.4, s * 10, -38.4, s * 15.5, { h: 0.75 });
-        B.wire(-32.5, s * 6, -32.5, s * 14); B.wire(-42.5, s * 2, -42.5, s * 12);
-      }
-      B.dom('A', -36.5, -1.4, 4.0, 4.0);
-      // hangar central
-      B.house(-11, -9, 11, 9, { floors: 1, h: 8, pattern: PAT.METAL, color: 0x6c7068, floorPat: PAT.CONCRETE, floorColor: 0x7c7a74, parapet: false, roofPat: PAT.METAL, roofColor: 0x5a5e58,
-        open: { n: [['big', 0.5, 0, 9, 0, 6.2]], s: [['big', 0.5, 0, 9, 0, 6.2]], e: [['door', 0.2, 0], ['door', 0.8, 0], ['win', 0.35, 0, 1.6, 4.6, 5.8], ['win', 0.65, 0, 1.6, 4.6, 5.8]], w: [['door', 0.2, 0], ['door', 0.8, 0], ['win', 0.35, 0, 1.6, 4.6, 5.8], ['win', 0.65, 0, 1.6, 4.6, 5.8]] } });
-      for (const s of [-1, 1]) {
-        // pasarela interior a 4 m con escalera
-        const xa = s > 0 ? 8.6 : -10.7, xb = s > 0 ? 10.7 : -8.6;
-        B.box(xa, 3.75, -8.7, xb, 4.0, 8.7, { pattern: PAT.GRATE, color: 0x5a5c58, kind: 'floor' });
-        B.decoBox(s > 0 ? 8.55 : -8.65, 4.0, -8.7, s > 0 ? 8.65 : -8.55, 5.0, 3.0, 0x3a3c3a);
-        const sx = s > 0 ? 7.95 : -7.95;
-        B.stairs(sx, 8.4, '-z', 1.1, 0.06, 4.0, { pattern: PAT.GRATE, color: 0x5a5c58, solidBase: false });
-        B.box(s > 0 ? 7.4 : -8.6, 3.75, 3.2, s > 0 ? 8.6 : -7.4, 4.0, 4.4, { pattern: PAT.GRATE, color: 0x5a5c58, kind: 'floor' });
-      }
-      // avión dentro del hangar
-      B.box(2.6, 0.7, -6.4, 4.4, 2.5, 5.2, { pattern: PAT.METAL, color: 0x7d8278, kind: 'vehicle' });
-      B.box(-2.6, 1.55, -1.2, 9.6, 1.75, 0.8, { pattern: PAT.METAL, color: 0x737870, kind: 'vehicle' });
-      B.deco(GEO.cone(0.9, 1.6, 8), 3.5, 1.6, -7.2, 0x7d8278, { rx: -Math.PI / 2 }); B.deco(GEO.box(0.2, 1.6, 1.4), 3.5, 3.0, 4.6, 0x737870);
-      for (const z of [-4, 3.5]) { B.deco(GEO.cyl(0.3, 0.3, 0.2, 8), 3.5, 0.3, z, 0x1a1918, { rz: Math.PI / 2 }); }
-      B.crate(-8.8, 0.06, -6.8, 1.2); B.crate(-8.8, 1.26, -6.8, 1.0); B.crate(-7.5, 0.06, -7.0, 1.1); B.crate(-8.6, 0.06, 6.6, 1.2);
-      B.barrel(8.2, 0.06, -7.6); B.barrel(-3.5, 0.06, 7.4);
-      B.box(-6, 0.06, 2.2, -3.4, 1.1, 3.4, { pattern: PAT.METAL, color: 0x4a5236, kind: 'cover' });
-      B.dom('B', -4.5, 0.06, -1.5, 4.2);
-      // torre de control (este) y helipuertos
-      B.house(27, -3, 33, 3, { floors: 2, h: 3.3, pattern: PAT.CONCRETE, color: 0xa6a298, stairs: { side: 'n', from: 'e' },
-        open: { w: [['door', 0.5, 0], ['win', 0.2, 1, 1.4], ['win', 0.5, 1, 1.4], ['win', 0.8, 1, 1.4]], e: [['door', 0.5, 0], ['win', 0.2, 1, 1.4], ['win', 0.5, 1, 1.4], ['win', 0.8, 1, 1.4]], n: [['win', 0.3, 1, 1.4], ['win', 0.7, 1, 1.4]], s: [['win', 0.5, 0], ['win', 0.3, 1, 1.4], ['win', 0.7, 1, 1.4]] } });
-      B.deco(GEO.cyl(0.05, 0.05, 3, 4), 31.5, 8.3, 1.8, 0x3a3a3a); B.deco(GEO.box(0.6, 0.4, 0.6), 29, 7.0, -1.4, 0x8a8a84);
-      B.dom('C', 22.5, 0, 0, 4.2);
-      B.stand(30, 3.3, 1.3, 'sniper'); B.stand(-27.3, -0.35, 0, 'shotgun'); B.stand(9.6, 4.0, -6.5, 'lmg');   // 3.2.3: el tubo antitanque queda fuera del juego por ahora
-      for (const s of [-1, 1]) {
-        const Z = (v) => s * v;
-        // barracas
-        houseZ(B, s, -9, 20, 9, 26, { floors: 1, h: 3.2, pattern: PAT.PLASTER, color: 0xb2ab94, open: { n: [['door', 0.25, 0], ['win', 0.5, 0], ['door', 0.75, 0]], s: [['win', 0.25, 0], ['door', 0.5, 0], ['win', 0.75, 0]], e: [['door', 0.5, 0]], w: [['win', 0.5, 0]] } });
-        B.box(-6.5, 0.06, Z(23) - 0.4, -2.5, 0.6, Z(23) + 0.4, { pattern: PAT.WOOD, color: 0x5a5040, kind: 'cover' }); B.box(2.5, 0.06, Z(23) - 0.4, 6.5, 0.6, Z(23) + 0.4, { pattern: PAT.WOOD, color: 0x5a5040, kind: 'cover' });
-        // nidos de sacos frente a las puertas del hangar
-        B.sandbags(-3, Z(12.5), 3, Z(12.5)); B.sandbags(-3.3, Z(12.2), -3.3, Z(10.6)); B.sandbags(3.3, Z(12.2), 3.3, Z(10.6));
-        // contenedores y camiones
-        B.container(-14, 0, Z(11.5), 'x'); B.container(14.5, 0, Z(11.5), 'z');
-        B.truck(-20, Z(16), 0); B.container(20, 0, Z(17), 'x'); B.container(20, 2.6, Z(17), 'x');
-        B.crate(16.3, 0, Z(19.2), 1.2); B.crate(17.4, 0, Z(19.2), 1.1); B.crate(16.3, 1.2, Z(19.2), 1.1);
-        // depósito de combustible
-        B.box(26, 0, Z(22) - 1.6, 31, 3.0, Z(22) + 1.6, { pattern: PAT.METAL, color: 0x8a8a7a, kind: 'cover' });
-        B.deco(GEO.cyl(1.7, 1.7, 5.0, 10), 28.5, 1.7, Z(22), 0x9a9a8a, { rz: Math.PI / 2 });
-        B.barrel(24.8, 0, Z(20)); B.barrel(25.4, 0, Z(19.4)); B.barrel(24.6, 0, Z(24.5));
-        // helipuerto
-        B.box(36, 0, Z(16) - 4, 44, 0.12, Z(16) + 4, { pattern: PAT.CONCRETE, color: 0x6e6e68, kind: 'floor' });
-        B.decoBox(39.2, 0.12, Z(16) - 2, 39.6, 0.13, Z(16) + 2, 0xd8d0b0); B.decoBox(40.4, 0.12, Z(16) - 2, 40.8, 0.13, Z(16) + 2, 0xd8d0b0); B.decoBox(39.6, 0.12, Z(16) - 0.2, 40.4, 0.13, Z(16) + 0.2, 0xd8d0b0);
-        // torres de vigilancia y restos
-        B.tower(-42, Z(30), 5.4, s > 0 ? '-z' : '+z');
-        B.tank(-20, Z(29), 1);
-        B.sandbags(-26, Z(30), -22.5, Z(30)); B.sandbags(10, Z(31), 14, Z(31));
-        B.wire(-12, Z(33), 12, Z(33));
-        B.fence(-48, Z(39.5), 48, Z(39.5), 2.4);
-        B.tree(44, Z(31), 1.0); B.tree(-46, Z(18), 1.0); B.deadTree(34, Z(34));
-        // aparición
-        const team = s > 0 ? 0 : 1;
-        for (const [x, z] of [[-24, 37], [-12, 37.5], [0, 36], [12, 37.5], [24, 37], [-34, 36], [34, 36], [-4, 34], [4, 34], [44, 36]]) B.spawn(team, x, 0, Z(z), s > 0 ? 0 : Math.PI);
-      }
-      B.smoke(-90, 20, 1.3); B.smoke(70, -80, 1.1);
-      B.horizon(0x6e7262, 22, 95, 150, { groundColor: 0x5f6342 });
-      for (const [x, z] of [[-30, -18], [-30, 18], [0, -16], [0, 16], [22, -8], [22, 8], [38, -2], [-44, 0], [-16, -30], [16, 30], [-8, 0], [6, 6.5]]) B.spawn('ffa', x, 0, z);
-      B.prop('tire', 18, 0, 6); B.prop('can', -13.5, 0, 6.5); B.prop('bucket', 10, 0, -15.5); B.prop('can', 24, 0, -3.5);
-    },
-  },
-
-  // -------------------------------------------------------------------
-  muelle: {
-    name: { es: 'Puerto Ánimas', en: 'Puerto Ánimas' },
-    desc: { es: 'Cajas de vagón apiladas en laberinto, grúas de vapor, un almacén con pasarelas y bidones que estallan.', en: 'A maze of stacked freight-car boxes, steam cranes, a warehouse with catwalks and drums that explode.' },
-    thumb: ['#3e5a78', '#b8b4a6', '#5a5f66'],
-    theme: { skyTop: 0x3c5876, skyMid: 0xbab4a2, skyBot: 0x7a8a8e, fog: 0x98a4a6, fogNear: 42, fogFar: 225, sun: 0xffdfb4, sunI: 2.4, sunDir: [0.5, 0.48, -0.7], hemiTop: 0xcfd8dc, hemiBot: 0x666660, hemiI: 1.35, exposure: 1.05 },
-    build(B) {
-      const C = B.C;
-      B.bounds(-50, -30, 50, 32);
-      B.ground(-50, -30, 50, 32, { pattern: PAT.CONCRETE, color: 0x8a8880 });
-      B.box(-50, 0, -30, 50, 0.25, -29.4, { pattern: PAT.HAZARD, color: 0x8a8880, kind: 'cover' });
-      for (let x = -46; x <= 46; x += 8) B.box(x - 0.25, 0, -28.9, x + 0.25, 0.6, -28.4, { pattern: PAT.METAL, color: 0x2a2c2e, kind: 'cover' });
-      // agua, barco y grúas lejanas (decoración)
-      const water = new THREE.Mesh(new THREE.PlaneGeometry(420, 200), new THREE.MeshLambertMaterial({ color: 0x3a5058 }));
-      water.rotation.x = -Math.PI / 2; water.position.set(0, -2.6, -130); MapSys.decor.add(water);
-      B.decoBox(-34, -3, -54, 30, 6.5, -36, 0x5a2a24); B.decoBox(-34, 6.5, -54, 30, 7.0, -36, 0x3a3a38);
-      B.decoBox(14, 7, -50, 26, 15, -40, 0xd8d4c8); B.decoBox(16, 15, -48, 24, 18, -42, 0xc8c4b8);
-      for (let i = 0; i < 5; i++) B.container(-26 + i * 7, 7.0, -45, 'x');
-      // almacén (A)
-      const wx0 = -40, wx1 = -22, wz0 = -12, wz1 = 12;
-      B.house(wx0, wz0, wx1, wz1, { floors: 1, h: 9, pattern: PAT.METAL, color: 0x7a7468, floorPat: PAT.CONCRETE, floorColor: 0x77756e, parapet: false, roofPat: PAT.METAL, roofColor: 0x5e5a52,
-        open: { e: [['big', 0.5, 0, 5, 0, 4.2], ['win', 0.12, 0, 1.6, 5.2, 6.6], ['win', 0.88, 0, 1.6, 5.2, 6.6]], w: [['door', 0.5, 0], ['win', 0.2, 0, 1.6, 5.2, 6.6], ['win', 0.8, 0, 1.6, 5.2, 6.6]],
-          n: [['door', 0.3, 0], ['win', 0.15, 0, 1.6, 5.2, 6.6], ['win', 0.5, 0, 1.6, 5.2, 6.6], ['win', 0.85, 0, 1.6, 5.2, 6.6]], s: [['door', 0.7, 0], ['win', 0.15, 0, 1.6, 5.2, 6.6], ['win', 0.5, 0, 1.6, 5.2, 6.6], ['win', 0.85, 0, 1.6, 5.2, 6.6]] } });
-      for (const s of [-1, 1]) {
-        const za = s < 0 ? wz0 + 0.3 : wz1 - 2.3, zb = za + 2;
-        B.box(wx0 + 0.3, 4.25, za, wx1 - 0.3, 4.5, zb, { pattern: PAT.GRATE, color: 0x55585a, kind: 'floor' });
-        B.decoBox(wx0 + 0.3, 4.5, s < 0 ? zb - 0.05 : za, wx1 - 0.3, 5.5, s < 0 ? zb : za + 0.05, 0x3a3c3e);
-        B.stairs(-31, s * 4.9, s < 0 ? '-z' : '+z', 1.1, 0.06, 4.5, { pattern: PAT.GRATE, color: 0x55585a, solidBase: false });
-        // estantes de cajas
-        for (const x of [-38, -34.5]) { B.crate(x, 0.06, s * 5.5, 1.3, { hp: 200 }); B.crate(x + 1.4, 0.06, s * 5.5, 1.3, { hp: 200 }); B.crate(x, 1.36, s * 5.5, 1.2, { hp: 200 }); }
-        B.crate(-26.5, 0.06, s * 7.8, 1.2); B.barrel(-24.2, 0.06, s * 9.8);
-      }
-      B.box(-38.5, 0.06, -2, -36.5, 1.1, 2, { pattern: PAT.WOOD, color: 0x6a5a40, kind: 'cover' });
-      B.dom('A', -30, 0.06, 0, 4.4);
-      B.stand(-38.6, 4.5, -10.6, 'sniper'); B.stand(-38.6, 0.06, 9.8, 'shotgun');
-      // patio de contenedores (B) — pasillos de 3 m o más
-      const yard = [
-        [-12, -19, 'x', 2], [-3.5, -19, 'x', 1], [6, -19, 'x', 2], [14, -19, 'x', 1],
-        [-14, -10, 'x', 1], [-6.5, -11, 'z', 2], [4.5, -10, 'x', 1], [12, -10.5, 'z', 2],
-        [-15.5, 1, 'z', 2], [15.5, -1, 'z', 2], [-7.5, 4.5, 'x', 1], [7.5, -4.5, 'x', 1],
-        [-12, 10.5, 'z', 2], [-4.5, 10, 'x', 1], [6.5, 11, 'z', 2], [14, 10, 'x', 1],
-        [-14, 19, 'x', 1], [-6, 19, 'x', 2], [3.5, 19, 'x', 1], [12, 19, 'x', 2],
-      ];
-      for (const [x, z, ax, n] of yard) for (let k = 0; k < n; k++) B.container(x, k * 2.6, z, ax);
-      // escalones de cajas pegados a los contenedores de un piso (desde ahí se trepa al techo)
-      for (const [x, z] of [[-3.5, -17.18], [14, -17.18], [-14, -8.18], [4.5, -8.18], [-7.5, 6.32], [7.5, -6.32], [-4.5, 11.82], [14, 11.82], [-14, 17.18], [3.5, 17.18]]) B.crate(x, 0, z, 1.2);
-      B.barrel(0.8, 0, -14); B.barrel(-1.6, 0, 14.4); B.barrel(9.8, 0, 3.6); B.barrel(-9.6, 0, -3.4);
-      B.sandbags(-2.5, -2.6, 2.5, -2.6, { h: 0.9 }); B.sandbags(-2.5, 2.6, 2.5, 2.6, { h: 0.9 });
-      B.dom('B', 0, 0, 0, 4.2);
-      B.stand(0, 0, -6.8, 'lmg');   // 3.2.3: el tubo antitanque queda fuera del juego por ahora
-      // muelle de grúas y oficina (C)
-      for (const [x, z] of [[27, -26.5], [27, -13.5], [41, -26.5], [41, -13.5]]) B.box(x - 0.45, 0, z - 0.45, x + 0.45, 14, z + 0.45, { pattern: PAT.HAZARD, color: 0xb8902a, kind: 'pole' });
-      B.decoBox(26.5, 14, -27, 27.5, 15.2, -13, 0xb8902a); B.decoBox(40.5, 14, -27, 41.5, 15.2, -13, 0xb8902a);
-      B.decoBox(26.5, 15.2, -21, 41.5, 16.2, -19, 0xa8802a); B.decoBox(32, 12, -21.5, 35, 14, -18.5, 0x5a5c58);
-      B.deco(GEO.cyl(0.03, 0.03, 6, 4), 33.5, 9, -20, 0x222222);
-      B.container(33.5, 0, -24, 'x'); B.container(33.5, 0, -16, 'x'); B.container(33.5, 2.6, -24, 'x');
-      B.crate(29.85, 0, -16, 1.2); B.crate(37, 0, -20, 1.2); B.barrel(37.8, 0, -21.4); B.barrel(29.6, 0, -24.2);
-      B.dom('C', 34, 0, -20, 4.0);
-      B.house(34, 10, 46, 20, { floors: 2, h: 3.2, pattern: PAT.PLASTER, color: 0xb8b2a2, stairs: { side: 'e', from: 's' },
-        open: { w: [['door', 0.5, 0], ['win', 0.2, 1], ['win', 0.5, 1], ['win', 0.8, 1]], n: [['door', 0.3, 0], ['win', 0.7, 0], ['win', 0.3, 1], ['win', 0.7, 1]], s: [['win', 0.5, 0], ['win', 0.5, 1]], e: [['door', 0.3, 0]] } });
-      B.stand(38, 3.2, 15, 'sniper');
-      // montacargas, palés, barreras
-      B.lbox(24, 6, 0, -1.2, 0, -0.7, 1.2, 1.6, 0.7, { pattern: PAT.METAL, color: 0xb88a22, kind: 'vehicle' });
-      B.lbox(-18, -24, 1, -1.2, 0, -0.7, 1.2, 1.6, 0.7, { pattern: PAT.METAL, color: 0xb88a22, kind: 'vehicle' });
-      B.truck(24, 24, 0, 0x6a3a2a); B.truck(-20, 26, 0, 0x3a4a5a);
-      for (const [x, z] of [[22, -6], [22.9, -6], [-20, 8], [-20, 9], [26, 14], [-46, -20], [-46, 22]]) B.box(x - 0.45, 0, z - 0.6, x + 0.45, 0.25, z + 0.6, { pattern: PAT.WOOD, color: 0x8a6a44, kind: 'cover' });
-      B.box(18.8, 0, -26, 19.4, 1.0, -18, { pattern: PAT.HAZARD, color: 0x9a9a92, kind: 'cover' }); B.box(-19.4, 0, 16, -18.8, 1.0, 24, { pattern: PAT.HAZARD, color: 0x9a9a92, kind: 'cover' });
-      B.container(-44, 0, -24, 'z'); B.container(44, 0, 26, 'z'); B.container(-44, 0, 26, 'z'); B.container(46, 0, -4, 'z');
-      for (let x = -48; x <= 48; x += 12) B.lamp(x, 30.5);
-      B.fence(-50, 31.6, 50, 31.6, 2.6);
-      B.smoke(-60, 70, 1.0); B.smoke(90, -20, 1.2);
-      B.horizon(0x6a7272, 16, 110, 160, { skip: 'n', groundColor: 0x6e6c64 });
-      // aparición
-      for (const [x, z] of [[-47, -14], [-47, -6], [-47, 2], [-47, 10], [-46, 17], [-44, -2], [-48, 28], [-48, -26], [-45, 6], [-45, -10]]) B.spawn(0, x, 0, z, -Math.PI / 2);
-      for (const [x, z] of [[47, -14], [48, -8], [47, 2], [47, 10], [47.5, 22], [45, -22], [48, 29], [46.5, -27], [44, 4], [44.5, -12]]) B.spawn(1, x, 0, z, Math.PI / 2);
-      for (const [x, z] of [[-30, -6], [-28, 8], [0, -24], [0, 24], [-20, 0], [20, 0], [34, -8], [30, 26], [-34, 22], [-34, -22], [10, -14], [-10, 14]]) B.spawn('ffa', x, 0, z);
-      B.prop('tire', 21, 0, 8); B.prop('can', -22.6, 0.06, 4.2); B.prop('bucket', 26.2, 0, -8.4); B.prop('can', 4, 0, 2.6);
-    },
-  },
+  // 3.3.0: San Juan, Tres Cruces y Puerto Ánimas se rehicieron desde cero (09f_sanjuan.js, 09g_novela_a.js)
 };
 // mapa plano solo para pruebas automatizadas (no aparece en el menú)
 MAPS.test = {
-  name: { es: 'Prueba', en: 'Test' }, desc: { es: '', en: '' }, theme: MAPS.base.theme, thumb: ['#555', '#888', '#444'],
+  name: { es: 'Prueba', en: 'Test' }, desc: { es: '', en: '' }, theme: MAP_THEME0, thumb: ['#555', '#888', '#444'],
   build(B) {
     B.bounds(-30, -30, 30, 30);
     B.ground(-30, -30, 30, 30, { pattern: PAT.CONCRETE, color: 0x8a8880 });
@@ -9743,7 +9475,7 @@ MAPS.test = {
 // campo de tiro: blancos fijos y móviles de 10 a 100 m y, desde la torre, galería larga de 200 a 626 m (no sale en la lista de mapas)
 MAPS.campo = {
   name: { es: 'Campo de tiro', en: 'Shooting range' }, desc: { es: 'Blancos a 10, 25, 50, 75 y 100 m, fijos y móviles. Desde la torre, galería larga hasta 626 m con banderolas de viento.', en: 'Targets at 10, 25, 50, 75 and 100 m, fixed and moving. From the tower, a long gallery out to 626 m with wind flags.' },
-  theme: { ...MAPS.base.theme, fogNear: 160, fogFar: 1500 }, thumb: ['#4a6a8a', '#9ab0a0', '#66763f'],
+  theme: { ...MAP_THEME0, fogNear: 160, fogFar: 1500 }, thumb: ['#4a6a8a', '#9ab0a0', '#66763f'],
   build(B) {
     const TZ = 21, LONG = [200, 300, 400, 500, 626];
     B.bounds(-60, -660, 60, 24, 30);
@@ -9893,57 +9625,7 @@ MAPS.bunker = {
 
 // el nombre real del búnker es de la Parte IV: como en la fase 0, el HTML no lleva datos de las Partes III–V;
 // lo pondrá la fase de la Parte IV detrás del Modo lector (≥ IV)
-MAPS.cruce = {
-  name: { es: 'Paso de los Ciegos', en: 'Paso de los Ciegos' },
-  desc: { es: 'Pequeño y frenético (40 × 34 m): un surtidor de gasolina con marquesina, un colmado y una venta en el cruce de caminos.', en: 'Small and frantic (40 × 34 m): a fuel pump with a canopy, a general store and a roadside inn at the crossroads.' },
-  small: true,
-  thumb: ['#4d6a8a', '#e0b27a', '#8a7a5c'],
-  theme: { skyTop: 0x4a6a92, skyMid: 0xe0b888, skyBot: 0xa89070, fog: 0xb8a284, fogNear: 30, fogFar: 170, sun: 0xffe0a8, sunI: 2.7, sunDir: [-0.4, 0.55, -0.55], hemiTop: 0xdcd0bc, hemiBot: 0x6e644e, hemiI: 1.4, exposure: 1.08 },
-  build(B) {
-    const C = B.C;
-    B.bounds(-20, -17, 20, 17);
-    const roadX = [-20, -3.5, 20, 3.5], roadN = [-3.5, -17, 3.5, -3.5], roadS = [-3.5, 3.5, 3.5, 17];
-    B.ground(-20, -17, 20, 17, { holes: [roadX, roadN, roadS], pattern: PAT.DIRT, color: 0x9a8662 });
-    B.ground(...roadX, { pattern: PAT.ASPHALT, color: C.asphalt }); B.ground(...roadN, { pattern: PAT.ASPHALT, color: C.asphalt }); B.ground(...roadS, { pattern: PAT.ASPHALT, color: C.asphalt });
-    for (let x = -19; x < 19; x += 5) if (Math.abs(x) > 4) B.decoBox(x, 0.005, -0.08, x + 2.4, 0.02, 0.08, 0xd8c890);
-    for (let z = -16; z < 16; z += 5) if (Math.abs(z) > 4) B.decoBox(-0.08, 0.005, z, 0.08, 0.02, z + 2.4, 0xd8c890);
-    // gasolinera (noreste): techo sobre los surtidores y tienda detrás
-    const px = [[7.4, -12.6], [16.6, -12.6], [7.4, -7.4], [16.6, -7.4]];
-    for (const [x, z] of px) B.box(x - 0.25, 0, z - 0.25, x + 0.25, 4.0, z + 0.25, { pattern: PAT.CONCRETE, color: 0xb0aca0, kind: 'pole' });
-    B.slab(6.4, -13.6, 17.6, -6.4, 4.0, 4.3, { pattern: PAT.METAL, color: 0xb8b0a0, kind: 'floor' });
-    B.decoBox(6.4, 4.3, -13.6, 17.6, 4.6, -13.4, 0xc0392b); B.decoBox(6.4, 4.3, -6.6, 17.6, 4.6, -6.4, 0xc0392b); B.decoBox(6.4, 4.0, -13.6, 17.6, 4.3, -6.4, 0xd8d0bc);
-    for (const x of [9.4, 14.6]) { B.box(x - 0.4, 0, -10.4, x + 0.4, 1.3, -9.6, { pattern: PAT.METAL, color: 0xc0392b, kind: 'cover', hp: 120 }); B.box(x - 0.4, 0, -10.4, x + 0.4, 0.14, -9.6, { pattern: PAT.CONCRETE, color: 0x6a6a64, kind: 'cover' }); }
-    B.barrel(12, 0, -10); B.barrel(12.7, 0, -9.7);
-    B.house(8, -17, 17, -14, { floors: 1, h: 3.1, pattern: PAT.PLASTER, color: 0xd8c8a0,
-      open: { s: [['door', 0.3, 0], ['win', 0.65, 0], ['win', 0.85, 0]], w: [['door', 0.5, 0]], e: [['win', 0.5, 0]], n: [['win', 0.5, 0]] } });
-    B.crate(18.4, 0, -11, 1.3); B.crate(18.4, 1.3, -11, 1.1); B.crate(18.4, 2.4, -11.2, 0.9);
-    B.stairs(12, -1.6, '-z', 1.4, 0, 4.3, { pattern: PAT.GRATE, color: 0x9a9da0, solidBase: false });
-    B.stand(15.5, 4.3, -10, 'sniper');
-    // bar / tienda de dos pisos (noroeste)
-    B.house(-18, -15, -8, -7.5, { floors: 2, h: 3.0, pattern: PAT.BRICK, color: 0x9a5b44, stairs: { side: 'w', from: 's' },
-      open: { s: [['door', 0.62, 0], ['win', 0.2, 0], ['win', 0.4, 0], ['win', 0.85, 0], ['win', 0.2, 1], ['win', 0.45, 1], ['win', 0.7, 1], ['win', 0.9, 1]], e: [['door', 0.5, 0], ['win', 0.5, 1]], w: [['win', 0.5, 0], ['win', 0.5, 1]], n: [['door', 0.3, 0], ['win', 0.7, 0]] } });
-    B.stand(-13, 3.0, -11, 'battle');
-    // casa en ruinas (suroeste) y casita de adobe (sureste)
-    B.house(-17, 8.5, -9, 15.5, { floors: 1, ruin: true, h: 3.0, pattern: PAT.PLASTER, color: 0xc4ae8a, open: { n: [['door', 0.4, 0], ['hole', 0.8, 0]], e: [['door', 0.5, 0]], w: [['hole', 0.5, 0]] } });
-    B.house(9, 9, 16.5, 15.5, { floors: 1, h: 3.0, pattern: PAT.PLASTER, color: 0xd6c8ad, open: { n: [['door', 0.35, 0], ['win', 0.75, 0]], w: [['door', 0.5, 0], ['win', 0.8, 0]], s: [['win', 0.5, 0]] } });
-    B.stand(12.5, 0.06, 13, 'tsmg');
-    // cruce: barricadas y autos
-    B.car(-8, -1.8, 1, 0x5b4636); B.car(6.5, 1.9, 1, 0x3e4a52); B.car(-1.9, -9, 1, 0x6a3a2a); B.car(1.9, 9.5, 1, 0x4a4a36);
-    B.sandbags(-2.8, -2.8, -1.0, -2.8); B.sandbags(1.0, 2.8, 2.8, 2.8); B.sandbags(-2.8, 2.8, -1.0, 2.8, { h: 0.9 }); B.sandbags(1.0, -2.8, 2.8, -2.8, { h: 0.9 });
-    B.box(-0.6, 0, -0.6, 0.6, 1.0, 0.6, { pattern: PAT.CONCRETE, color: 0x9a978f, kind: 'cover' });
-    B.crate(-14, 0, 5.2, 1.2); B.crate(-13, 0, 5.6, 1.1); B.crate(14.5, 0, 6, 1.2); B.barrel(-6, 0, 6.6); B.barrel(5.8, 0, -6.6);
-    B.sandbags(-6.2, 4.6, -6.2, 8); B.sandbags(6.2, -8, 6.2, -4.6);
-    B.tank(-6.5, 12, 1); B.deadTree(19, 9.5); B.deadTree(-4.5, 15.5);
-    B.dom('A', -11.5, 0, 0, 3.4); B.dom('B', 0, 0, 0, 3.4); B.dom('C', 11.5, 0, 0, 3.4);
-    for (const x of [-12, 12]) { B.lamp(x, 4.2); B.lamp(x, -4.2); }
-    B.wire(-19.2, 10, -19.2, 16);
-    B.smoke(60, -50, 1.0);
-    B.horizon(0x8a7e66, 14, 70, 120, { groundColor: 0x8a7a5c });
-    for (const z of [-6.6, -4.4, -2.2, 0, 2.2, 4.4, 6.6]) { B.spawn(0, -18.4, 0, z, -Math.PI / 2); B.spawn(1, 18.4, 0, z, Math.PI / 2); }
-    for (const [x, z] of [[-12, -4.2], [-12, 5], [12, 4.8], [12, -4.2], [0, -12], [0, 12], [-5, 7], [5, -7], [-5.2, -5.4], [5.2, 5.6], [-15, 1], [15, -1]]) B.spawn('ffa', x, 0, z);
-    B.prop('tire', -9, 0, 2.4); B.prop('can', 4.6, 0, -2.2); B.prop('bucket', 10, 0, 4.4);
-  },
-};
+// 3.3.0: el Paso de los Ciegos se rehízo con nieve y aduana (09h_novela_b.js)
 MAP_ORDER.push('patio', 'bunker', 'cruce');
 
 // ---- 09d_prison.js ----
@@ -10175,6 +9857,814 @@ MAPS.furgon = {
     B.spawn('ffa', -0.8, -0.95, 0.5, -Math.PI / 2);
   },
 };
+// ---- 09f_sanjuan.js ----
+// =====================================================================
+// SAN JUAN DE LAS MINAS (3.3.0) — mapa nuevo, trazado del prototipo v4 rehecho con el constructor de bloques
+// de la 3.1.4. Pueblo minero: calle de las casas mineras (oeste), taberna «La Galena», plaza con fuente y
+// plátanos, iglesia de San Juan con el campanario del reloj (parado a las diez y diez), huertos al norte,
+// lavadero y vía de las vagonetas al sur, y al este, 2,2 m más alto, el patio de la mina: castillete,
+// casa de máquinas con su chimenea, taller, escombrera y la boca de la galería nueve.
+// Ejes: x hacia el este, z hacia el sur (-z = norte). Zona jugable: x de -56 a 56, z de -38 a 36.
+// =====================================================================
+const SJ = { cal: 0xe2dac6, cal2: 0xd6ccb4, ocre: 0xc8a36c, rosa: 0xc99c88, stone: 0x9c917f, dstone: 0x6e665a, tile: 0x9a5038, tileD: 0x7c3e2c,
+  wood: 0x5e4630, plank: 0x7a5c3c, iron: 0x37383a, rust: 0x6b4232, brick: 0x8e5442, coal: 0x1f1d1b, shutG: 0x4f6a4a, shutB: 0x4e6478, leaf: 0x55602e, crop: 0x6c7a36 };
+// prisma triangular unidad (ancho 1 en x, alto 1 en y, largo 1 en z; base en y=0, cumbrera a lo largo de z): tejados a dos aguas
+function sjPrism() {
+  return GEO.get('prism1', () => {
+    const A = [-0.5, 0, -0.5], Bv = [0.5, 0, -0.5], Cv = [0, 1, -0.5], A2 = [-0.5, 0, 0.5], B2 = [0.5, 0, 0.5], C2 = [0, 1, 0.5];
+    const tris = [A, Cv, Bv, A2, B2, C2, A, A2, C2, A, C2, Cv, Bv, Cv, C2, Bv, C2, B2, A, Bv, B2, A, B2, A2];
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(tris.flat()), 3)); g.computeVertexNormals(); return g;
+  });
+}
+const _sjQ = new THREE.Quaternion(), _sjE = new THREE.Euler(), _sjA = new THREE.Vector3(), _sjB = new THREE.Vector3(), _sjU = new THREE.Vector3(0, 1, 0);
+function sjHelpers(B) {
+  const rng = B.rng, H = {};
+  // viga de un punto a otro (patas del castillete, cables, tornapuntas)
+  H.beam = (x0, y0, z0, x1, y1, z1, t, color) => {
+    _sjA.set(x1 - x0, y1 - y0, z1 - z0); const L = _sjA.length(); _sjQ.setFromUnitVectors(_sjU, _sjA.normalize()); _sjE.setFromQuaternion(_sjQ, 'XYZ');
+    B.deco(GEO.box(1, 1, 1), (x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2, color, { rx: _sjE.x, ry: _sjE.y, rz: _sjE.z, sx: t, sy: L, sz: t });
+  };
+  // tejado a dos aguas con alero; ridge 'x' = cumbrera paralela al eje x
+  H.gable = (x0, z0, x1, z1, y, h, color = SJ.tile, ridge = 'x', ov = 0.4) => {
+    const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, w = x1 - x0 + 2 * ov, d = z1 - z0 + 2 * ov;
+    if (ridge === 'x') B.deco(sjPrism(), cx, y, cz, color, { ry: Math.PI / 2, sx: d, sy: h, sz: w });
+    else B.deco(sjPrism(), cx, y, cz, color, { sx: w, sy: h, sz: d });
+    B.decoBox(x0 - ov, y - 0.12, z0 - ov, x1 + ov, y + 0.02, z1 + ov, shade(color, -0.35));
+  };
+  // contraventanas a los lados de un hueco de ventana en la fachada (side n/s/w/e)
+  H.shutters = (side, x0, z0, x1, z1, f, y, col) => {
+    const t = 0.3, hw = 0.575, sw = 0.5, sh = 1.12, y0 = y + 0.95, out = 0.06;
+    if (side === 'n' || side === 's') {
+      const a = lerp(x0, x1, f), z = side === 'n' ? z0 - out : z1 + out;
+      for (const s of [-1, 1]) B.decoBox(a + s * hw, y0, z - 0.03, a + s * (hw + sw), y0 + sh, z + 0.03, col);
+      B.decoBox(a - hw - 0.1, y0 - 0.12, z - 0.09, a + hw + 0.1, y0, z + 0.09, SJ.stone);
+    } else {
+      const a = lerp(z0 + t, z1 - t, f), x = side === 'w' ? x0 - out : x1 + out;
+      for (const s of [-1, 1]) B.decoBox(x - 0.03, y0, a + s * hw, x + 0.03, y0 + sh, a + s * (hw + sw), col);
+      B.decoBox(x - 0.09, y0 - 0.12, a - hw - 0.1, x + 0.09, y0, a + hw + 0.1, SJ.stone);
+    }
+  };
+  // casa minera encalada: zócalo de piedra, contraventanas, tejado de teja y chimenea. street = fachada principal (n/s/w/e)
+  H.house = (x0, z0, x1, z1, o = {}) => {
+    const fl = o.floors || 2, h = o.h || 3.1, col = o.color ?? rng.pick([SJ.cal, SJ.cal2, SJ.cal, SJ.ocre, SJ.rosa]), st = o.street || 's';
+    const back = { n: 's', s: 'n', w: 'e', e: 'w' }[st], wide = (st === 'n' || st === 's') ? x1 - x0 : z1 - z0;
+    const open = { n: [], s: [], w: [], e: [] };
+    const fw = wide >= 6.5 ? [0.2, 0.8] : [0.22, 0.78];
+    open[st].push(['door', o.doorAt ?? 0.5, 0]); for (const f of fw) open[st].push(['win', f, 0]);
+    for (let k = 1; k < fl; k++) for (const f of (wide >= 8 ? [0.2, 0.5, 0.8] : [0.25, 0.75])) open[st].push(['win', f, k]);
+    if (o.back !== false) { open[back].push(['door', 0.5, 0]); if (fl > 1) open[back].push(['win', 0.5, 1]); }
+    for (const sd of (o.sides || '')) { open[sd].push(['win', 0.5, 0]); if (fl > 1) open[sd].push(['win', 0.5, 1]); }
+    if (o.extra) for (const k in o.extra) open[k].push(...o.extra[k]);
+    B.house(x0, z0, x1, z1, { floors: fl, h, color: col, pattern: o.pattern ?? PAT.PLASTER, parapet: false, roofPat: PAT.ROOF, roofColor: SJ.tileD, stairs: o.stairs, open, floorPat: o.floorPat, floorColor: o.floorColor });
+    // zócalo de piedra y esquinas de sillería
+    B.decoBox(x0 - 0.05, 0, z0 - 0.05, x1 + 0.05, 0.7, z1 + 0.05, SJ.stone);
+    for (const [cx, cz] of [[x0, z0], [x1, z0], [x0, z1], [x1, z1]]) B.decoBox(cx - 0.14, 0.7, cz - 0.14, cx + 0.14, fl * h, cz + 0.22, shade(SJ.stone, 0.08));
+    const sc = o.shut ?? rng.pick([SJ.shutG, SJ.shutB, SJ.wood]);
+    for (const sd of ['n', 's', 'w', 'e']) for (const op of open[sd]) if (op[0] === 'win') H.shutters(sd, x0, z0, x1, z1, op[1], op[2] * h, sc);
+    // cornisa, tejado y chimenea
+    const top = fl * h + 0.25, ridge = o.ridge ?? ((st === 'n' || st === 's') ? 'x' : 'z');
+    B.decoBox(x0 - 0.12, top - 0.35, z0 - 0.12, x1 + 0.12, top - 0.05, z1 + 0.12, shade(col, -0.12));
+    H.gable(x0, z0, x1, z1, top, o.roofH ?? Math.min(2.6, Math.max(1.6, (ridge === 'x' ? z1 - z0 : x1 - x0) * 0.22)), o.roof ?? (rng.next() < 0.5 ? SJ.tile : shade(SJ.tile, -0.08)), ridge);
+    if (o.chimney !== false) { const cx = lerp(x0, x1, rng.range(0.2, 0.8)), cz = lerp(z0, z1, rng.range(0.3, 0.7)); B.decoBox(cx - 0.32, top, cz - 0.32, cx + 0.32, top + 2.5, cz + 0.32, shade(col, -0.18)); B.decoBox(cx - 0.4, top + 2.5, cz - 0.4, cx + 0.4, top + 2.7, cz + 0.4, SJ.dstone); }
+    return top;
+  };
+  // tapia de piedra seca (cobertura baja)
+  H.dry = (axis, a0, a1, c, h = 1.2, o = {}) => B.wall(axis, a0, a1, c, o.y ?? 0, h, 0.5, { pattern: PAT.BRICK, color: o.color ?? 0x8c8270, kind: 'cover', open: o.open, jag: o.jag });
+  // carro de mulas (cobertura)
+  H.cart = (x, z, ax = 'x', y = 0) => {
+    const L = 3, W = 1.5;
+    if (ax === 'x') { B.box(x - L / 2, y + 0.65, z - W / 2, x + L / 2, y + 1.25, z + W / 2, { pattern: PAT.WOOD, color: SJ.plank, kind: 'cover' }); B.box(x - 0.4, y, z - 0.6, x + 0.4, y + 0.65, z + 0.6, { noRender: true, kind: 'cover' }); for (const s of [-1, 1]) B.deco(GEO.cyl(0.6, 0.6, 0.1, 14), x + 0.3, y + 0.6, z + s * 0.82, SJ.wood, { rx: Math.PI / 2 }); B.decoBox(x - L / 2 - 2.2, y + 0.66, z - 0.05, x - L / 2, y + 0.74, z + 0.05, SJ.wood); }
+    else { B.box(x - W / 2, y + 0.65, z - L / 2, x + W / 2, y + 1.25, z + L / 2, { pattern: PAT.WOOD, color: SJ.plank, kind: 'cover' }); B.box(x - 0.6, y, z - 0.4, x + 0.6, y + 0.65, z + 0.4, { noRender: true, kind: 'cover' }); for (const s of [-1, 1]) B.deco(GEO.cyl(0.6, 0.6, 0.1, 14), x + s * 0.82, y + 0.6, z + 0.3, SJ.wood, { rz: Math.PI / 2 }); B.decoBox(x - 0.05, y + 0.66, z - L / 2 - 2.2, x + 0.05, y + 0.74, z - L / 2, SJ.wood); }
+  };
+  // vagoneta de mineral sobre la vía (cobertura baja)
+  H.wagon = (x, z, ax = 'x', y = 0) => {
+    const w = ax === 'x' ? 1.7 : 1.1, d = ax === 'x' ? 1.1 : 1.7;
+    B.box(x - w / 2, y + 0.3, z - d / 2, x + w / 2, y + 1.2, z + d / 2, { pattern: PAT.METAL, color: SJ.rust, kind: 'cover' });
+    B.decoBox(x - w / 2 + 0.1, y + 1.2, z - d / 2 + 0.1, x + w / 2 - 0.1, y + 1.42, z + d / 2 - 0.1, SJ.coal);
+    for (const s of [-1, 1]) for (const t of [-1, 1]) B.deco(GEO.cyl(0.2, 0.2, 0.08, 10), x + (ax === 'x' ? s * 0.55 : t * 0.5), y + 0.2, z + (ax === 'x' ? t * 0.5 : s * 0.55), SJ.iron, ax === 'x' ? { rx: Math.PI / 2 } : { rz: Math.PI / 2 });
+  };
+  // vía de las vagonetas (carriles y traviesas, solo decoración)
+  H.rail = (x0, z0, x1, z1, y = 0) => {
+    const L = Math.hypot(x1 - x0, z1 - z0), ry = Math.atan2(x1 - x0, z1 - z0), n = Math.ceil(L / 0.7), px = (z1 - z0) / L, pz = -(x1 - x0) / L;
+    for (const s of [-0.3, 0.3]) B.deco(GEO.box(0.06, 0.08, 1), (x0 + x1) / 2 + px * s, y + 0.12, (z0 + z1) / 2 + pz * s, SJ.iron, { ry, sz: L });
+    for (let i = 0; i <= n; i++) { const t = i / n; B.deco(GEO.box(0.9, 0.07, 0.18), lerp(x0, x1, t), y + 0.04, lerp(z0, z1, t), SJ.wood, { ry }); }
+  };
+  // plátano de sombra
+  H.plane = (x, z, s = 1, y = 0) => {
+    B.box(x - 0.26, y, z - 0.26, x + 0.26, y + 4 * s, z + 0.26, { pattern: PAT.WOOD, color: 0x6a5a44, kind: 'tree', noRender: true });
+    B.deco(GEO.cyl(0.2 * s, 0.3 * s, 4.4 * s, 7), x, y + 2.2 * s, z, 0x8a7a62);
+    for (let k = 0; k < 5; k++) { const a = k * 1.3 + rng.range(0, 1), r = k ? 1.3 * s : 0; B.deco(GEO.sphere(1, 8, 6), x + Math.cos(a) * r, y + (5.2 + rng.range(-0.3, 0.7)) * s, z + Math.sin(a) * r, shade(SJ.leaf, rng.range(-0.1, 0.1)), { sx: 2 * s, sy: 1.5 * s, sz: 2 * s }); }
+  };
+  // letrero pintado sobre una fachada
+  H.signboard = (x, y, z, ry, w, h, lines, bg = '#e6dcc4') => B.panel(x, y, z, ry, w, h, (g, W, Hh) => {
+    g.fillStyle = bg; g.fillRect(0, 0, W, Hh); g.strokeStyle = '#3a2a1e'; g.lineWidth = Math.max(3, Hh * 0.05); g.strokeRect(g.lineWidth, g.lineWidth, W - 2 * g.lineWidth, Hh - 2 * g.lineWidth);
+    g.fillStyle = '#2a2018'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    lines.forEach((t, i) => { const fs = Math.min(Hh / (lines.length + 0.6), W / (t.length * 0.62)); g.font = `bold ${fs | 0}px Georgia, serif`; g.fillText(t, W / 2, Hh * (i + 1) / (lines.length + 1)); });
+  }, { px: 512 });
+  // esfera del reloj del campanario (números romanos, parado a las diez y diez)
+  H.clock = (x, y, z, ry, r = 1.2) => {
+    B.panel(x, y, z, ry, r * 2, r * 2, (g, W) => {
+      const c = W / 2; g.clearRect(0, 0, W, W); g.fillStyle = '#e8e0cb'; g.beginPath(); g.arc(c, c, c * 0.97, 0, TAU); g.fill();
+      g.lineWidth = W * 0.035; g.strokeStyle = '#2a2622'; g.stroke(); g.fillStyle = '#2a2622'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = `bold ${W * 0.1 | 0}px Georgia, serif`;
+      const N = ['XII', 'I', 'II', 'III', 'IIII', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI'];
+      N.forEach((t, i) => { const a = i / 12 * TAU; g.fillText(t, c + Math.sin(a) * c * 0.74, c - Math.cos(a) * c * 0.74); });
+      const hand = (a, L, w) => { g.lineWidth = w; g.lineCap = 'round'; g.beginPath(); g.moveTo(c, c); g.lineTo(c + Math.sin(a) * L, c - Math.cos(a) * L); g.stroke(); };
+      hand((10 + 10 / 60) / 12 * TAU, c * 0.45, W * 0.04); hand(10 / 60 * TAU, c * 0.66, W * 0.025);
+      g.beginPath(); g.arc(c, c, W * 0.03, 0, TAU); g.fill();
+    }, { px: 256, alpha: true });
+    B.deco(GEO.torus(r * 1.02, 0.09, 28, 5), x, y, z, SJ.dstone, { ry });
+  };
+  // construye a otra cota: lo que fn crea en y=0 (bloques y decoración) se sube dy metros
+  H.lift = (dy, fn) => {
+    const n0 = PHYS.blocks.length, D = MapSys.decoBatch, d0 = D.items.length; fn();
+    for (let i = n0; i < PHYS.blocks.length; i++) { PHYS.blocks[i].min.y += dy; PHYS.blocks[i].max.y += dy; }
+    for (let i = d0; i < D.items.length; i++) D.items[i].m.elements[13] += dy;
+  };
+  return H;
+}
+
+MAPS.pueblo = {
+  name: { es: 'San Juan de las Minas', en: 'San Juan de las Minas' },
+  desc: { es: 'El pueblo minero: la calle de las casas mineras, la taberna La Galena, la plaza del campanario del reloj y, arriba, el patio de la mina con el castillete y la galería nueve.', en: 'The mining town: the street of miners\' houses, La Galena tavern, the square under the clock tower and, up the hill, the mine yard with the headframe and gallery nine.' },
+  thumb: ['#4a5466', '#c9a27a', '#6e5d4a'],
+  theme: { skyTop: 0x46505f, skyMid: 0xc49c74, skyBot: 0x8a765e, fog: 0x9c8870, fogNear: 34, fogFar: 200, sun: 0xffcf9a, sunI: 2.4, sunDir: [-0.62, 0.42, 0.38], hemiTop: 0xd6c6ae, hemiBot: 0x6a5e4c, hemiI: 1.3, exposure: 1.05 },
+  build(B) {
+    const H = sjHelpers(B), Y = 2.2;   // Y = cota del patio de la mina
+    B.bounds(-56, -38, 56, 36, 22);
+    const street = [-56, -4, 14, 4], plaza = [-14, -13, 14, 13], street2 = [14, -4, 29, 4], yard = [37, -38, 56, 30];
+    B.ground(-56, -38, 56, 36, { holes: [street, plaza, street2, yard], pattern: PAT.DIRT, color: 0x86765a });
+    B.ground(-56, -4, -14, 4, { pattern: PAT.COBBLE, color: 0x857d70 });
+    B.ground(...plaza, { pattern: PAT.COBBLE, color: 0x938a7c });
+    B.ground(...street2, { pattern: PAT.COBBLE, color: 0x857d70 });
+    B.ground(...yard, { y: Y, depth: 4.4, pattern: PAT.DIRT, color: 0x6e6250 });
+    // ============ límites: tapia de piedra seca
+    H.dry('x', -56, 37, 35.6, 1.3); H.dry('x', -56, 37, -37.6, 1.4); H.dry('z', -37, -4.5, -55.6, 1.4); H.dry('z', 4.5, 35.5, -55.6, 1.4);
+    H.dry('x', 37, 56, -37.6, 1.2, { y: Y }); H.dry('z', -37, 29.6, 55.6, 1.2, { y: Y });
+    // salida oeste de la calle cerrada: carros y sacos (el pueblo está cercado)
+    H.cart(-54, -1.8, 'z'); B.sandbags(-53.2, 0.8, -53.2, 3.6);
+
+    // ============ CALLE DE LAS CASAS MINERAS (z de -4 a 4)
+    H.house(-56, -15, -50, -4, { street: 's', stairs: { side: 'w', from: 'n' } }); H.house(-50, -15, -44, -4, { street: 's', floors: 1 });
+    H.house(-42.5, -14.5, -35.5, -4, { street: 's', color: SJ.ocre, sides: 'w' }); H.house(-35.5, -14, -30.5, -4, { street: 's', floors: 1, sides: 'e' });
+    H.house(-27.5, -15, -22, -4, { street: 's', sides: 'w', stairs: { side: 'e', from: 'n' } }); H.house(-22, -14, -16, -4, { street: 's', floors: 1, color: SJ.rosa, sides: 'e' });
+    H.house(-56, 4, -50, 14, { street: 'n', floors: 1 }); H.house(-50, 4, -44, 13, { street: 'n', stairs: { side: 'w', from: 's' } });
+    H.house(-42.5, 4, -36.5, 14, { street: 'n', sides: 'w', stairs: { side: 'e', from: 's' } }); H.house(-36.5, 4, -32, 13.5, { street: 'n', floors: 1, sides: 'e' });
+    H.house(-29, 4, -24.5, 13, { street: 'n', floors: 1, sides: 'w' });
+    // taberna «La Galena» (puerta a la calle y a la plaza; mostrador y mesas dentro)
+    H.house(-24.5, 4, -14, 13, { street: 'n', color: SJ.cal, sides: 'e', extra: { e: [['door', 0.5, 0]] }, stairs: { side: 'w', from: 's' } });
+    H.signboard(-19.2, 5.2, 3.88, Math.PI, 3.6, 1.1, ['TABERNA', 'LA GALENA']);
+    B.box(-20.8, 0.06, 10.3, -16.8, 1.1, 11.0, { pattern: PAT.WOOD, color: 0x4e3a28, kind: 'cover' });
+    for (const [x, z] of [[-21.6, 6.6], [-17.2, 7.0]]) { B.box(x - 0.5, 0.75, z - 0.5, x + 0.5, 0.8, z + 0.5, { pattern: PAT.WOOD, color: SJ.plank, kind: 'cover' }); B.deco(GEO.cyl(0.05, 0.05, 0.75, 6), x, 0.4, z, SJ.wood); }
+    B.barrel(-23.4, 0.06, 11.6); B.barrel(-23.4, 0.06, 10.6);
+    // carros, barriles y cajas por la calle
+    H.cart(-40, 1.6); B.crate(-47, 0, -3, 1.0); B.crate(-47.2, 0, -1.9, 0.8); B.barrel(-31, 0, -3.2); B.barrel(-30.2, 0, -3.4); B.crate(-25.5, 0, 3.1, 1.0);
+    B.sandbags(-33, 1.4, -29.4, -0.6); B.sandbags(-46, 3.4, -44, 3.4);
+    for (const [x, z] of [[-49, -3.6], [-34, 3.6], [-20, -3.6], [20, 3.6]]) B.lamp(x, z);
+
+    // ============ HUERTOS Y CALLEJÓN NORTE (z de -38 a -15)
+    for (const [a, b, c, d] of [[-54, -46, -35, -20], [-43, -33, -35, -21], [-30, -17, -35, -22]]) {
+      const m = (a + b) / 2, mz = (c + d) / 2;
+      H.dry('x', a, b, c, 0.9); H.dry('x', a, b, d, 0.9, { open: [{ type: 'door', at: m, w: 2.2 }] }); H.dry('z', c, d, a, 0.9); H.dry('z', c, d, b, 0.9, { open: [{ type: 'door', at: mz, w: 2.2 }] });
+      for (let x = a + 1.2; x < b - 0.8; x += 1.4) for (let z = c + 1.4; z < d - 0.8; z += 0.9) if (B.rng.next() < 0.85) B.deco(GEO.sphere(0.32, 5, 4), x + B.rng.range(-0.15, 0.15), 0.16, z, shade(SJ.crop, B.rng.range(-0.12, 0.1)), { sy: B.rng.range(0.6, 1.1) });
+    }
+    H.house(-12, -37, -7.5, -32.5, { street: 'e', floors: 1, h: 3.2, color: SJ.ocre, back: false, chimney: false });   // cobertizo de aperos
+    B.box(-39.8, 0, -19.3, -37.2, 2.6, -16.7, { pattern: PAT.DIRT, color: 0xb89a50, kind: 'cover', noRender: true });   // pajar
+    B.deco(GEO.cyl(1.3, 1.5, 2.2, 14), -38.5, 1.1, -18, 0xb89a50); B.deco(GEO.dome(1.32, 14, 6), -38.5, 2.2, -18, 0xc2a458);
+    B.crate(-26, 0, -17.5, 1.1); B.crate(-50, 0, -17.2, 1.0); B.tree(-50, -27, 0.9); B.tree(-25, -30, 0.85);
+
+    // ============ PLAZA (x de -14 a 14, z de -13 a 13): fuente, plátanos, bancos, carro del mercado
+    B.box(-1.6, 0, -1.6, 1.6, 0.8, 1.6, { noRender: true, kind: 'cover' });
+    B.deco(GEO.cyl(2.1, 2.2, 0.8, 8), 0, 0.4, 0, SJ.stone, { ry: Math.PI / 8 }); B.deco(GEO.cyl(1.9, 1.9, 0.04, 8), 0, 0.72, 0, 0x55666a, { ry: Math.PI / 8 });
+    B.box(-0.4, 0.8, -0.4, 0.4, 2.6, 0.4, { pattern: PAT.CONCRETE, color: SJ.stone, kind: 'cover' });
+    B.deco(GEO.cyl(0.6, 0.3, 0.3, 10), 0, 2.75, 0, SJ.stone); B.deco(GEO.sphere(0.28, 10, 7), 0, 3.1, 0, SJ.stone);
+    for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2; B.deco(GEO.cyl(0.03, 0.03, 0.4, 6), Math.sin(a) * 0.5, 1.8, Math.cos(a) * 0.5, 0xa88a3a, { rx: Math.PI / 2, ry: a, order: 'YXZ' }); }
+    for (const [x, z] of [[-10, -8.5], [10, -8.5], [-10, 8.5], [10, 8.5]]) H.plane(x, z);
+    for (const [x0, z0, x1, z1] of [[-7, -11, -5, -10.4], [5, -11, 7, -10.4], [-13, -5, -12.4, -3], [12.4, 4, 13, 6]]) B.box(x0, 0, z0, x1, 0.45, z1, { pattern: PAT.CONCRETE, color: SJ.stone, kind: 'cover' });
+    H.cart(6.5, 4.5); B.crate(-7, 0, 6.5, 1.0); B.crate(-6.2, 0, 7.4, 0.8); B.sandbags(4, -6.2, 8, -6.2);
+    // banderines de fiesta cruzando la plaza
+    for (const [ax, az, bx, bz] of [[-13.6, -12, 13.6, 12], [13.6, -8, -13.6, 12]]) {
+      const n = 46; for (let i = 1; i < n; i++) { const t = i / n, x = lerp(ax, bx, t), z = lerp(az, bz, t), y = 6.2 - Math.sin(t * Math.PI) * 1.4;
+        B.deco(GEO.cone(0.16, 0.34, 3), x, y - 0.17, z, [0xb3261e, 0xd9c27a, 0xe6e0d0][i % 3], { rx: Math.PI, ry: Math.atan2(bx - ax, bz - az) }); }
+    }
+    // casas de la plaza: ayuntamiento al noreste, casino al este, casas al sur
+    H.house(14, -22, 26, -8, { street: 's', h: 3.6, color: SJ.ocre, sides: 'w', stairs: { side: 'e', from: 'n' } });
+    H.signboard(20, 6.6, -7.93, 0, 5, 1.0, ['AYUNTAMIENTO']);
+    B.deco(GEO.cyl(0.04, 0.04, 3, 6), 23.5, 8.2, -7.6, SJ.iron, { rx: 0.5 }); B.deco(GEO.box(1.6, 1, 0.02), 24.2, 9.3, -7.0, 0xb08a2e, { rx: 0.5 });
+    H.house(15, 5, 25, 14, { street: 'n', sides: 'w', color: SJ.cal2, stairs: { side: 'e', from: 's' } });
+    H.signboard(20, 2.7, 4.88, Math.PI, 3.4, 0.7, ['CASINO MINERO']);
+    H.house(2, 13, 12, 22, { street: 'n', color: SJ.rosa, sides: 'e', stairs: { side: 'e', from: 's' } });
+    H.house(-16, 13, -6, 22, { street: 'n', floors: 1, h: 3.4, sides: 'w' });
+
+    // ============ IGLESIA DE SAN JUAN y CAMPANARIO DEL RELOJ (al norte de la plaza)
+    const CH = 11.5;
+    B.house(-6, -30, 6, -16, { floors: 1, h: CH, pattern: PAT.BRICK, color: SJ.stone, floorPat: PAT.COBBLE, floorColor: 0x7a7468, parapet: false, roofPat: PAT.ROOF, roofColor: SJ.tileD, solidWalls: true,
+      open: { s: [['arch', 0.5, 0, 2.2, 0, 3.4]], w: [['win', 0.3, 0, 1.0, 4.5, 7.8], ['win', 0.7, 0, 1.0, 4.5, 7.8], ['door', 0.5, 0]], e: [['win', 0.3, 0, 1.0, 4.5, 7.8], ['door', 0.84, 0, 1.2, 8.9, 11.3]] } });
+    H.gable(-6, -30, 6, -16, CH + 0.25, 3.6, SJ.tile, 'z', 0.3);
+    B.decoBox(-6.2, 0, -16.25, 6.2, 1.2, -15.85, SJ.dstone); for (const s of [-1, 1]) B.decoBox(s * 1.1 - 0.3, 0, -16.25, s * 1.1 + 0.3, 3.9, -15.8, SJ.dstone); B.decoBox(-1.4, 3.4, -16.25, 1.4, 4.0, -15.8, SJ.dstone);
+    B.deco(GEO.cyl(1.1, 1.1, 0.1, 24), 0, 7.4, -15.84, 0x3a4a6a, { rx: Math.PI / 2 }); B.deco(GEO.torus(1.15, 0.12, 24, 6), 0, 7.4, -15.8, SJ.dstone);
+    for (let i = 0; i < 3; i++) B.box(-3.5, 0, -15.6 + i * 0.45, 3.5, 0.6 - i * 0.2, -15.15 + i * 0.45, { pattern: PAT.CONCRETE, color: SJ.stone, kind: 'stairs' });
+    for (let i = 0; i < 5; i++) for (const s of [-1, 1]) B.box(s > 0 ? 0.9 : -4.6, 0.06, -27 + i * 2, s > 0 ? 4.0 : -0.9, 0.55, -26.5 + i * 2, { pattern: PAT.WOOD, color: 0x4e3a28, kind: 'cover' });
+    B.box(-2, 0.06, -29.4, 2, 1.0, -28.4, { pattern: PAT.CONCRETE, color: 0xb0a690, kind: 'cover' });
+    // escalera interior al campanario (sube pegada al muro este)
+    B.stairs(5.1, -29.4, '+z', 1.1, 0.06, 8.9, { pattern: PAT.WOOD, color: 0x5e4630 });
+    B.box(4.55, 8.65, -19.9, 5.7, 8.9, -17.2, { pattern: PAT.WOOD, color: 0x5e4630, kind: 'floor' });
+    // torre: base de sillería maciza, reloj en tres caras, cuerpo de campanas con arcos y chapitel
+    const TX0 = 6, TX1 = 11, TZ0 = -21, TZ1 = -16, TP = 8.9, tw = 0.35, stone = { pattern: PAT.BRICK, color: 0xa29683 };
+    B.box(TX0, 0, TZ0, TX1, TP, TZ1, stone);
+    for (const k of [3.2, 6.0, TP - 0.1]) B.decoBox(TX0 - 0.1, k, TZ0 - 0.1, TX1 + 0.1, k + 0.22, TZ1 + 0.1, SJ.dstone);
+    B.wall('x', TX0, TX1, TZ0 + tw / 2, TP, 4.2, tw, { ...stone, open: [{ type: 'arch', at: 8.5, w: 2.4, y0: 0.9, y1: 3.4 }] });
+    B.wall('x', TX0, TX1, TZ1 - tw / 2, TP, 4.2, tw, { ...stone, open: [{ type: 'arch', at: 8.5, w: 2.4, y0: 0.9, y1: 3.4 }] });
+    B.wall('z', TZ0 + tw, TZ1 - tw, TX1 - tw / 2, TP, 4.2, tw, { ...stone, open: [{ type: 'arch', at: -18.5, w: 2.4, y0: 0.9, y1: 3.4 }] });
+    B.wall('z', TZ0 + tw, TZ1 - tw, TX0 + tw / 2, TP, 4.2, tw, { ...stone, open: [{ type: 'door', at: -18.5, w: 1.2, y0: 0, y1: 2.4 }] });
+    B.box(TX0 - 0.25, TP + 4.2, TZ0 - 0.25, TX1 + 0.25, TP + 4.5, TZ1 + 0.25, { pattern: PAT.CONCRETE, color: SJ.dstone });
+    B.deco(GEO.cone(3.7, 5, 4), 8.5, TP + 7.0, -18.5, SJ.tile, { ry: Math.PI / 4 }); B.deco(GEO.cyl(0.05, 0.05, 2.2, 5), 8.5, TP + 10.4, -18.5, SJ.iron); B.deco(GEO.box(0.9, 0.06, 0.06), 8.5, TP + 10.9, -18.5, SJ.iron);
+    B.deco(GEO.cyl(0.5, 0.75, 0.9, 12), 8.5, TP + 3.0, -18.5, 0xa8843a); B.deco(GEO.box(1.6, 0.18, 0.18), 8.5, TP + 3.55, -18.5, SJ.wood);
+    H.clock(8.5, 7.4, TZ1 + 0.03, 0); H.clock(8.5, 7.4, TZ0 - 0.03, Math.PI); H.clock(TX1 + 0.03, 7.4, -18.5, Math.PI / 2);
+    // atrio: pretil bajo delante de la iglesia
+    B.box(-14, 0, -13.7, -4, 0.9, -13.2, { pattern: PAT.CONCRETE, color: SJ.stone, kind: 'cover' }); B.box(4, 0, -13.7, 14, 0.9, -13.2, { pattern: PAT.CONCRETE, color: SJ.stone, kind: 'cover' });
+    // casas del norte de la plaza (camino de los huertos)
+    H.house(-16, -30, -9, -20, { street: 'e', floors: 1, sides: 's', color: SJ.cal2 }); H.house(28, -30, 34, -21, { street: 's', floors: 1, h: 3.4, sides: 'w' });
+
+    // ============ LAVADERO, VÍA DE LAS VAGONETAS Y SUR
+    B.box(-8, 0, 24.6, 2, 0.82, 27.4, { pattern: PAT.CONCRETE, color: SJ.stone, kind: 'cover' }); B.decoBox(-7.7, 0.82, 24.9, 1.7, 0.84, 27.1, 0x55666a);
+    for (const sx of [-8, -3, 2]) for (const sz of [23.4, 28.6]) B.box(sx - 0.16, 0, sz - 0.16, sx + 0.16, 2.9, sz + 0.16, { pattern: PAT.WOOD, color: SJ.wood, kind: 'pole' });
+    B.box(-8.6, 2.9, 23.0, 2.6, 3.1, 29.0, { pattern: PAT.WOOD, color: SJ.wood, kind: 'cover' }); H.gable(-8.6, 23.0, 2.6, 29.0, 3.1, 1.4, SJ.tile, 'x', 0.2);
+    H.rail(-56, 31, 36, 31);
+    for (const x of [-36, -34.1, -6, 18, 20]) H.wagon(x, 31);
+    B.sandbags(-20, 28.3, -15, 28.3); B.sandbags(10, 33.4, 14, 33.4);
+    H.house(26, 32.6, 32, 36, { street: 'n', floors: 1, h: 3.2, color: SJ.ocre, back: false });   // casa del guardavía
+    for (let i = 0; i < 4; i++) B.decoBox(-46.2 + i * 0.1, i * 0.19, 25, -43.8 + i * 0.1, i * 0.19 + 0.18, 26, SJ.wood);
+    B.box(-46.3, 0, 25, -43.6, 0.76, 26, { noRender: true, kind: 'cover' });
+    B.tree(-40, 22, 1.0); B.tree(-50, 26, 0.9); B.deadTree(8, 26); B.tree(-28, 20, 0.8); B.crate(-12, 0, 18.5, 1.1); B.crate(30, 0, 21, 1.1); B.crate(31, 0, 22.1, 0.9);
+    B.sandbags(26, 9, 26, 13);
+
+    // ============ CALLE DE LA MINA: escalinata empedrada que sube al patio, entre muros de contención
+    B.stairs(29, 0, '+x', 8, 0, Y, { pattern: PAT.COBBLE, color: 0x857d70, run: 1.0 });
+    B.wall('x', 27, 37, -4.15, 0, Y + 0.5, 0.3, { pattern: PAT.BRICK, color: SJ.stone, kind: 'wall' }); B.wall('x', 27, 37, 4.15, 0, Y + 0.5, 0.3, { pattern: PAT.BRICK, color: SJ.stone, kind: 'wall' });
+    B.wall('z', -38, 30, 36.85, 0, Y + 0.4, 0.3, { pattern: PAT.BRICK, color: SJ.stone, kind: 'wall', open: [{ type: 'big', at: 0, w: 8, y0: 0, y1: 4 }, { type: 'door', at: 20, w: 1.8, y0: 0, y1: 4 }, { type: 'door', at: -26, w: 1.8, y0: 0, y1: 4 }] });
+    B.wall('x', 37, 56, 30.15, 0, Y + 0.4, 0.3, { pattern: PAT.BRICK, color: SJ.stone, kind: 'wall' });
+    B.stairs(34.3, 20, '+x', 1.6, 0, Y); B.stairs(34.3, -26, '+x', 1.6, 0, Y);
+    B.crate(25, 0, -5.2, 1.0); B.crate(25, 0, 5.4, 1.0);
+
+    // ============ PATIO DE LA MINA (x de 37 a 56, a 2,2 m)
+    // castillete: cuatro patas de hierro remachado, arriostramiento, plataforma, dos poleas y tornapuntas hacia la casa de máquinas
+    const cx = 45, cz = -10, top = Y + 16, hb = 2.3, ht = 1.3;
+    for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+      H.beam(cx + sx * hb, Y, cz + sz * hb, cx + sx * ht, top, cz + sz * ht, 0.34, SJ.rust);
+      B.box(cx + sx * hb - 0.22, Y, cz + sz * hb - 0.22, cx + sx * hb + 0.22, Y + 2.4, cz + sz * hb + 0.22, { pattern: PAT.METAL, color: SJ.rust, kind: 'pole', noRender: true });
+    }
+    for (let k = 1; k <= 4; k++) {
+      const yk = Y + k * 3.6, hk = hb + (ht - hb) * (k * 3.6) / (top - Y), hk0 = hb + (ht - hb) * ((k - 1) * 3.6) / (top - Y);
+      for (const s of [-1, 1]) { B.decoBox(cx + s * hk - 0.08, yk - 0.1, cz - hk, cx + s * hk + 0.08, yk + 0.1, cz + hk, SJ.rust); B.decoBox(cx - hk, yk - 0.1, cz + s * hk - 0.08, cx + hk, yk + 0.1, cz + s * hk + 0.08, SJ.rust); }
+      for (const s of [-1, 1]) { H.beam(cx + s * hk0, yk - 3.6, cz - hk0, cx + s * hk, yk, cz + hk, 0.09, SJ.rust); H.beam(cx - hk0, yk - 3.6, cz + s * hk0, cx + hk, yk, cz + s * hk, 0.09, SJ.rust); }
+    }
+    B.decoBox(cx - 1.7, top, cz - 1.7, cx + 1.7, top + 0.3, cz + 1.7, SJ.plank);
+    for (const s of [-1, 1]) { B.decoBox(cx - 1.7, top + 0.3, cz + s * 1.7 - 0.03, cx + 1.7, top + 1.2, cz + s * 1.7 + 0.03, SJ.iron); B.decoBox(cx + s * 1.7 - 0.03, top + 0.3, cz - 1.7, cx + s * 1.7 + 0.03, top + 1.2, cz + 1.7, SJ.iron); }
+    for (const s of [-1, 1]) {
+      const wy = top + 1.9, wz = cz + s * 0.7;
+      B.deco(GEO.torus(1.55, 0.09, 30, 6), cx, wy, wz, SJ.iron);
+      for (let i = 0; i < 4; i++) B.deco(GEO.box(0.06, 3.0, 0.06), cx, wy, wz, SJ.iron, { rz: i * Math.PI / 4 });
+      B.decoBox(cx - 0.12, top + 0.3, wz - 0.12, cx + 0.12, wy, wz + 0.12, SJ.iron);
+      H.beam(cx + 9, Y, cz + s * 1.6, cx + 1.2, top - 0.4, cz + s * 1.1, 0.3, SJ.rust);
+      H.beam(cx + 1.5, wy + 1.5, wz, 51, Y + 6.8, wz, 0.05, 0x222222);   // cable a la casa de máquinas
+    }
+    B.box(cx + 8.6, Y, cz - 2, cx + 9.4, Y + 1.2, cz + 2, { pattern: PAT.CONCRETE, color: SJ.dstone, kind: 'cover' });
+    // brocal del pozo y jaula
+    B.box(cx - 1.5, Y, cz - 1.5, cx + 1.5, Y + 1.2, cz + 1.5, { pattern: PAT.CONCRETE, color: SJ.dstone, kind: 'cover' });
+    B.box(cx - 0.8, Y + 1.2, cz - 0.8, cx + 0.8, Y + 3.6, cz + 0.8, { pattern: PAT.GRATE, color: SJ.iron, kind: 'cover' });
+    // casa de máquinas de ladrillo con su chimenea, y taller abierto (se entra por el oeste): se levantan a la cota del patio
+    H.lift(Y, () => {
+      B.house(50, -15, 56, -5, { floors: 1, h: 7.2, pattern: PAT.BRICK, color: SJ.brick, parapet: false, roofPat: PAT.ROOF, roofColor: SJ.tileD, floorPat: PAT.CONCRETE, floorColor: 0x6a655c, solidWalls: true,
+        open: { w: [['big', 0.5, 0, 2.4], ['win', 0.15, 0, 1.0, 3.4, 5.6], ['win', 0.85, 0, 1.0, 3.4, 5.6]], s: [['door', 0.5, 0], ['win', 0.2, 0]], n: [['win', 0.5, 0]] } });
+      H.gable(50, -15, 56, -5, 7.45, 1.8, SJ.tile, 'z', 0.3);
+      B.box(51, 0.06, -13.5, 53.5, 1.6, -11, { pattern: PAT.METAL, color: SJ.iron, kind: 'cover' }); B.deco(GEO.cyl(1.4, 1.4, 0.4, 20), 52.2, 2.2, -8.5, SJ.iron, { rz: Math.PI / 2 }); B.box(51.9, 0.06, -10, 52.5, 3.6, -7, { noRender: true, kind: 'cover' });
+      B.house(39, 12, 47, 20, { floors: 1, h: 3.6, pattern: PAT.BRICK, color: SJ.brick, parapet: false, roofPat: PAT.ROOF, roofColor: SJ.tileD, floorPat: PAT.CONCRETE, floorColor: 0x6a655c, open: { w: [['big', 0.5, 0, 5.2]], n: [['door', 0.2, 0, 2.2]], e: [['win', 0.5, 0]] } });
+      H.gable(39, 12, 47, 20, 3.85, 1.4, SJ.tile, 'x', 0.3);
+      B.box(42.7, 0.06, 18.35, 46.3, 0.9, 19.25, { pattern: PAT.WOOD, color: SJ.plank, kind: 'cover' });
+      B.crate(42, 0.06, 14, 1.0); B.crate(41, 0.06, 14.3, 0.8);
+      B.crate(47.5, 0, -33, 1.1); B.crate(40, 0, -27, 1.0); B.crate(52, 0, 12, 1.1); B.crate(52.9, 0, 12.8, 0.9);
+    });
+    B.barrel(45.8, Y + 0.06, 13.4); B.barrel(45.8, Y + 0.06, 14.3); B.barrel(41, Y, -4.6); B.barrel(41.7, Y, -4.9);
+    B.box(53.2, Y, -2.8, 54.8, Y + 20, -1.2, { pattern: PAT.BRICK, color: SJ.brick, kind: 'pole', noRender: true });
+    B.deco(GEO.cyl(0.7, 0.95, 20, 14), 54, Y + 10, -2, SJ.brick); B.deco(GEO.cyl(0.82, 0.82, 0.5, 14), 54, Y + 19.9, -2, SJ.dstone);
+    H.signboard(49.93, Y + 6.2, -10, -Math.PI / 2, 3.2, 0.55, ['CASA DE MÁQUINAS'], '#d9cfb6'); H.signboard(38.93, Y + 3.1, 16, -Math.PI / 2, 2.4, 0.5, ['TALLER'], '#d9cfb6');
+    // galería nueve: boca de sillería con arco y puerta de tablas entornada, en el muro norte del patio
+    B.box(40.5, Y, -38, 47.5, Y + 5, -36.9, { pattern: PAT.BRICK, color: SJ.stone, kind: 'wall' });
+    B.decoBox(42.5, Y, -36.92, 45.5, Y + 3, -36.86, 0x0c0b0a); B.deco(GEO.cyl(1.5, 1.5, 0.06, 16, 1), 44, Y + 3, -36.89, 0x0c0b0a, { rx: Math.PI / 2 });
+    for (const s of [-1, 1]) B.box(44 + s * 1.55 - 0.15, Y, -36.9, 44 + s * 1.55 + 0.15, Y + 3.6, -36.5, { pattern: PAT.WOOD, color: SJ.wood, kind: 'pole' });
+    B.decoBox(42.3, Y + 3.45, -36.9, 45.7, Y + 3.75, -36.5, SJ.wood); B.decoBox(42.6, Y, -36.75, 44.0, Y + 2.8, -36.67, 0x5a4430, { ry: 0.25 });
+    H.signboard(44, Y + 4.25, -36.86, 0, 4.0, 0.7, ['GALERÍA N.º 9'], '#cfc4a8');
+    H.rail(44, -36.5, 44, -18, Y); H.wagon(44, -21, 'z', Y); H.wagon(44, -28, 'z', Y);
+    // escombrera: montón de estéril en gradas
+    for (const [r, h] of [[6.5, 1.0], [4.8, 2.0], [3.0, 3.0]]) B.box(50.5 - r * 0.8, Y, -27 - r * 0.6, 50.5 + r * 0.8, Y + h, -27 + r * 0.6, { pattern: PAT.DIRT, color: 0x4a4440, kind: 'deco' });
+    // montones de carbón, puntales, sacos y cajas
+    for (const [x, z, s] of [[40.5, 25, 1.3], [51, 23.5, 1.7]]) { B.box(x - s, Y, z - s * 0.8, x + s, Y + s * 0.6, z + s * 0.8, { pattern: PAT.DIRT, color: 0x34312d, kind: 'cover' }); B.deco(GEO.sphere(1, 7, 5), x, Y + s * 0.6, z, 0x2a2826, { sx: s * 0.9, sy: s * 0.45, sz: s * 0.7 }); }
+    for (const [x, z] of [[49, 6], [39.5, -16]]) { for (let i = 0; i < 6; i++) B.deco(GEO.cyl(0.12, 0.12, 3, 8), x, Y + 0.13 + Math.floor(i / 3) * 0.24, z + (i % 3) * 0.26 - 0.26, SJ.wood, { rx: Math.PI / 2, rz: Math.PI / 2 }); B.box(x - 1.5, Y, z - 0.45, x + 1.5, Y + 0.5, z + 0.45, { noRender: true, kind: 'cover' }); }
+    B.sandbags(48, -19, 52, -19, { y: Y }); B.sandbags(40, 3.4, 40, 6.4, { y: Y });
+
+    // ============ ambiente: humo de la chimenea y paisaje
+    B.smoke(54, -2, 0.7); B.smoke(-80, -70, 1.1); B.smoke(90, 50, 1.3);
+    B.horizon(0x7f705a, 22, 95, 150, { groundColor: 0x76694e });
+
+    // ============ A / B / C, armas, apariciones
+    B.dom('A', -36, 0, 0); B.dom('B', 0, 0, 7); B.dom('C', 45, Y, 3);
+    B.stand(8.5, TP, -18.5, 'sniper'); B.stand(44, Y, 16.5, 'lmg'); B.stand(-19, 0.06, 8.2, 'shotgun');
+    for (const [x, z] of [[-53, -1], [-53, 2], [-52, 20], [-46, 26], [-38, 26], [-53, 30], [-51, -27], [-44, -18], [-36, -22], [-53, -32]]) B.spawn(0, x, 0, z, -Math.PI / 2);
+    for (const [x, z] of [[53, 2], [53, -2], [54, 9], [50, 9], [54, 20], [47, 26], [53, -22], [48, -32], [54, -35], [41, 8]]) B.spawn(1, x, Y, z, Math.PI / 2);
+    for (const [x, y, z] of [[-42, 0, 0], [42, Y, 0], [0, 0, -9], [0, 0, 10], [-20, 0, -26], [20, 0, -26], [-22, 0, 20], [22, 0, 24], [-40, 0, -24], [50, Y, 24], [-12, 0, 1], [12, 0, -1], [-31, 0, -9], [31, 0, 12], [50, Y, -32], [-3, 0, 32]]) B.spawn('ffa', x, y, z);
+    B.prop('can', 2.2, 0, 7.5); B.prop('can', -26.5, 0, 3.4); B.prop('bucket', -3.2, 0.82, 25.8); B.prop('bucket', 43, Y, 13.5);
+  },
+};
+// ---- 09g_novela_a.js ----
+// =====================================================================
+// MAPAS DE LA NOVELA (3.3.0) — Cuartel Tres Cruces y Puerto Ánimas, rehechos desde cero con el
+// constructor de bloques y los ayudantes de San Juan (sjHelpers). Sustituyen al aeródromo y al muelle viejos.
+// =====================================================================
+// agua (solo decoración): un plano grande a la cota y
+function sjWater(B, x0, z0, x1, z1, y = -0.6, color = 0x3a5262) { B.decoBox(x0, y - 0.05, z0, x1, y, z1, color); }
+
+// ---------------------------------------------------------------------
+// CUARTEL TRES CRUCES: cuartel de costa. Al norte la puerta de la guardia; dentro, barracones, comandancia,
+// patio de armas con el mástil, caballerizas al oeste y los tres polvorines alambrados al este; al sur la tapia
+// del mar, las dunas con trincheras y la playa.
+MAPS.base = {
+  name: { es: 'Cuartel Tres Cruces', en: 'Tres Cruces Barracks' },
+  desc: { es: 'Cuartel de costa: barracones, comandancia y patio de armas; al este los tres polvorines alambrados y al sur las dunas con trincheras frente al mar.', en: 'A coastal barracks: huts, headquarters and parade ground; the three wired-in powder magazines to the east and dunes with trenches facing the sea.' },
+  thumb: ['#56677a', '#c8b48a', '#6a6a5a'],
+  theme: { skyTop: 0x56677a, skyMid: 0xaab3b3, skyBot: 0x868a80, fog: 0x99a09c, fogNear: 38, fogFar: 210, sun: 0xfff1da, sunI: 2.1, sunDir: [0.42, 0.72, -0.32], hemiTop: 0xd5dde0, hemiBot: 0x66665a, hemiI: 1.35, exposure: 1.05 },
+  build(B) {
+    const H = sjHelpers(B), conc = { pattern: PAT.CONCRETE, color: 0xa29e92 }, ocre = 0xcdb58a, cal = 0xdcd4c0;
+    B.bounds(-48, -36, 48, 36, 18);
+    const parade = [-18, -12, 18, 10], beach = [-48, 20, 48, 36];
+    B.ground(-48, -36, 48, 36, { holes: [parade, beach], pattern: PAT.DIRT, color: 0x8c7c5c });
+    B.ground(...parade, { pattern: PAT.CONCRETE, color: 0x9c978a });
+    B.ground(...beach, { pattern: PAT.DIRT, color: 0xc8b48a });
+    sjWater(B, -260, 36.2, 260, 300, -0.5, 0x3d5a6a);
+    for (let i = 0; i < 9; i++) B.decoBox(-60 + i * 15, -0.48, 36.4 + (i % 3) * 3, -52 + i * 15, -0.45, 37 + (i % 3) * 3, 0xd8e0e0);   // espuma
+    // ============ tapia del cuartel (2,6 m) con la puerta de la guardia al norte, dos salidas al mar y portillos a los lados
+    const wall = { pattern: PAT.PLASTER, color: 0xd2c8b0, kind: 'wall' };
+    B.wall('x', -42, 42, -30, 0, 2.6, 0.4, { ...wall, open: [{ type: 'big', at: 0, w: 5 }] });
+    B.wall('x', -42, 42, 18, 0, 2.6, 0.4, { ...wall, open: [{ type: 'big', at: -22, w: 3.5 }, { type: 'big', at: 22, w: 3.5 }, { type: 'door', at: 0, w: 1.6 }] });
+    B.wall('z', -30, 18, -42, 0, 2.6, 0.4, { ...wall, open: [{ type: 'door', at: -6, w: 1.6 }] });
+    B.wall('z', -30, 18, 42, 0, 2.6, 0.4, { ...wall, open: [{ type: 'door', at: 14, w: 1.6 }] });
+    for (const x of [-42, 42]) for (const z of [-30, 18]) B.decoBox(x - 0.35, 0, z - 0.35, x + 0.35, 2.9, z + 0.35, 0xb8ae96);
+    for (let x = -42; x <= 42; x += 6) { B.decoBox(x - 0.25, 2.6, -30.25, x + 0.25, 2.75, -29.75, 0xb8ae96); B.decoBox(x - 0.25, 2.6, 17.75, x + 0.25, 2.75, 18.25, 0xb8ae96); }
+    // puerta de la guardia: pilares, garita y barrera; fuera, el camino
+    for (const s of [-1, 1]) B.box(s * 2.5 - 0.45, 0, -30.5, s * 2.5 + 0.45, 3.6, -29.5, { pattern: PAT.BRICK, color: 0xb8ae96 });
+    B.decoBox(-3, 3.6, -30.4, 3, 4.2, -29.6, 0xb8ae96); H.signboard(0, 3.9, -30.42, Math.PI, 5, 0.55, ['CUARTEL TRES CRUCES']);
+    B.house(4, -28.6, 6.4, -26.2, { floors: 1, h: 2.6, color: cal, parapet: false, open: { w: [['door', 0.5, 0]], n: [['win', 0.5, 0]] } }); H.gable(4, -28.6, 6.4, -26.2, 2.85, 0.9, 0x5a5a52, 'z', 0.2);
+    B.decoBox(-2.4, 1.0, -31.1, 2.2, 1.12, -30.98, 0xc23a2a);
+    B.sandbags(-6, -33, -2.5, -33); B.sandbags(2.5, -33, 6, -33); H.cart(-14, -33); B.crate(12, 0, -33.5, 1.1); B.crate(13, 0, -32.8, 0.9);
+    // ============ barracones (dos plantas) y comandancia al norte del patio
+    for (const [x0, x1] of [[-38, -14], [14, 38]]) {
+      const w = x1 - x0, op = { n: [], s: [] };
+      for (let k = 0; k < 6; k++) { op.s.push(['win', (k + 0.5) / 6, 0]); op.s.push(['win', (k + 0.5) / 6, 1]); op.n.push(['win', (k + 0.5) / 6, 1]); }
+      op.s[4] = ['door', 2.5 / 6, 0]; op.n.push(['door', 0.5, 0]);
+      B.house(x0, -27, x1, -18, { floors: 2, h: 3.2, color: ocre, parapet: false, roofPat: PAT.ROOF, roofColor: 0x6e3a2a, stairs: { side: x0 < 0 ? 'w' : 'e', from: 'n' }, open: { ...op, w: [['door', 0.5, 0], ['win', 0.5, 1]], e: [['door', 0.5, 0], ['win', 0.5, 1]] } });
+      H.gable(x0, -27, x1, -18, 6.65, 2.0, 0x8a4a34, 'x');
+      B.decoBox(x0 - 0.05, 0, -27.05, x1 + 0.05, 0.6, -17.95, 0x8a826e); B.decoBox(x0 - 0.1, 3.05, -27.1, x1 + 0.1, 3.25, -17.9, shade(ocre, -0.15));
+      for (let i = 0; i < 3; i++) B.box(x0 + 3 + i * 7, 0.06, -26.2, x0 + 5 + i * 7, 0.5, -25.2, { pattern: PAT.WOOD, color: 0x5e4630, kind: 'cover' });   // literas (abajo)
+      void w;
+    }
+    B.house(-8, -27, 8, -16, { floors: 2, h: 3.4, color: cal, parapet: false, roofPat: PAT.ROOF, roofColor: 0x6e3a2a, stairs: { side: 'e', from: 'n' },
+      open: { s: [['door', 0.5, 0], ['win', 0.2, 0], ['win', 0.8, 0], ['win', 0.2, 1], ['win', 0.5, 1], ['win', 0.8, 1]], n: [['door', 0.3, 0], ['win', 0.7, 0], ['win', 0.3, 1], ['win', 0.7, 1]], w: [['win', 0.5, 0], ['win', 0.5, 1]], e: [['win', 0.3, 1]] } });
+    H.gable(-8, -27, 8, -16, 7.05, 2.2, 0x8a4a34, 'x'); H.signboard(0, 3.0, -15.93, 0, 4.2, 0.6, ['COMANDANCIA']);
+    for (const [f, fl] of [[0.2, 0], [0.8, 0], [0.2, 1], [0.5, 1], [0.8, 1]]) H.shutters('s', -8, -27, 8, -16, f, fl * 3.4, 0x4f6a4a);
+    B.box(-3, 0.06, -24.5, 3, 0.85, -23.5, { pattern: PAT.WOOD, color: 0x4e3a28, kind: 'cover' });
+    B.box(-2, 3.4, -21, 2, 4.2, -20, { pattern: PAT.WOOD, color: 0x4e3a28, kind: 'cover' });
+    // ============ patio de armas: mástil, cañón de campaña y carros
+    B.box(-0.12, 0, -0.12, 0.12, 12, 0.12, { pattern: PAT.METAL, color: 0xd8d4c8, kind: 'pole', noRender: true }); B.deco(GEO.cyl(0.08, 0.12, 12, 8), 0, 6, 0, 0xd8d4c8);
+    B.box(-1.2, 0, -1.2, 1.2, 0.5, 1.2, { pattern: PAT.CONCRETE, color: 0xb0aa9c, kind: 'cover' }); B.deco(GEO.box(2.4, 1.4, 0.02), 1.3, 11, 0, 0x8a2a24);
+    const gun = (x, z, ry) => { B.box(x - 1.2, 0, z - 1.2, x + 1.2, 1.2, z + 1.2, { noRender: true, kind: 'cover' }); B.deco(GEO.cyl(0.14, 0.18, 3.2, 10), x + Math.sin(ry) * 1.4, 1.15, z + Math.cos(ry) * 1.4, 0x3e4436, { rx: Math.PI / 2 - 0.12, ry, order: 'YXZ' }); B.deco(GEO.box(1.6, 1.0, 0.1), x, 1.0, z, 0x4a5240, { ry }); for (const s of [-1, 1]) B.deco(GEO.cyl(0.6, 0.6, 0.12, 14), x + Math.cos(ry) * s * 0.85, 0.6, z - Math.sin(ry) * s * 0.85, 0x3a3128, { rz: Math.PI / 2, ry, order: 'YXZ' }); B.deco(GEO.box(0.2, 0.2, 2.4), x - Math.sin(ry) * 1.3, 0.4, z - Math.cos(ry) * 1.3, 0x4a5240, { ry }); };
+    gun(-9, 4, Math.PI); gun(9, 4, Math.PI);
+    H.cart(-12, -6, 'z'); H.cart(13, -7); B.sandbags(-4, 6.5, 4, 6.5); B.crate(-15, 0, 7, 1.1); B.crate(15.5, 0, 7.5, 1.1); B.crate(16.4, 0, 6.6, 0.9);
+    for (const [x, z] of [[-18, -12], [18, -12], [-18, 10], [18, 10]]) B.lamp(x, z);
+    // ============ caballerizas (madera) y cocinas al oeste
+    B.house(-38, -10, -24, 4, { floors: 1, h: 3.6, pattern: PAT.WOOD, color: 0x6a5038, parapet: false, roofPat: PAT.ROOF, roofColor: 0x5a4a3a, open: { e: [['big', 0.25, 0], ['big', 0.75, 0]], w: [['door', 0.5, 0]], n: [['win', 0.5, 0]], s: [['win', 0.3, 0], ['win', 0.7, 0]] } });
+    H.gable(-38, -10, -24, 4, 3.85, 1.6, 0x5e4a36, 'z');
+    for (let i = 0; i < 4; i++) B.box(-37.6, 0.06, -8.6 + i * 3.4, -33.6, 1.3, -8.4 + i * 3.4, { pattern: PAT.WOOD, color: 0x5a4430, kind: 'cover' });
+    B.decoBox(-31, 0.06, -9, -30, 0.06, 3, 0xb89a50); B.box(-31.5, 0, -2, -29.5, 1.1, 0, { pattern: PAT.DIRT, color: 0xb89a50, kind: 'cover' });
+    B.house(-38, 8, -26, 15, { floors: 1, h: 3.2, color: cal, parapet: false, roofPat: PAT.ROOF, roofColor: 0x6e3a2a, open: { e: [['door', 0.5, 0]], n: [['door', 0.3, 0], ['win', 0.7, 0]], s: [['win', 0.5, 0]] } });
+    H.gable(-38, 8, -26, 15, 3.45, 1.4, 0x8a4a34, 'x'); B.decoBox(-28.5, 3.4, 10.5, -27.8, 5.6, 11.2, 0x8a826e);
+    // ============ los tres polvorines (hormigón, puerta de hierro, montera de tierra) entre alambradas
+    for (const [k, z0] of [[1, -12], [2, -3], [3, 6]]) {
+      const x0 = 28, x1 = 36, z1 = z0 + 6;
+      B.house(x0, z0, x1, z1, { floors: 1, h: 2.8, pattern: PAT.CONCRETE, color: 0x9a968c, t: 0.5, solidWalls: true, parapet: false, roofPat: PAT.DIRT, roofColor: 0x6e7a46, floorPat: PAT.CONCRETE, floorColor: 0x7a776e, open: { w: [['door', 0.5, 0, 1.6]] } });
+      B.decoBox(x0 - 0.6, 0, z0 - 0.6, x0, 2.2, z1 + 0.6, 0x6e7a46, {}); B.decoBox(x1, 0, z0 - 0.6, x1 + 0.6, 2.2, z1 + 0.6, 0x6e7a46);
+      B.decoBox(x0 - 0.04, 0.05, (z0 + z1) / 2 - 0.95, x0 + 0.02, 2.4, (z0 + z1) / 2 - 0.82, 0x2e2e2c);
+      H.signboard(x0 - 0.03, 2.55, (z0 + z1) / 2, -Math.PI / 2, 2.0, 0.35, ['POLVORÍN ' + k], '#d8cfb4');
+      B.crate(x0 + 2, 0.06, z0 + 1.6, 1.0); B.crate(x0 + 3.1, 0.06, z0 + 1.5, 0.9); B.crate(x0 + 2.2, 1.06, z0 + 1.6, 0.8); B.crate(x1 - 1.8, 0.06, z1 - 1.5, 1.0);
+    }
+    B.wire(24, -14, 24, -6); B.wire(24, -1, 24, 3); B.wire(24, 8, 24, 13); B.fence(25, -15, 39, -15, 2.0); B.fence(25, 14, 39, 14, 2.0);
+    B.sandbags(21, -10, 21, -7); B.sandbags(21, 8, 21, 11); B.barrel(20, 0, 0.5);
+    // ============ torres de vigía sobre la tapia del mar
+    B.tower(-36, 13, 5, '-z'); B.tower(38.5, -24, 5, '+z');
+    // ============ el mar: dunas, trincheras con sacos, alambradas, muro del mar y piezas de costa
+    for (const [x, z, w, d, h] of [[-36, 27, 9, 5, 0.9], [-14, 30, 8, 4, 0.7], [8, 26.5, 7, 4, 0.8], [30, 29, 10, 5, 1.0], [-28, 33, 6, 3, 0.5], [40, 33, 6, 3, 0.6]]) {
+      B.box(x - w / 2, 0, z - d / 2, x + w / 2, h * 0.5, z + d / 2, { pattern: PAT.DIRT, color: 0xc4ae84, kind: 'deco' }); B.box(x - w / 3, 0.0, z - d / 3, x + w / 3, h, z + d / 3, { pattern: PAT.DIRT, color: 0xccb68c, kind: 'deco' });
+    }
+    B.sandbags(-30, 22.4, -16, 22.4); B.sandbags(-6, 22.4, 6, 22.4); B.sandbags(16, 22.4, 30, 22.4);
+    B.wire(-44, 26, -26, 26); B.wire(-20, 27, -2, 27); B.wire(4, 25, 22, 25); B.wire(30, 25, 44, 25);
+    for (const x of [-22, 22]) { B.sandbags(x - 3, 20.4, x - 3, 23.4); B.sandbags(x + 3, 20.4, x + 3, 23.4); }
+    B.wall('x', -6, 6, 31, 0, 2.4, 0.4, { pattern: PAT.PLASTER, color: 0xd8d0bc, kind: 'wall' });
+    for (let i = 0; i < 14; i++) B.decoBox(-5 + B.rng.range(0, 10) - 0.04, 1.0 + B.rng.range(0, 0.9), 30.78, -5 + B.rng.range(0, 10) + 0.04, 1.08 + B.rng.range(0, 0.9), 30.8, 0x6e6a60);
+    for (const [x, z] of [[-40, 30.5], [-9, 34], [14, 33], [36, 31]]) { B.box(x - 0.9, 0, z - 0.3, x + 0.9, 0.7, z + 0.3, { pattern: PAT.METAL, color: 0x4a4a46, kind: 'cover' }); B.deco(GEO.box(1.8, 0.12, 0.12), x, 0.95, z, 0x4a4a46, { ry: 0.8 }); B.deco(GEO.box(1.8, 0.12, 0.12), x, 0.95, z, 0x4a4a46, { ry: -0.8 }); }   // erizos
+    // barca varada
+    B.box(10, 0, 32, 15, 0.9, 34, { pattern: PAT.WOOD, color: 0x4e5a62, kind: 'cover' }); B.deco(sjPrism(), 16.1, 0, 33, 0x4e5a62, { rz: -Math.PI / 2, sx: 2, sy: 1.2, sz: 0.9, order: 'ZXY' });
+    // ============ ambiente
+    B.smoke(-90, -80, 1.0); B.horizon(0x7c7a68, 18, 95, 150, { groundColor: 0x7a7458, skip: 's' });
+    // ============ A / B / C, armas, apariciones (norte: el camino; sur: la playa)
+    B.dom('A', -31, 0, -3); B.dom('B', 0, 0, 3); B.dom('C', 32, 0, 0, 4.6);
+    B.stand(-36, 5, 13, 'sniper'); B.stand(0, 3.46, -20.5, 'lmg'); B.stand(32, 0.06, -9, 'shotgun');
+    for (const [x, z] of [[-30, -34], [-20, -34.5], [-10, -34], [10, -34], [20, -34.5], [30, -34], [-40, -33], [40, -33], [0, -35], [-4, -33.5]]) B.spawn(0, x, 0, z, Math.PI);
+    for (const [x, z] of [[-30, 34.5], [-20, 34], [-6, 35], [6, 35], [20, 34], [30, 35], [-42, 34.5], [42, 34.5], [0, 33.5], [26, 33]]) B.spawn(1, x, 0, z, 0);
+    for (const [x, z] of [[-30, -14], [30, -18], [0, -8], [0, 14], [-12, 14], [12, 14], [-40, -20], [40, 6], [-20, 30], [20, 30], [-30, 6], [24, -26], [-10, -33], [10, -33]]) B.spawn('ffa', x, 0, z);
+    B.prop('bucket', -30, 0.06, -6); B.prop('can', 4, 0, 8); B.prop('can', -12, 0, 24);
+  },
+};
+
+// ---------------------------------------------------------------------
+// PUERTO ÁNIMAS (de noche): muelle de piedra con el mercante amarrado (se sube por la pasarela), dos grúas de vapor
+// sobre carriles, almacenes con pasarela interior, la capitanía, el faro en la punta del espigón y la calle del puerto.
+MAPS.muelle = {
+  name: { es: 'Puerto Ánimas', en: 'Puerto Ánimas' },
+  desc: { es: 'El puerto de noche: el mercante amarrado al muelle (se sube por la pasarela), grúas de vapor, almacenes, la capitanía y el faro del espigón.', en: 'The harbour at night: the freighter moored at the quay (up the gangway), steam cranes, warehouses, the harbourmaster\'s office and the breakwater lighthouse.' },
+  thumb: ['#0e1a2c', '#3a4e6a', '#c8a050'],
+  theme: { skyTop: 0x05080f, skyMid: 0x18273e, skyBot: 0x0d121b, fog: 0x18253a, fogNear: 26, fogFar: 150, sun: 0x9fbcff, sunI: 0.95, sunDir: [0.5, 0.62, -0.6], hemiTop: 0x4a64a0, hemiBot: 0x1c2638, hemiI: 2.0, exposure: 1.5, cloud: 0.25, rays: 0, glow: 0.05, stars: 1, lamps: true,
+    disc: [0.75, 0.85, 1.0], soldFill: 0.9, soldRim: 1.1, grade: { sat: 0.82, con: 1.08, sh: [0.9, 0.98, 1.15], hi: [1.0, 1.0, 1.08] } },
+  build(B) {
+    const H = sjHelpers(B), stone = 0x8a8478, D = 3.0;   // D = cubierta del mercante
+    B.bounds(-48, -28, 48, 34, 20);
+    const quay = [-48, -18.5, 40, -6];
+    B.ground(-48, -18.5, 48, 34, { holes: [quay], pattern: PAT.COBBLE, color: 0x6e6a62 });
+    B.ground(...quay, { pattern: PAT.CONCRETE, color: 0x8a867c });
+    B.ground(40, -28, 48, -18.5, { pattern: PAT.CONCRETE, color: 0x8a867c });   // espigón del faro
+    sjWater(B, -260, -300, 260, -18.5, -1.6, 0x16263a); sjWater(B, -48, -28, 40, -18.5, -1.6, 0x16263a);
+    B.decoBox(-48, -1.6, -18.9, 40, 0, -18.5, 0x5e5a52);
+    for (let x = -44; x <= 36; x += 8) { B.box(x - 0.3, 0, -18.3, x + 0.3, 0.6, -17.7, { pattern: PAT.METAL, color: 0x2a2a2a, kind: 'cover' }); }   // bolardos
+    // ============ el mercante «San Telmo» amarrado: casco, cubierta, bodegas, puente de mando, chimenea y palos de carga
+    const sx0 = -36, sx1 = 6, sz0 = -27.5, sz1 = -18.6;
+    B.box(sx0, -2, sz0, sx1, D, sz1, { pattern: PAT.METAL, color: 0x2a2e34, kind: 'floor' });
+    B.box(sx0 + 0.02, D - 0.02, sz0 + 0.02, sx1 - 0.02, D, sz1 - 0.02, { pattern: PAT.WOOD, color: 0x6a5a44, kind: 'floor' });
+    B.decoBox(sx0, -0.5, sz0 - 0.01, sx1, 0.2, sz1 + 0.01, 0x7a2a22);
+    B.deco(sjPrism(), sx1 + 2.6, -2, (sz0 + sz1) / 2, 0x2a2e34, { rz: -Math.PI / 2, ry: 0, sx: sz1 - sz0, sy: 5.2, sz: 5, order: 'ZXY' });
+    B.box(sx1, -2, sz0 + 2, sx1 + 2.5, D, sz1 - 2, { pattern: PAT.METAL, color: 0x2a2e34, kind: 'floor' });
+    const bul = { pattern: PAT.METAL, color: 0x3a3e44, kind: 'cover' };
+    B.wall('x', sx0, sx1, sz0 + 0.1, D, 1.0, 0.2, bul); B.wall('x', sx0, sx1, sz1 - 0.1, D, 1.0, 0.2, { ...bul, open: [{ type: 'big', at: -16, w: 1.6, y0: 0, y1: 2 }] }); B.wall('z', sz0, sz1, sx0 + 0.1, D, 1.0, 0.2, bul);
+    for (const [a, b] of [[-33, -25], [-9, -1]]) { B.box(a, D, sz0 + 2.2, b, D + 0.9, sz1 - 2.2, { pattern: PAT.WOOD, color: 0x3e4a34, kind: 'cover' }); B.decoBox(a + 0.2, D + 0.9, sz0 + 2.4, b - 0.2, D + 0.95, sz1 - 2.4, 0x2e3828); }
+    H.lift(D, () => { B.house(-20, -26.4, -12, -19.8, { floors: 2, h: 2.8, color: 0xd8d2c4, parapet: false, roofColor: 0x4a4a4a, floorH: 0, open: { s: [['door', 0.3, 0], ['win', 0.7, 0], ['win', 0.25, 1], ['win', 0.5, 1], ['win', 0.75, 1]], n: [['door', 0.6, 0], ['win', 0.5, 1]], w: [['win', 0.5, 0], ['win', 0.5, 1]], e: [['win', 0.5, 1]] }, stairs: { side: 'w', from: 'n' } }); H.gable(-20, -26.4, -12, -19.8, 5.85, 0.6, 0x4a4a4a, 'x', 0.3); });
+    B.deco(GEO.cyl(1.1, 1.2, 4.5, 14), -16, D + 5.6 + 2.2, -23, 0x2a2a2a); B.decoBox(-17.2, D + 9.6, -24.2, -14.8, D + 10.1, -21.8, 0xa8382a);
+    for (const x of [-29, -5]) { B.box(x - 0.2, D, -23.2, x + 0.2, D + 10, -22.8, { pattern: PAT.METAL, color: 0x3a3a3a, kind: 'pole', noRender: true }); B.deco(GEO.cyl(0.18, 0.24, 10, 8), x, D + 5, -23, 0x3a3a3a); const H2 = sjHelpers(B); H2.beam(x, D + 1.2, -23, x + (x < -16 ? 6 : -6), D + 6.5, -23, 0.16, 0x4a4a4a); H2.beam(x, D + 10, -23, x + (x < -16 ? 6 : -6), D + 6.5, -23, 0.03, 0x1a1a1a); }
+    H.beam(sx0, D + 10, -23, -16, D + 9, -23, 0.02, 0x1a1a1a); H.beam(sx1 + 2, D + 4, -23, -5, D + 10, -23, 0.02, 0x1a1a1a);
+    B.panel(sx0 + 6, 1.6, sz1 + 0.03, 0, 5, 0.6, (g, W, Hh) => { g.clearRect(0, 0, W, Hh); g.fillStyle = '#e8e0c8'; g.font = `bold ${Hh * 0.8 | 0}px Georgia, serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('SAN TELMO', W / 2, Hh / 2); }, { px: 512, alpha: true });
+    B.stairs(-16, -14.9, '-z', 1.5, 0, D, { pattern: PAT.WOOD, color: 0x5e4630, solidBase: false });   // pasarela
+    B.stairs(2, -14.9, '-z', 1.2, 0, D, { pattern: PAT.WOOD, color: 0x5e4630, solidBase: false });
+    // ============ grúas de vapor sobre carriles
+    H.rail(-48, -15, 40, -15); H.rail(-48, -12.5, 40, -12.5);
+    for (const [cx, ang] of [[12, -0.35], [28, 0.3]]) {
+      for (const sx of [-1, 1]) for (const sz of [-15, -12.5]) B.box(cx + sx * 1.6 - 0.2, 0, sz - 0.2, cx + sx * 1.6 + 0.2, 4, sz + 0.2, { pattern: PAT.METAL, color: 0x3a3634, kind: 'pole' });
+      B.box(cx - 1.9, 4, -15.3, cx + 1.9, 4.4, -12.2, { pattern: PAT.METAL, color: 0x3a3634, kind: 'cover' });
+      B.decoBox(cx - 1.5, 4.4, -14.9, cx + 1.5, 7.2, -12.6, 0x4a3a30); H.gable(cx - 1.5, -14.9, cx + 1.5, -12.6, 7.2, 0.7, 0x2a2a2a, 'x', 0.15);
+      B.deco(GEO.cyl(0.25, 0.25, 2.2, 8), cx + 1, 8.2, -13, 0x222222);
+      H.beam(cx, 5.2, -13.8, cx + Math.sin(ang) * 9, 13, -13.8 - Math.cos(ang) * 9, 0.35, 0x4a3a30); H.beam(cx + Math.sin(ang) * 9, 13, -13.8 - Math.cos(ang) * 9, cx + Math.sin(ang) * 9, 6, -13.8 - Math.cos(ang) * 9, 0.03, 0x111111);
+      B.decoBox(cx + Math.sin(ang) * 9 - 0.6, 5.2, -13.8 - Math.cos(ang) * 9 - 0.6, cx + Math.sin(ang) * 9 + 0.6, 6, -13.8 - Math.cos(ang) * 9 + 0.6, 0x6a5232);
+    }
+    // ============ almacenes con pasarela (entreplanta) y la capitanía
+    for (const [x0, x1, nm] of [[-44, -26, 'ALMACÉN 2'], [-6, 14, 'ALMACÉN 4']]) {
+      B.house(x0, -4, x1, 10, { floors: 1, h: 6, pattern: PAT.BRICK, color: 0x7a4a3a, parapet: false, roofPat: PAT.ROOF, roofColor: 0x3a3a3a, floorPat: PAT.CONCRETE, floorColor: 0x5e5a54,
+        open: { n: [['big', 0.3, 0, 3.4], ['door', 0.75, 0], ['win', 0.75, 0, 1.6, 3.6, 4.8]], s: [['big', 0.6, 0, 3.4], ['win', 0.2, 0, 1.6, 3.6, 4.8]], w: [['door', 0.5, 0], ['win', 0.5, 0, 1.4, 3.6, 4.8]], e: [['door', 0.4, 0], ['win', 0.7, 0, 1.4, 3.6, 4.8]] } });
+      H.gable(x0, -4, x1, 10, 6.25, 2.2, 0x3a3a3a, 'x', 0.3); H.signboard((x0 + x1) / 2, 5.4, -4.03, Math.PI, 3.6, 0.6, [nm], '#cfc4a8');
+      B.box(x0 + 0.3, 3.0, 6.6, x1 - 0.3, 3.2, 9.7, { pattern: PAT.GRATE, color: 0x4a4a48, kind: 'floor' });
+      B.stairs(x1 - 1.2, -3.2, '+z', 1.2, 0.06, 3.0, { pattern: PAT.GRATE, color: 0x4a4a48, solidBase: false });
+      B.box(x1 - 1.8, 3.0, -0.4, x1 - 0.6, 3.2, 6.6, { pattern: PAT.GRATE, color: 0x4a4a48, kind: 'floor' });
+      B.wall('x', x0 + 0.3, x1 - 1.8, 6.65, 3.2, 1.0, 0.08, { pattern: PAT.GRATE, color: 0x3a3a38, kind: 'cover' });
+      for (const [dx, dz, s] of [[3, 2, 1.3], [4.3, 2.2, 1.1], [3.2, 2.1, 1.0], [8, -1, 1.2], [9.2, -0.8, 1.0], [12, 3, 1.3], [12.1, 3, 1.1]]) B.crate(x0 + dx, dx === 3.2 || dx === 12.1 ? 1.36 : 0.06, dz, s);
+      B.barrel(x0 + 6, 0.06, 7.5); B.barrel(x0 + 6.7, 0.06, 7.9);
+    }
+    B.house(22, 0, 32, 10, { floors: 2, h: 3.2, color: 0xc8b896, parapet: false, roofPat: PAT.ROOF, roofColor: 0x5a3a2a, stairs: { side: 'e', from: 's' },
+      open: { n: [['door', 0.5, 0], ['win', 0.2, 0], ['win', 0.8, 0], ['win', 0.2, 1], ['win', 0.5, 1], ['win', 0.8, 1]], w: [['door', 0.5, 0], ['win', 0.5, 1]], s: [['win', 0.5, 0], ['win', 0.3, 1]], e: [['win', 0.5, 0]] } });
+    H.gable(22, 0, 32, 10, 6.65, 1.8, 0x7a4430, 'x'); H.signboard(27, 2.9, -0.03, Math.PI, 3.6, 0.55, ['CAPITANÍA'], '#e2d8c0');
+    for (const [f, fl] of [[0.2, 0], [0.8, 0], [0.2, 1], [0.5, 1], [0.8, 1]]) H.shutters('n', 22, 0, 32, 10, f, fl * 3.2, 0x3e5a6a);
+    // ============ faro en la punta del espigón (base maciza, escalera exterior, linterna)
+    B.box(42, 0, -26.5, 46, 1.0, -22.5, { pattern: PAT.CONCRETE, color: 0xb0aa9c, kind: 'cover' });
+    B.box(42.9, 1.0, -25.6, 45.1, 13, -23.4, { pattern: PAT.PLASTER, color: 0xe2ddd0, noRender: true });
+    B.deco(GEO.cyl(1.0, 1.4, 12, 16), 44, 7, -24.5, 0xe2ddd0); for (const y of [4, 8]) B.deco(GEO.cyl(1.25 - y * 0.02, 1.3 - y * 0.02, 1.2, 16), 44, y, -24.5, 0xa8322a);
+    B.deco(GEO.cyl(1.3, 1.3, 0.2, 16), 44, 13.1, -24.5, 0x2a2a2a); B.deco(GEO.cyl(0.8, 0.8, 1.4, 12), 44, 13.9, -24.5, 0xf4e2a0); B.deco(GEO.cone(1.0, 1.0, 12), 44, 15.1, -24.5, 0x2a2a2a);
+    B.light(44, 13.9, -24.5);
+    B.sandbags(40.5, -21, 40.5, -19); B.crate(46.5, 0, -20, 1.0);
+    // ============ calle del puerto (sur): casas, taberna del muelle y farolas
+    let i = 0;
+    for (const [x0, x1] of [[-46, -38], [-36, -28], [-24, -16], [-12, -4], [2, 10], [16, 24], [30, 38]]) {
+      H.house(x0, 22, x1, 32, { street: 'n', floors: i % 3 === 1 ? 1 : 2, color: [0xd8cfb8, 0xc8a46a, 0xb8c0c4, 0xc99c88][i % 4], stairs: { side: 'e', from: 's' } }); i++;
+    }
+    H.signboard(-20, 2.9, 21.92, Math.PI, 3.2, 0.6, ['TABERNA DEL MUELLE']);
+    for (const x of [-40, -20, 0, 20, 36]) { B.lamp(x, -9); B.lamp(x + 4, 19); }
+    B.lamp(-12, 4); B.lamp(18, 4);
+    // cobertura en la explanada del puerto
+    for (const [x, z, ax] of [[-20, 14, 'x'], [4, 15, 'z'], [36, 14, 'x']]) B.container(x, 0, z, ax);
+    B.container(-36, 0, 15, 'z'); B.container(-36, 2.6, 15.3, 'z');
+    for (const [x, z] of [[-14, -9], [-15.2, -9.3], [0, -8], [18, -9.5], [36, -8.5], [-30, 16], [16, 16]]) B.crate(x, 0, z, 1.1);
+    for (const [x, z] of [[-24, -9], [-23.3, -8.6], [8, 17], [42, 12]]) B.barrel(x, 0, z);
+    B.sandbags(-2, 18, 2, 18); B.sandbags(40, 2, 40, 6); H.cart(-6, 16, 'z');
+    H.rail(-48, 13, 48, 13); H.wagon(-44, 13); H.wagon(26, 13);
+    // ============ ambiente
+    B.horizon(0x1e2632, 16, 100, 160, { groundColor: 0x1a1e26, skip: 'n' });
+    // ============ A / B / C, armas, apariciones
+    B.dom('A', -24, D, -23, 4.6); B.dom('B', 4, 0, 4); B.dom('C', 34, 0, -10);
+    B.stand(-16, D + 2.8, -23.6, 'sniper'); B.stand(-35, 3.2, 8.2, 'lmg'); B.stand(4, 3.2, 8.2, 'shotgun');
+    for (const [x, z] of [[-46, -12], [-46, -9], [-46, 0], [-46, 5], [-46, 14], [-46, 18], [-42, -16], [-46, 10], [-44, 19], [-47, -3]]) B.spawn(0, x, 0, z, -Math.PI / 2);
+    for (const [x, z] of [[46, -12], [46, -9], [46, 0], [46, 5], [46, 14], [46, 18], [42, -16], [46, 10], [44, 19], [47, -3]]) B.spawn(1, x, 0, z, Math.PI / 2);
+    for (const [x, y, z] of [[-30, D, -22], [-4, D, -24], [-35, 0, 3], [4, 0, 3], [27, 0, 15], [-12, 0, 18], [16, 0, -9], [-30, 0, -10], [38, 0, -4], [-2, 0, 20], [44, 0, -20], [-20, 0, 8]]) B.spawn('ffa', x, y, z);
+    B.prop('can', -10, 0, 12); B.prop('bucket', 30, 0, -9);
+  },
+};
+// ---- 09h_novela_b.js ----
+// =====================================================================
+// MAPAS DE LA NOVELA (3.3.0), segunda tanda: Paso de los Ciegos (nieve de noche, aduana), Estación Central
+// (el reloj de cuatro esferas, andenes y trenes) y Villa Corcovado (calle de los Herreros, el río y el puente de hierro).
+// =====================================================================
+// nevada: copos que caen alrededor de la cámara (solo decoración)
+function sjSnow(ms, n = 1400, R = 26) {
+  const pos = new Float32Array(n * 3), rng = new RNG(hash32('snow', ms.id));
+  for (let i = 0; i < n; i++) { pos[i * 3] = rng.range(-R, R); pos[i * 3 + 1] = rng.range(0, 18); pos[i * 3 + 2] = rng.range(-R, R); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const pts = new THREE.Points(g, new THREE.PointsMaterial({ color: 0xf2f6ff, size: 0.09, transparent: true, opacity: 0.85, depthWrite: false }));
+  pts.frustumCulled = false; ms.decor.add(pts);
+  ms.anim.push((t, dt) => {
+    const c = G.camera ? G.camera.position : null; if (!c) return;
+    for (let i = 0; i < n; i++) {
+      let y = pos[i * 3 + 1] - dt * (1.1 + (i % 7) * 0.08); if (y < 0) y += 18; pos[i * 3 + 1] = y;
+      pos[i * 3] += Math.sin(t * 0.7 + i) * dt * 0.25;
+    }
+    pts.position.set(Math.floor(c.x / (2 * R)) * 2 * R, c.y - 6, Math.floor(c.z / (2 * R)) * 2 * R);
+    // los copos se reparten en una celda de 2R alrededor: se recolocan para que siempre rodeen a la cámara
+    for (let i = 0; i < n; i++) {
+      const wx = pts.position.x + pos[i * 3], wz = pts.position.z + pos[i * 3 + 2];
+      if (wx - c.x > R) pos[i * 3] -= 2 * R; else if (c.x - wx > R) pos[i * 3] += 2 * R;
+      if (wz - c.z > R) pos[i * 3 + 2] -= 2 * R; else if (c.z - wz > R) pos[i * 3 + 2] += 2 * R;
+    }
+    g.attributes.position.needsUpdate = true;
+  });
+}
+// abeto nevado
+function sjFir(B, x, z, s = 1, y = 0) {
+  B.box(x - 0.2 * s, y, z - 0.2 * s, x + 0.2 * s, y + 2.6 * s, z + 0.2 * s, { pattern: PAT.WOOD, color: 0x3a2e22, kind: 'tree', noRender: true });
+  B.deco(GEO.cyl(0.14 * s, 0.22 * s, 2.4 * s, 6), x, y + 1.2 * s, z, 0x3a2e22);
+  const lv = [[1.8, 2.2, 1.7], [1.45, 2.2, 2.8], [1.05, 1.9, 3.8], [0.6, 1.4, 4.7]];
+  for (const [r, h, yy] of lv) { B.deco(GEO.cone(r * s, h * s, 8), x, y + yy * s, z, 0x2e4030, { ry: B.rng.range(0, 3) }); B.deco(GEO.cone(r * 0.82 * s, h * 0.45 * s, 8), x, y + (yy + h * 0.32) * s, z, 0xe8eef2, { ry: B.rng.range(0, 3) }); }
+}
+
+// ---------------------------------------------------------------------
+// PASO DE LOS CIEGOS: frontera de Tierra Alta a 3.840 m, nieve de noche. El camino cruza la barrera de la aduana;
+// al norte el edificio de la aduana (dos plantas), al sur la garita y el refugio de piedra.
+MAPS.cruce = {
+  name: { es: 'Paso de los Ciegos', en: 'Paso de los Ciegos' },
+  desc: { es: 'Pequeño y frenético (44 × 36 m): la aduana de la frontera de Tierra Alta, a 3.840 m, de noche y con nieve. El camino cruza la barrera entre la aduana y el refugio.', en: 'Small and frantic (44 × 36 m): the Tierra Alta border customs post at 3,840 m, at night in the snow. The road crosses the barrier between the customs house and the refuge.' },
+  small: true,
+  thumb: ['#0c1424', '#d8e0ea', '#3a4a5e'],
+  theme: { skyTop: 0x070c18, skyMid: 0x2a3a54, skyBot: 0x1a2232, fog: 0x4a5a72, fogNear: 14, fogFar: 85, sun: 0xaac4ff, sunI: 1.0, sunDir: [-0.4, 0.6, -0.55], hemiTop: 0x6a84b8, hemiBot: 0x3a4658, hemiI: 2.1, exposure: 1.45, cloud: 1.2, rays: 0, glow: 0.05, stars: 0, lamps: true,
+    disc: [0.6, 0.7, 0.9], soldFill: 0.9, soldRim: 1.1, grade: { sat: 0.78, con: 1.06, sh: [0.9, 0.97, 1.14], hi: [1.0, 1.0, 1.08] } },
+  build(B) {
+    const H = sjHelpers(B), snow = 0xdfe5ec, snowD = 0xc8d0da, stone = 0x7e7a72;
+    B.bounds(-22, -18, 22, 18, 16);
+    B.ground(-22, -18, 22, 18, { holes: [[-22, -3, 22, 3]], pattern: PAT.DIRT, color: snow });
+    B.ground(-22, -3, 22, 3, { pattern: PAT.DIRT, color: 0xb4b6b4 });
+    for (let x = -21; x < 21; x += 1.6) B.decoBox(x, 0, B.rng.range(-0.3, 0.3) - 1.2, x + 0.9, 0.012, B.rng.range(-0.3, 0.3) - 1.0, 0x8e8e8a);   // rodadas
+    // muretes de nieve y piedra a los lados del camino
+    for (const s of [-1, 1]) { B.box(-22, 0, s * 3 - 0.3, -10, 0.7, s * 3 + 0.3, { pattern: PAT.DIRT, color: snowD, kind: 'cover' }); B.box(10, 0, s * 3 - 0.3, 22, 0.7, s * 3 + 0.3, { pattern: PAT.DIRT, color: snowD, kind: 'cover' }); }
+    // aduana: dos plantas de piedra con tejado nevado, letrero y bandera
+    B.house(-7, -14, 7, -5, { floors: 2, h: 3.0, pattern: PAT.BRICK, color: stone, parapet: false, roofPat: PAT.DIRT, roofColor: snow, stairs: { side: 'w', from: 'n' },
+      open: { s: [['door', 0.5, 0], ['win', 0.2, 0], ['win', 0.8, 0], ['win', 0.2, 1], ['win', 0.5, 1], ['win', 0.8, 1]], n: [['door', 0.75, 0], ['win', 0.3, 1]], w: [['win', 0.5, 0]], e: [['door', 0.5, 0], ['win', 0.5, 1]] } });
+    H.gable(-7, -14, 7, -5, 6.25, 2.0, snow, 'x'); H.signboard(0, 2.75, -4.93, 0, 4.4, 0.6, ['ADUANA · TIERRA ALTA']);
+    for (const [f, fl] of [[0.2, 0], [0.8, 0], [0.2, 1], [0.5, 1], [0.8, 1]]) H.shutters('s', -7, -14, 7, -5, f, fl * 3.0, 0x4a3a2a);
+    B.box(-4, 0.06, -11, 2, 0.95, -10.3, { pattern: PAT.WOOD, color: 0x4e3a28, kind: 'cover' }); B.box(3.5, 3.0, -13, 6, 3.9, -12, { pattern: PAT.WOOD, color: 0x4e3a28, kind: 'cover' });
+    B.decoBox(4.5, 6.4, -9.8, 5.2, 8.6, -9.1, 0x5a5650); B.light(0, 2.6, -4.5);
+    B.deco(GEO.cyl(0.04, 0.05, 4.5, 6), -8.2, 2.25, -4.6, 0x3a3a3a); B.deco(GEO.box(1.3, 0.8, 0.02), -7.5, 4.0, -4.6, 0x2a5a3a);
+    // barrera, garita y refugio de piedra
+    B.box(-0.4, 0, 3.4, 0.4, 1.1, 4.2, { pattern: PAT.CONCRETE, color: 0x8a8680, kind: 'cover' });
+    for (let i = 0; i < 8; i++) B.decoBox(-0.06 + 0, 1.0, 2.9 - i * 0.82, 0.06, 1.12, 3.4 - i * 0.82, i % 2 ? 0xe8e4dc : 0xb02a22);
+    B.box(-0.05, 0.9, -3.0, 0.05, 1.2, 3.4, { kind: 'fence', noRender: true, pattern: PAT.WOOD, color: 0xb02a22 });
+    B.house(2, 4.5, 4.4, 6.9, { floors: 1, h: 2.5, pattern: PAT.WOOD, color: 0x5a6a5a, parapet: false, roofPat: PAT.DIRT, roofColor: snow, open: { n: [['door', 0.5, 0]], w: [['win', 0.5, 0]], e: [['win', 0.5, 0]] } });
+    H.gable(2, 4.5, 4.4, 6.9, 2.75, 0.8, snow, 'z', 0.15);
+    B.house(-16, 7, -6, 15, { floors: 1, h: 3.0, pattern: PAT.BRICK, color: 0x6e6a62, parapet: false, roofPat: PAT.DIRT, roofColor: snow, open: { n: [['door', 0.6, 0], ['win', 0.25, 0]], e: [['win', 0.5, 0]], w: [['door', 0.5, 0]], s: [['win', 0.5, 0]] } });
+    H.gable(-16, 7, -6, 15, 3.25, 1.6, snow, 'x'); H.signboard(-11, 2.6, 6.93, Math.PI, 2.6, 0.45, ['REFUGIO'], '#d8cfb4');
+    B.box(-14, 0.06, 12.5, -11, 0.9, 13.4, { pattern: PAT.WOOD, color: 0x4e3a28, kind: 'cover' }); B.decoBox(-7.2, 3.2, 12.5, -6.6, 5, 13.1, 0x5a5650);
+    // leñera, cobertizo, carro nevado y cajas
+    B.house(9, 7, 15, 12, { floors: 1, h: 2.6, pattern: PAT.WOOD, color: 0x5a4432, parapet: false, roofPat: PAT.DIRT, roofColor: snow, open: { n: [['big', 0.5, 0, 3.2]], w: [['win', 0.5, 0]] } });
+    H.gable(9, 7, 15, 12, 2.85, 1.0, snow, 'x', 0.2);
+    for (let i = 0; i < 3; i++) B.box(16.5, i * 0.4, 8 + i * 0.1, 19, 0.4 + i * 0.4, 9.6 - i * 0.1, { pattern: PAT.WOOD, color: 0x6a5038, kind: 'cover' });
+    H.cart(12, -9); B.decoBox(10.6, 1.25, -9.7, 13.4, 1.4, -8.3, snow);
+    for (const [x, z, s] of [[-14, -7, 1.1], [-13, -6.4, 0.9], [15, 4.6, 1.0], [-3, 6, 1.1], [8, -14, 1.1], [-18, -12, 1.0]]) { B.crate(x, 0, z, s); B.decoBox(x - s / 2, s, z - s / 2, x + s / 2, s + 0.08, z + s / 2, snow); }
+    B.sandbags(-10, -4, -6, -4); B.sandbags(6, 4, 9, 4); B.sandbags(17, -6, 17, -3.4);
+    // montones de nieve (cobertura baja) y abetos
+    for (const [x, z, w, d] of [[-18, 6, 3, 1.6], [18, -11, 3.2, 1.4], [12, 15, 2.6, 1.4], [-2, 12, 3, 1.4], [-18, -15, 2.4, 1.2]]) { B.box(x - w / 2, 0, z - d / 2, x + w / 2, 0.8, z + d / 2, { pattern: PAT.DIRT, color: snowD, kind: 'cover', noRender: true }); B.deco(GEO.sphere(1, 8, 5), x, 0.1, z, snowD, { sx: w * 0.6, sy: 0.75, sz: d * 0.65 }); }
+    for (const [x, z, s] of [[-20, -16, 1.0], [-11, -16.5, 0.9], [11, -16.5, 1.1], [20, 16, 1.0], [5, 16.5, 0.8], [-20, 16.5, 0.9], [20, -16, 0.85], [-20.5, 10, 0.8]]) sjFir(B, x, z, s);
+    // postes del telégrafo
+    for (const x of [-18, -6, 6, 18]) { B.box(x - 0.1, 0, -3.6, x + 0.1, 5.5, -3.4, { pattern: PAT.WOOD, color: 0x4a3a28, kind: 'pole', noRender: true }); B.deco(GEO.cyl(0.08, 0.1, 5.5, 6), x, 2.75, -3.5, 0x4a3a28); B.deco(GEO.box(1.0, 0.08, 0.08), x, 5.2, -3.5, 0x4a3a28); }
+    for (const x of [-12, 0, 12]) H.beam(x - 6, 5.25, -3.5, x + 6, 5.25, -3.5, 0.015, 0x111111);
+    B.lamp(-6, 3.6); B.lamp(8, -3.8);
+    // montes nevados y nevada
+    B.horizon(0xc8d2de, 16, 70, 120, { groundColor: snow });
+    sjSnow(MapSys);
+    B.stand(-3, 3.0, -12.5, 'dmr'); B.stand(-11, 0.06, 11, 'shotgun');
+    B.dom('A', -15, 0, 0, 3.4); B.dom('B', 0, 0, 0, 3.4); B.dom('C', 15, 0, 0, 3.4);
+    for (const z of [-14, -9, -5.5, -1.5, 1.5, 5.5, 9, 14]) { B.spawn(0, -21, 0, z, -Math.PI / 2); B.spawn(1, 21, 0, z, Math.PI / 2); }
+    for (const [x, z] of [[-12, -10], [-12, 10], [12, -12], [12, 12], [0, -16], [0, 16], [-5, 2], [5, -2], [-18, 0], [18, 0], [-1, -8], [8, 6]]) B.spawn('ffa', x, 0, z);
+    B.prop('bucket', -9, 0, 5); B.prop('can', 4, 0, -4.5);
+  },
+};
+
+// ---------------------------------------------------------------------
+// ESTACIÓN CENTRAL: la fachada con la torre del reloj de cuatro esferas, el vestíbulo, tres andenes con marquesina,
+// la locomotora y los coches de viajeros, la pasarela sobre las vías y, al sur, el patio de mercancías.
+MAPS.estacion = {
+  name: { es: 'Estación Central', en: 'Central Station' },
+  desc: { es: 'La Estación Central de San Elías: la torre del reloj de cuatro esferas, el vestíbulo, tres andenes con trenes, la pasarela sobre las vías y el patio de mercancías.', en: 'San Elías Central Station: the four-faced clock tower, the concourse, three platforms with trains, the footbridge over the tracks and the goods yard.' },
+  thumb: ['#46505f', '#b8a688', '#4a3a2e'],
+  theme: { skyTop: 0x4c5868, skyMid: 0xb4aa98, skyBot: 0x7e786c, fog: 0x9a968a, fogNear: 34, fogFar: 190, sun: 0xfff0d8, sunI: 2.2, sunDir: [0.5, 0.55, 0.45], hemiTop: 0xd2d6d8, hemiBot: 0x625e54, hemiI: 1.35, exposure: 1.05 },
+  build(B) {
+    const H = sjHelpers(B), P = 0.9, stoneF = 0xb8ac94, iron = 0x2e3236;   // P = altura de los andenes
+    B.bounds(-46, -32, 46, 32, 24);
+    B.ground(-46, -32, 46, 32, { holes: [[-46, -32, 46, -14]], pattern: PAT.DIRT, color: 0x6a6258 });
+    B.ground(-46, -32, 46, -14, { pattern: PAT.CONCRETE, color: 0x9a948a });
+    // ============ edificio de viajeros: dos alas de dos plantas y el vestíbulo central de doble altura
+    const facadeOpen = (n) => { const o = []; for (let k = 0; k < n; k++) { o.push(['win', (k + 0.5) / n, 0, 1.3, 1.0, 3.0]); o.push(['win', (k + 0.5) / n, 1, 1.3, 1.0, 3.0]); } return o; };
+    for (const [x0, x1] of [[-40, -10], [10, 40]]) {
+      const sOpen = facadeOpen(6); sOpen[x0 < 0 ? 10 : 0] = ['door', x0 < 0 ? 10.5 / 12 : 0.5 / 12, 0, 1.6, 0, 2.6];
+      B.house(x0, -30, x1, -16, { floors: 2, h: 4.2, pattern: PAT.BRICK, color: stoneF, parapet: false, roofPat: PAT.ROOF, roofColor: 0x4a4e52, stairs: { side: x0 < 0 ? 'w' : 'e', from: 'n' },
+        open: { s: sOpen, n: facadeOpen(6).map((o, i) => (i === 4 ? ['door', o[1], 0, 1.6, 0, 2.6] : o)), w: [['door', 0.5, 0], ['win', 0.5, 1, 1.3, 1.0, 3.0]], e: [['door', 0.5, 0], ['win', 0.5, 1, 1.3, 1.0, 3.0]] } });
+      H.gable(x0, -30, x1, -16, 8.65, 2.4, 0x4a4e52, 'x', 0.3);
+      B.decoBox(x0 - 0.15, 4.0, -30.15, x1 + 0.15, 4.35, -15.85, 0x9a8e78); B.decoBox(x0 - 0.1, 0, -30.1, x1 + 0.1, 0.8, -15.9, 0x8a8070);
+    }
+    B.house(-10, -30, 10, -14, { floors: 1, h: 9.0, pattern: PAT.BRICK, color: stoneF, parapet: false, roofPat: PAT.ROOF, roofColor: 0x4a4e52, solidWalls: true, floorPat: PAT.COBBLE, floorColor: 0x8a8274,
+      open: { n: [['arch', 0.25, 0, 2.6, 0, 3.6], ['arch', 0.75, 0, 2.6, 0, 3.6], ['win', 0.25, 0, 2.4, 4.6, 7.6], ['win', 0.75, 0, 2.4, 4.6, 7.6]], s: [['arch', 0.2, 0, 3.0, 0, 3.8], ['arch', 0.5, 0, 3.0, 0, 3.8], ['arch', 0.8, 0, 3.0, 0, 3.8]], w: [['door', 0.6, 0, 1.6, 0, 2.6]], e: [['door', 0.6, 0, 1.6, 0, 2.6]] } });
+    H.gable(-10, -30, 10, -14, 9.25, 3.2, 0x4a4e52, 'z', 0.3);
+    H.signboard(0, 8.0, -14 + 0.03, 0, 9, 0.9, ['ESTACIÓN CENTRAL']);
+    // taquillas, bancos y quiosco del vestíbulo
+    B.box(-8.5, 0.06, -27.8, -2.5, 1.2, -26.8, { pattern: PAT.WOOD, color: 0x5a3e2a, kind: 'cover' }); B.decoBox(-8.5, 1.2, -27.4, -2.5, 2.6, -27.3, 0x7a6a50);
+    for (const [x, z] of [[-6, -20], [6, -20], [-6, -23.5], [6, -23.5]]) B.box(x - 1.6, 0.06, z - 0.3, x + 1.6, 0.5, z + 0.3, { pattern: PAT.WOOD, color: 0x5a3e2a, kind: 'cover' });
+    B.box(3, 0.06, -28.2, 6.5, 1.3, -26.6, { pattern: PAT.WOOD, color: 0x3e4a3a, kind: 'cover' });
+    // ============ la torre del reloj de cuatro esferas (sobre la puerta norte del vestíbulo)
+    const tx = 0, tz = -32.6, tw = 5.2;   // la torre se alza junto a la fachada norte, fuera del área de juego
+    B.decoBox(tx - tw / 2, 0, tz - tw / 2, tx + tw / 2, 19, tz + tw / 2, stoneF);
+    for (const k of [9, 13.2, 19]) B.decoBox(tx - tw / 2 - 0.15, k, tz - tw / 2 - 0.15, tx + tw / 2 + 0.15, k + 0.35, tz + tw / 2 + 0.15, 0x9a8e78);
+    for (const [dx, dz, ry] of [[0, tw / 2 + 0.04, 0], [0, -tw / 2 - 0.04, Math.PI], [tw / 2 + 0.04, 0, Math.PI / 2], [-tw / 2 - 0.04, 0, -Math.PI / 2]]) H.clock(tx + dx, 16, tz + dz, ry, 1.8);
+    B.decoBox(tx - 2.2, 19.35, tz - 2.2, tx + 2.2, 22, tz + 2.2, 0x8a8070); B.deco(GEO.cone(3.4, 4.5, 4), tx, 24.2, tz, 0x3e4448, { ry: Math.PI / 4 }); B.deco(GEO.cyl(0.05, 0.05, 2, 5), tx, 27.2, tz, iron);
+    B.box(-46, 0, -32.5, 46, 0.1, -32.4, { noRender: true, kind: 'bound' });
+    // ============ andenes (0,9 m) con marquesina y vías
+    const plat = (z0, z1, x0 = -40, x1 = 40) => {
+      B.box(x0, 0, z0, x1, P, z1, { pattern: PAT.CONCRETE, color: 0xa29c90, kind: 'floor' }); B.decoBox(x0, P - 0.02, z1 - 0.35, x1, P + 0.005, z1 - 0.25, 0xd8c860); B.decoBox(x0, P - 0.02, z0 + 0.25, x1, P + 0.005, z0 + 0.35, 0xd8c860);
+      for (const x of [x0, x1]) B.stairs(x === x0 ? x0 - 2.88 : x1 + 2.88, (z0 + z1) / 2, x === x0 ? '+x' : '-x', z1 - z0 - 0.2, 0, P, { pattern: PAT.CONCRETE, color: 0x8e887e });
+    };
+    plat(-14, -10); plat(-1.5, 3.5); plat(11, 14.5);
+    for (const z of [-7.8, -3.8, 5.6, 9.2]) H.rail(-46, z, 46, z);
+    // marquesina del andén central: columnas de fundición y cubierta a dos aguas
+    for (let x = -36; x <= 36; x += 8) { B.box(x - 0.12, P, 0.88, x + 0.12, P + 4.2, 1.12, { pattern: PAT.METAL, color: iron, kind: 'pole' }); B.deco(GEO.cyl(0.24, 0.24, 0.3, 8), x, P + 0.15, 1, iron); }
+    B.decoBox(-38, P + 4.2, 0.85, 38, P + 4.4, 1.15, iron); H.gable(-38, -1.8, 38, 3.8, P + 4.4, 0.9, 0x5a5e62, 'x', 0);
+    for (let x = -36; x <= 36; x += 18) { B.deco(GEO.cyl(0.05, 0.05, 1.2, 5), x + 4, P + 3.6, 1, iron); H.clock(x + 4, P + 2.8, 1.05, 0, 0.35); H.clock(x + 4, P + 2.8, 0.95, Math.PI, 0.35); }
+    // marquesina pegada al edificio sobre el andén 1
+    for (let x = -36; x <= 36; x += 8) B.box(x - 0.1, P, -10.6, x + 0.1, P + 3.8, -10.4, { pattern: PAT.METAL, color: iron, kind: 'pole' });
+    B.decoBox(-40, P + 3.8, -14, 40, P + 4.0, -10.2, 0x5a5e62);
+    // ============ trenes: locomotora de vapor con su ténder (vía 2) y tres coches de viajeros (vía 3)
+    const loco = (x0, z) => {
+      B.box(x0, 0.25, z - 1.4, x0 + 12, 1.2, z + 1.4, { pattern: PAT.METAL, color: 0x1e2022, kind: 'cover' });
+      B.box(x0 + 0.4, 1.2, z - 1.0, x0 + 8, 3.2, z + 1.0, { noRender: true, kind: 'cover' }); B.deco(GEO.cyl(1.1, 1.1, 7.6, 16), x0 + 4.2, 2.3, z, 0x1a1c1e, { rz: Math.PI / 2 });
+      for (const [dx, h, r] of [[1.2, 1.4, 0.35], [3.6, 0.8, 0.45], [5.6, 0.6, 0.4]]) B.deco(GEO.cyl(r * 0.8, r, h, 10), x0 + dx, 3.4 + h / 2, z, 0x1a1c1e);
+      B.box(x0 + 8, 1.2, z - 1.4, x0 + 12, 4.4, z + 1.4, { pattern: PAT.METAL, color: 0x1e2022, kind: 'cover' }); B.decoBox(x0 + 7.8, 4.4, z - 1.6, x0 + 12.2, 4.6, z + 1.6, 0x2a2a2a);
+      for (let i = 0; i < 3; i++) for (const s of [-1, 1]) B.deco(GEO.cyl(0.75, 0.75, 0.12, 16), x0 + 2.5 + i * 2.2, 0.75, z + s * 1.42, 0x6a2a20, { rx: Math.PI / 2 });
+      B.decoBox(x0 - 0.3, 0.4, z - 1.5, x0, 1.0, z + 1.5, 0xa82a22);
+      B.box(x0 + 12.6, 0.25, z - 1.4, x0 + 18, 2.8, z + 1.4, { pattern: PAT.METAL, color: 0x1e2022, kind: 'cover' }); B.decoBox(x0 + 12.8, 2.8, z - 1.2, x0 + 17.8, 3.2, z + 1.2, 0x121212);
+      B.smoke(x0 + 1.2, z, 0.25);
+    };
+    loco(4, -5.8);
+    const coach = (x0, z, col) => {
+      B.box(x0, 0.5, z - 1.4, x0 + 11, 3.6, z + 1.4, { pattern: PAT.WOOD, color: col, kind: 'container' }); B.decoBox(x0 - 0.1, 3.6, z - 1.5, x0 + 11.1, 3.9, z + 1.5, 0x3a3a3a);
+      for (let k = 0; k < 7; k++) for (const s of [-1, 1]) B.decoBox(x0 + 0.8 + k * 1.45, 2.0, z + s * 1.4 - 0.02, x0 + 1.7 + k * 1.45, 3.0, z + s * 1.4 + 0.02, 0x1e2a30);
+      for (const dx of [1.8, 9.2]) for (const s of [-1, 1]) B.deco(GEO.cyl(0.45, 0.45, 0.1, 12), x0 + dx, 0.45, z + s * 1.35, 0x222222, { rx: Math.PI / 2 });
+    };
+    coach(-38, 7.4, 0x5a2a22); coach(-25.6, 7.4, 0x2e4a3a); coach(-13.2, 7.4, 0x5a2a22);
+    // ============ pasarela de hierro sobre las vías (del andén 1 al 3)
+    const bx = 30, BY = 5.6;
+    B.box(bx - 1, BY - 0.25, -10, bx + 1, BY, 14.5, { pattern: PAT.GRATE, color: 0x3a3e42, kind: 'floor' });
+    for (const s of [-1, 1]) B.wall('z', -10, 14.5, bx + s * 1.05, BY, 1.1, 0.1, { pattern: PAT.GRATE, color: iron, kind: 'cover' });
+    B.stairs(bx, -13.6, '+z', 1.8, P, BY, { pattern: PAT.GRATE, color: 0x3a3e42, solidBase: false });
+    B.box(bx - 1, BY - 0.25, -13.9, bx + 1, BY, -10, { pattern: PAT.GRATE, color: 0x3a3e42, kind: 'floor', noRender: true });
+    B.stairs(bx + 3.2, 13.5, '-z', 1.8, P, BY, { pattern: PAT.GRATE, color: 0x3a3e42, solidBase: false }); B.box(bx + 1, BY - 0.25, 12.7, bx + 4.2, BY, 14.5, { pattern: PAT.GRATE, color: 0x3a3e42, kind: 'floor' });
+    for (const z of [-4, 6]) B.box(bx - 0.2, 0, z - 0.2, bx + 0.2, BY - 0.25, z + 0.2, { pattern: PAT.METAL, color: iron, kind: 'pole' });
+    // ============ patio de mercancías (sur): vagones, cajas, aguada, garita de señales
+    for (const [x, z, ax] of [[-30, 20, 'x'], [-22, 20, 'x'], [8, 24, 'z'], [24, 20, 'x'], [36, 26, 'z']]) B.container(x, 0, z, ax);
+    B.container(-26, 2.6, 20.2, 'x');
+    H.rail(-46, 20, 46, 20);
+    for (const [x, z, s] of [[-8, 18.5, 1.2], [-6.8, 18.8, 1.0], [-7.6, 19, 0.9], [14, 27, 1.2], [15.2, 27.3, 1.0], [-38, 28, 1.2], [-14, 28, 1.1], [30, 28, 1.1]]) B.crate(x, x === -7.6 ? 1.2 : 0, z, s);
+    B.sandbags(-2, 26, 2, 26); B.sandbags(40, 16, 40, 20); B.barrel(18, 0, 24); B.barrel(18.7, 0, 24.4);
+    // aguada: depósito sobre cuatro patas
+    for (const [dx, dz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) B.box(-38 + dx * 1.4 - 0.15, 0, 26 + dz * 1.4 - 0.15, -38 + dx * 1.4 + 0.15, 5, 26 + dz * 1.4 + 0.15, { pattern: PAT.METAL, color: iron, kind: 'pole' });
+    B.deco(GEO.cyl(2, 2, 2.6, 16), -38, 6.3, 26, 0x4a3a30); B.deco(GEO.cone(2.1, 0.8, 16), -38, 8.0, 26, 0x2a2a2a);
+    // garita de señales (dos plantas, se sube por fuera)
+    B.house(36, 18.5, 42, 23, { floors: 2, h: 2.8, pattern: PAT.WOOD, color: 0x6a4a32, parapet: false, roofPat: PAT.ROOF, roofColor: 0x3a3a3a, stairs: { side: 'e', from: 's' }, open: { w: [['door', 0.5, 0], ['win', 0.3, 1], ['win', 0.7, 1]], n: [['win', 0.5, 1]], s: [['win', 0.5, 1]] } });
+    H.gable(36, 18.5, 42, 23, 5.85, 1.2, 0x3a3a3a, 'z');
+    B.deco(GEO.cyl(0.1, 0.1, 6, 6), 33, 3, 17, iron); B.decoBox(32.6, 5.2, 16.9, 34.2, 5.5, 17.1, 0xb02a22);
+    for (const [x, z] of [[-40, -12], [0, -12], [40, -12], [-40, 1], [40, 1], [-20, 13], [20, 13], [-30, 24], [26, 26]]) B.lamp(x, z);
+    B.horizon(0x7a7466, 22, 95, 150, { groundColor: 0x6e6858 });
+    B.smoke(-80, 60, 1.0);
+    // ============ A / B / C, armas, apariciones
+    B.dom('A', -28, P, 1); B.dom('B', 0, 0, -21, 4.6); B.dom('C', 30, BY, 2, 3.6);
+    B.stand(-30, 4.26, -27, 'sniper'); B.stand(38.5, 2.86, 21, 'dmr'); B.stand(0, P, 13, 'lmg'); B.stand(-5.5, 0.06, -26, 'shotgun');
+    for (const [x, z] of [[-44, -12], [-44, -6], [-44, -1], [-44, 3], [-44, 9], [-44, 13], [-44, 18], [-44, 24], [-44, 29], [-44, -20]]) B.spawn(0, x, 0, z, -Math.PI / 2);
+    for (const [x, z] of [[44, -12], [44, -6], [44, -1], [44, 3], [44, 9], [44, 13], [44, 18], [44, 24], [44, 29], [44, -20]]) B.spawn(1, x, 0, z, Math.PI / 2);
+    for (const [x, y, z] of [[-20, P, -12], [20, P, -12], [-10, P, 1], [10, P, 1], [-20, 0, 24], [20, 0, 26], [0, 0, -18], [-30, 0, -24], [30, 0, -24], [0, P, 13], [-34, P, 13], [12, 0, 18]]) B.spawn('ffa', x, y, z);
+    B.prop('bucket', -36, 0, 22); B.prop('can', 4, P, 2.5); B.prop('can', -2, 0, -21);
+  },
+};
+
+// ---------------------------------------------------------------------
+// VILLA CORCOVADO: el río parte el pueblo en dos. Al oeste la calle de los Herreros (la casa y el taller de la familia,
+// la fragua); al este la estación pequeña con la aguada. El ferrocarril cruza el río por el puente de hierro (al norte)
+// y, al sur, un vado de pasaderas. Se puede bajar al cauce por las escaleras de las orillas.
+MAPS.corcovado = {
+  name: { es: 'Villa Corcovado', en: 'Villa Corcovado' },
+  desc: { es: 'El pueblo partido por el río: la calle de los Herreros y la fragua al oeste, la estación al este; el tren cruza por el puente de hierro y abajo, en el cauce, se pelea con el agua por los tobillos.', en: 'The town split by the river: Herreros street and the forge to the west, the station to the east; the train crosses on the iron bridge, and down in the riverbed you fight ankle-deep in water.' },
+  thumb: ['#3e5068', '#b8a07a', '#3a4a3a'],
+  theme: { skyTop: 0x3e5068, skyMid: 0xc0a888, skyBot: 0x847660, fog: 0x9a8e78, fogNear: 34, fogFar: 195, sun: 0xffd8a8, sunI: 2.3, sunDir: [-0.55, 0.45, -0.45], hemiTop: 0xd0c8b4, hemiBot: 0x5e5a4a, hemiI: 1.35, exposure: 1.05 },
+  build(B) {
+    const H = sjHelpers(B), R = -2.6, iron = 0x2e3438;   // R = cota del cauce
+    B.bounds(-46, -32, 46, 32, 18);
+    const river = [-7, -32, 7, 32], street = [-46, -4, -7, 4];
+    B.ground(-46, -32, 46, 32, { holes: [river, street], pattern: PAT.DIRT, color: 0x84765a });
+    B.ground(...street, { pattern: PAT.COBBLE, color: 0x857d70 });
+    B.ground(...river, { y: R, depth: 2, pattern: PAT.DIRT, color: 0x5e5644 });
+    sjWater(B, -7, -32, 7, 32, R + 0.35, 0x3e5a5e); sjWater(B, -7, -260, 7, -32, R + 0.35, 0x3e5a5e); sjWater(B, -7, 32, 7, 260, R + 0.35, 0x3e5a5e);
+    for (const s of [-1, 1]) B.decoBox(s * 7 - 0.25, R, -32, s * 7 + 0.25, 0.25, 32, 0x7a7466);   // muros de la orilla
+    for (const [x, z, w] of [[-3, -8, 1.6], [2, 6, 2.2], [-2, 22, 1.4], [3.5, -26, 1.8]]) B.box(x - w / 2, R, z - w * 0.6, x + w / 2, R + 0.9, z + w * 0.6, { pattern: PAT.CONCRETE, color: 0x6e6a60, kind: 'cover' });   // peñas
+    // escaleras para bajar al cauce
+    for (const z of [-10, 12]) { B.stairs(-4.1, z, '-x', 1.4, R, 0, { pattern: PAT.CONCRETE, color: 0x7a7466 }); B.stairs(4.1, z, '+x', 1.4, R, 0, { pattern: PAT.CONCRETE, color: 0x7a7466 }); }
+    // vado de pasaderas (sur)
+    for (let i = 0; i < 6; i++) B.box(-5.5 + i * 2.2, R, 23.4, -4.5 + i * 2.2, R + 0.55, 24.6, { pattern: PAT.CONCRETE, color: 0x8a8478, kind: 'floor' });
+    // ============ el puente de hierro del ferrocarril (al norte): tablero, vigas de celosía y pila central
+    const bz0 = -21, bz1 = -16;
+    B.box(-7.5, -0.5, bz0, 7.5, 0, bz1, { pattern: PAT.METAL, color: 0x3a3e40, kind: 'floor' });
+    B.box(-1.2, R, bz0 + 0.5, 1.2, -0.5, bz1 - 0.5, { pattern: PAT.CONCRETE, color: 0x7a7466 });
+    for (const z of [bz0 - 0.1, bz1 + 0.1]) {
+      B.wall('x', -7.5, 7.5, z, 0, 1.1, 0.16, { pattern: PAT.GRATE, color: iron, kind: 'cover' });
+      B.decoBox(-7.5, 3.6, z - 0.12, 7.5, 3.9, z + 0.12, iron);
+      for (let k = 0; k < 6; k++) { const xa = -7.5 + k * 2.5, xb = xa + 2.5; H.beam(xa, 0, z, xb, 3.75, z, 0.14, iron); H.beam(xa, 3.75, z, xb, 0, z, 0.1, iron); B.decoBox(xa - 0.08, 0, z - 0.1, xa + 0.08, 3.75, z + 0.1, iron); }
+    }
+    for (let x = -6; x <= 6; x += 3) B.decoBox(x - 0.08, 3.6, bz0, x + 0.08, 3.75, bz1, iron);
+    H.rail(-46, -18.5, 46, -18.5);
+    // ============ calle de los Herreros (oeste del río)
+    H.house(-44, -15, -36, -4, { street: 's', stairs: { side: 'w', from: 'n' } }); H.house(-34, -14, -27, -4, { street: 's', floors: 1, sides: 'e' });
+    // casa de la familia: dos plantas con los relojes; taller anejo con la fragua abierta a la calle
+    H.house(-25, -15, -17, -4, { street: 's', color: 0xd8ccb0, sides: 'w', stairs: { side: 'w', from: 'n' } });
+    for (let k = 0; k < 4; k++) { B.deco(GEO.cyl(0.18, 0.18, 0.05, 12), -23 + k * 1.6, 1.9, -14.55, 0xe8e0c8, { rx: Math.PI / 2 }); B.deco(GEO.torus(0.19, 0.025, 12, 4), -23 + k * 1.6, 1.9, -14.53, 0x8a6a2a); }
+    B.house(-15, -13, -9, -4, { floors: 1, h: 3.4, pattern: PAT.BRICK, color: 0x7a6a5a, parapet: false, roofPat: PAT.ROOF, roofColor: 0x4a3a2e, open: { s: [['big', 0.5, 0, 3.6]], w: [['door', 0.5, 0]] } });
+    H.gable(-15, -13, -9, -4, 3.65, 1.2, 0x5a3a2a, 'x'); H.signboard(-12, 2.85, -3.93, 0, 3.2, 0.5, ['FRAGUA']);
+    B.box(-14, 0.06, -11.6, -12, 1.0, -10.4, { pattern: PAT.BRICK, color: 0x5a3a2a, kind: 'cover' }); B.decoBox(-13.4, 1.0, -11.2, -12.6, 1.05, -10.8, 0xd86a2a);
+    B.box(-11, 0.06, -8, -10.2, 0.8, -7.6, { pattern: PAT.METAL, color: 0x2a2a2a, kind: 'cover' }); B.decoBox(-11.3, 0.8, -8.05, -9.9, 0.98, -7.55, 0x2a2a2a);
+    H.house(-44, 4, -38, 14, { street: 'n', floors: 1 }); H.house(-36, 4, -28, 15, { street: 'n', stairs: { side: 'e', from: 's' } });
+    H.house(-26, 4, -20, 13, { street: 'n', floors: 1, sides: 'e' }); H.house(-18, 4, -10, 14, { street: 'n', color: 0xc8a46a, sides: 'w', stairs: { side: 'e', from: 's' } });
+    H.signboard(-30.5, 3.0, -3.9, 0, 4.4, 0.45, ['CALLE DE LOS HERREROS'], '#e2dac6');
+    for (const x of [-40, -26, -12]) B.lamp(x, x === -26 ? 3.6 : -3.6);
+    H.cart(-32, 1.4); B.crate(-22, 0, 2.8, 1.0); B.crate(-21.2, 0, 3.4, 0.8); B.barrel(-38, 0, -3.2); B.sandbags(-16, -1.5, -16, 1.5);
+    // huertos y lavadero junto al río (oeste, sur)
+    for (const [a, b, c, d] of [[-44, -30, 18, 30], [-26, -12, 18, 30]]) { H.dry('x', a, b, c, 0.9, { open: [{ type: 'door', at: (a + b) / 2, w: 2 }] }); H.dry('z', c, d, b, 0.9); for (let x = a + 1.2; x < b - 0.8; x += 1.4) for (let z = c + 1.4; z < d - 0.8; z += 0.9) if (B.rng.next() < 0.8) B.deco(GEO.sphere(0.32, 5, 4), x, 0.16, z, shade(0x6c7a36, B.rng.range(-0.12, 0.1))); }
+    B.house(-40, -30, -32, -22, { floors: 1, h: 3.2, pattern: PAT.WOOD, color: 0x6a5038, parapet: false, roofPat: PAT.ROOF, roofColor: 0x5a4a3a, open: { e: [['big', 0.5, 0, 3]], s: [['win', 0.5, 0]] } }); H.gable(-40, -30, -32, -22, 3.45, 1.4, 0x5e4a36, 'z');
+    for (const [x, z, s] of [[-28, -26, 1], [-18, -28, 0.9], [-10, 26, 1.0], [-44, 0, 0.8]]) B.tree(x, z, s);
+    // ============ este del río: estación pequeña, aguada, almacén y casas
+    B.box(12, 0, -24, 40, 0.9, -21.2, { pattern: PAT.CONCRETE, color: 0xa29c90, kind: 'floor' }); B.stairs(9.1, -22.6, '+x', 2.6, 0, 0.9, { pattern: PAT.CONCRETE, color: 0x8e887e });
+    H.lift(0.9, () => {
+      B.house(18, -31, 32, -24, { floors: 1, h: 3.8, pattern: PAT.BRICK, color: 0xc8b896, parapet: false, roofPat: PAT.ROOF, roofColor: 0x5a3a2a, floorH: 0,
+        open: { s: [['door', 0.3, 0], ['door', 0.7, 0], ['win', 0.12, 0], ['win', 0.5, 0], ['win', 0.88, 0]], w: [['door', 0.5, 0]], e: [['win', 0.5, 0]], n: [['win', 0.3, 0], ['win', 0.7, 0]] } });
+      H.gable(18, -31, 32, -24, 4.05, 1.6, 0x7a4430, 'x');
+      B.box(20, 0, -29.5, 24, 1.1, -28.6, { pattern: PAT.WOOD, color: 0x5a3e2a, kind: 'cover' });
+    });
+    B.box(18, 0, -31, 32, 0.9, -24, { pattern: PAT.CONCRETE, color: 0x8a8478, kind: 'floor' });
+    H.signboard(25, 4.0, -23.93, 0, 4.2, 0.6, ['CORCOVADO']);
+    H.clock(25, 3.0 + 0.9, -23.95, 0, 0.45);
+    for (const x of [14, 24, 36]) B.box(x - 0.1, 0.9, -21.9, x + 0.1, 4.3, -21.7, { pattern: PAT.METAL, color: iron, kind: 'pole' });
+    B.decoBox(12, 4.3, -24, 40, 4.45, -21.2, 0x4a4e52);
+    for (const [dx, dz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) B.box(42 + dx * 1.3 - 0.15, 0, -26 + dz * 1.3 - 0.15, 42 + dx * 1.3 + 0.15, 4.6, -26 + dz * 1.3 + 0.15, { pattern: PAT.METAL, color: iron, kind: 'pole' });
+    B.deco(GEO.cyl(1.9, 1.9, 2.4, 16), 42, 5.8, -26, 0x4a3a30); B.deco(GEO.cone(2.0, 0.7, 16), 42, 7.35, -26, 0x2a2a2a);
+    H.wagon(20, -18.5); H.wagon(22, -18.5); B.container(-30, 0, -18.5, 'x'); B.container(34, 0, -18.5, 'x');
+    B.house(14, -10, 28, 2, { floors: 1, h: 4.6, pattern: PAT.WOOD, color: 0x6a4a32, parapet: false, roofPat: PAT.ROOF, roofColor: 0x3a3a3a, open: { w: [['big', 0.5, 0, 3.4]], e: [['big', 0.5, 0, 3.4]], s: [['door', 0.5, 0]], n: [['win', 0.3, 0], ['win', 0.7, 0]] } });
+    H.gable(14, -10, 28, 2, 4.85, 1.6, 0x3a3a3a, 'z'); H.signboard(13.93, 3.9, -4, -Math.PI / 2, 3.0, 0.5, ['ALMACÉN'], '#d9cfb6');
+    for (const [x, z, s] of [[17, -7, 1.2], [18.2, -7.3, 1.0], [24, -1, 1.2], [25, -0.6, 1.0], [24.4, -0.9, 0.9]]) B.crate(x, x === 24.4 ? 1.2 : 0.06, z, s);
+    H.house(30, -8, 38, 2, { street: 'w', stairs: { side: 'e', from: 'n' } }); H.house(14, 8, 22, 18, { street: 'w', floors: 1, sides: 'n' }); H.house(26, 8, 36, 17, { street: 'n', stairs: { side: 'e', from: 's' }, color: 0xc99c88 });
+    H.house(30, 22, 40, 30, { street: 'n', floors: 1 });
+    for (const [x, z] of [[11, -12], [11, 6], [24, 20], [40, -14]]) B.lamp(x, z);
+    H.cart(20, 22, 'z'); B.sandbags(10, -8, 10, -4); B.sandbags(10, 4, 10, 8); B.sandbags(40, 4, 44, 4); B.crate(42, 0, 12, 1.1); B.barrel(12, 0, 24); B.barrel(12.7, 0, 24.4);
+    for (const [x, z, s] of [[16, 28, 1.0], [44, 28, 0.9], [44, 18, 0.85]]) B.tree(x, z, s);
+    B.horizon(0x6e7a5a, 22, 95, 150, { groundColor: 0x6a6a4e });
+    B.smoke(80, -70, 1.0);
+    // ============ A / B / C, armas, apariciones (oeste: la calle; este: la estación)
+    B.dom('A', -28, 0, 0); B.dom('B', 0, R, 0, 4.6); B.dom('C', 22, 0, -4);
+    B.stand(-21, 3.1, -9, 'sniper'); B.stand(32, 3.1, 12, 'dmr'); B.stand(0, R, -6, 'shotgun'); B.stand(21, 0.06, -4, 'lmg');
+    for (const [x, z] of [[-44, -2], [-44, 2], [-44, -20], [-44, 20], [-44, 30], [-44, -28], [-36, -18], [-34, 18], [-45, 10], [-45, -10]]) B.spawn(0, x, 0, z, -Math.PI / 2);
+    for (const [x, z] of [[44, -2], [44, 2], [44, -18], [44, 22], [44, 30], [44, -30], [38, -14], [40, 14], [45, 8], [45, -8]]) B.spawn(1, x, 0, z, Math.PI / 2);
+    for (const [x, y, z] of [[-30, 0, -20], [-30, 0, 18], [0, R, -4], [0, R, 14], [20, 0, -14], [20, 0, 6], [-12, 0, 0], [12, 0, 0], [-40, 0, 24], [40, 0, 20], [26, 0.9, -22.6], [-20, 0, 26]]) B.spawn('ffa', x, y, z);
+    B.prop('bucket', -11, 0, -2); B.prop('can', 16, 0, 4);
+  },
+};
+MAP_ORDER.splice(0, MAP_ORDER.length, 'pueblo', 'base', 'muelle', 'estacion', 'corcovado', 'patio', 'bunker', 'cruce');
 // ---- 10_props.js ----
 // =====================================================================
 // OBJETOS SUELTOS — llantas, bidones y cubetas con física real. Son solo
@@ -10776,7 +11266,7 @@ const MODES = {
 MODES.range = { id: 'range', name: { es: 'Campo de tiro', en: 'Shooting range' }, desc: { es: 'Practica con cualquier arma contra blancos fijos y móviles. No da experiencia.', en: 'Practise with any weapon on fixed and moving targets. Gives no XP.' }, teams: false, respawn: true, range: true, time: Infinity };
 const MODE_ORDER = ['tdm', 'ffa', 'dom', 'elim', 'tags', 'squads', 'gun'];
 // tamaño de cada mapa y modos que mejor le van
-const MAP_INFO = { pueblo: 'big', base: 'big', muelle: 'big', patio: 'small', bunker: 'small', cruce: 'small' };
+const MAP_INFO = { pueblo: 'big', base: 'big', muelle: 'big', estacion: 'big', corcovado: 'big', patio: 'small', bunker: 'small', cruce: 'small' };
 const MAP_IDEAL = { big: ['dom', 'tdm', 'ffa'], small: ['squads', 'gun', 'elim'] };
 
 // medallas: tier 1 bronce · 2 plata · 3 oro; shape = forma del emblema; g = símbolo
@@ -15871,21 +16361,34 @@ function mapThumb(id) {
   x.fillStyle = th[2]; x.fillRect(0, gy, W, H - gy);
   const sil = 'rgba(22,22,20,.86)', box = (a, b, w, h) => x.fillRect(a, gy - h, w, h);
   x.fillStyle = sil;
+  const roof = (a, w, h, hh) => { x.beginPath(); x.moveTo(a - 3, gy - h); x.lineTo(a + w / 2, gy - h - hh); x.lineTo(a + w + 3, gy - h); x.fill(); };
+  const house = (a, w, h, hh = 10) => { box(a, 0, w, h); roof(a, w, h, hh); };
+  const clockAt = (cx, cy, r) => { x.fillStyle = 'rgba(232,224,203,.95)'; x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); x.fill(); x.strokeStyle = sil; x.lineWidth = 1.5; x.beginPath(); x.moveTo(cx, cy); x.lineTo(cx - r * 0.5, cy - r * 0.3); x.moveTo(cx, cy); x.lineTo(cx + r * 0.4, cy - r * 0.6); x.stroke(); x.fillStyle = sil; };
+  // 3.3.0: siluetas de los mapas nuevos de la novela
   if (id === 'pueblo') {
-    box(10, 0, 46, 26); box(58, 0, 34, 34); box(150, 0, 40, 22); box(230, 0, 50, 30); box(282, 0, 30, 20);
-    box(108, 0, 18, 56); x.beginPath(); x.moveTo(104, gy - 56); x.lineTo(117, gy - 70); x.lineTo(130, gy - 56); x.fill();
-    x.fillStyle = 'rgba(30,26,22,.6)'; x.fillRect(0, gy, W, 6);
-    x.fillStyle = 'rgba(60,55,50,.5)'; for (let i = 0; i < 3; i++) { x.beginPath(); x.arc(200 + i * 9, gy - 40 - i * 10, 7 + i * 3, 0, Math.PI * 2); x.fill(); }
+    house(8, 34, 26); house(46, 30, 32); house(152, 36, 24); house(194, 28, 30);
+    box(96, 0, 40, 30); roof(96, 40, 30, 12); box(124, 0, 16, 60); roof(124, 16, 60, 14); clockAt(132, gy - 46, 5);
+    x.fillStyle = sil; x.lineWidth = 2; x.strokeStyle = sil;
+    x.beginPath(); x.moveTo(246, gy); x.lineTo(256, gy - 64); x.lineTo(268, gy - 64); x.lineTo(278, gy); x.stroke(); for (let k = 1; k < 5; k++) { x.beginPath(); x.moveTo(246 + k * 2.5, gy - k * 13); x.lineTo(278 - k * 2.5, gy - k * 13); x.stroke(); }
+    x.beginPath(); x.arc(262, gy - 68, 7, 0, Math.PI * 2); x.stroke(); x.fillRect(296, gy - 74, 7, 74); box(282, 0, 30, 30);
   } else if (id === 'base') {
-    box(90, 0, 110, 34); box(212, 0, 26, 46); x.fillRect(210, gy - 50, 30, 5); box(30, 0, 40, 16);
-    x.fillRect(262, gy - 30, 3, 30); x.fillRect(282, gy - 30, 3, 30); x.fillRect(258, gy - 34, 30, 6);
-    x.strokeStyle = sil; x.lineWidth = 1; for (let i = 0; i < W; i += 8) { x.beginPath(); x.moveTo(i, gy + 2); x.lineTo(i, gy - 8); x.stroke(); }
-    x.beginPath(); x.moveTo(0, gy - 6); x.lineTo(W, gy - 6); x.stroke();
+    house(16, 100, 30, 12); house(196, 100, 30, 12); house(124, 64, 36, 12); x.fillRect(158, gy - 72, 2, 36); x.fillStyle = 'rgba(150,40,30,.95)'; x.fillRect(160, gy - 72, 14, 9); x.fillStyle = sil;
+    x.fillStyle = 'rgba(60,90,110,.85)'; x.fillRect(0, gy + 10, W, H - gy - 10);
   } else if (id === 'muelle') {
-    const cols = ['rgba(120,40,30,.9)', 'rgba(40,70,100,.9)', 'rgba(80,90,40,.9)', 'rgba(150,100,30,.9)'];
-    for (let i = 0; i < 9; i++) { x.fillStyle = cols[i % 4]; const h = 12 + (i % 3) * 12; box(20 + i * 22, 0, 20, h); }
-    x.fillStyle = sil; x.fillRect(236, gy - 64, 5, 64); x.fillRect(290, gy - 64, 5, 64); x.fillRect(226, gy - 68, 80, 6); x.fillRect(262, gy - 62, 2, 26); box(256, 36, 14, 10);
-    x.fillStyle = 'rgba(50,70,80,.85)'; x.fillRect(0, gy + 8, W, H - gy - 8);
+    x.fillStyle = sil; box(30, 0, 150, 22); x.fillRect(176, gy - 22, 18, 12); box(90, 22, 34, 18); x.fillRect(104, gy - 62, 10, 22); x.fillRect(60, gy - 66, 3, 44); x.fillRect(150, gy - 66, 3, 44);
+    x.lineWidth = 3; x.strokeStyle = sil; x.beginPath(); x.moveTo(214, gy - 30); x.lineTo(244, gy - 62); x.stroke(); box(206, 0, 14, 34);
+    x.fillStyle = 'rgba(232,228,214,.95)'; x.fillRect(286, gy - 66, 10, 66); x.fillStyle = 'rgba(255,220,140,.95)'; x.fillRect(285, gy - 72, 12, 6); x.fillStyle = sil;
+    x.fillStyle = 'rgba(20,34,52,.9)'; x.fillRect(0, gy + 6, W, H - gy - 6);
+  } else if (id === 'estacion') {
+    box(20, 0, 110, 34); roof(20, 110, 34, 10); box(190, 0, 110, 34); roof(190, 110, 34, 10); box(130, 0, 60, 46); roof(130, 60, 46, 12);
+    box(148, 46, 24, 30); x.beginPath(); x.moveTo(146, gy - 90); x.lineTo(160, gy - 108); x.lineTo(174, gy - 90); x.fill(); x.fillRect(146, gy - 92, 28, 16); clockAt(160, gy - 82, 7);
+    x.fillStyle = 'rgba(30,30,32,.95)'; x.fillRect(30, gy - 10, 46, 10); x.beginPath(); x.arc(40, gy - 12, 6, 0, Math.PI * 2); x.fill(); x.fillRect(36, gy - 24, 4, 10);
+  } else if (id === 'corcovado') {
+    house(8, 30, 30); house(42, 26, 22); house(250, 30, 28); house(286, 28, 24);
+    x.fillStyle = 'rgba(62,90,94,.95)'; x.fillRect(80, gy, 160, H - gy); x.fillStyle = sil;
+    x.fillRect(74, gy - 14, 172, 6); x.lineWidth = 2; x.strokeStyle = sil; x.beginPath(); x.moveTo(74, gy - 34); x.lineTo(246, gy - 34);
+    for (let k = 0; k <= 8; k++) { x.moveTo(74 + k * 21.5, gy - 8); x.lineTo(74 + k * 21.5, gy - 34); if (k < 8) { x.moveTo(74 + k * 21.5, gy - 8); x.lineTo(95.5 + k * 21.5, gy - 34); } }
+    x.stroke(); x.fillRect(150, gy - 8, 20, 30);
   } else if (id === 'patio') {
     const cols = ['rgba(120,40,30,.92)', 'rgba(40,70,100,.92)', 'rgba(80,90,40,.92)', 'rgba(150,100,30,.92)'];
     for (let i = 0; i < 4; i++) { x.fillStyle = cols[i]; box(8 + i * 22, 0, 20, 22); box(16 + i * 22, 22, 20, 22); }
@@ -15899,12 +16402,11 @@ function mapThumb(id) {
     for (let i = 0; i < 5; i++) { box(8 + i * 12, 0, 10, 8); box(250 + i * 12, 0, 10, 8); }
     box(34, 8, 18, 10); box(270, 8, 18, 10);
   } else if (id === 'cruce') {
-    x.fillStyle = 'rgba(70,64,54,.9)'; x.fillRect(0, gy, W, 12);
-    x.fillStyle = 'rgba(210,200,150,.8)'; for (let i = 0; i < 8; i++) x.fillRect(6 + i * 42, gy + 5, 22, 2);
-    x.fillStyle = sil; box(10, 0, 70, 56); x.fillRect(8, gy - 60, 74, 5);
-    x.fillStyle = 'rgba(150,40,30,.95)'; x.fillRect(196, gy - 44, 110, 8); x.fillStyle = sil;
-    x.fillRect(204, gy - 44, 5, 44); x.fillRect(292, gy - 44, 5, 44); box(236, 0, 20, 10); box(262, 0, 12, 10);
-    box(170, 0, 22, 14); box(120, 0, 40, 30);
+    x.fillStyle = 'rgba(220,228,236,.95)'; x.fillRect(0, gy, W, H - gy); x.fillStyle = sil;
+    house(110, 70, 40, 14); x.fillStyle = 'rgba(230,236,242,.95)'; roof(110, 70, 40, 14); x.fillStyle = sil;
+    for (const [a, h] of [[16, 40], [52, 30], [236, 44], [282, 34]]) { x.beginPath(); x.moveTo(a, gy - h); x.lineTo(a - 12, gy); x.lineTo(a + 12, gy); x.fill(); }
+    x.fillStyle = 'rgba(176,42,34,.95)'; x.fillRect(196, gy - 18, 34, 3); x.fillStyle = sil; x.fillRect(194, gy - 20, 4, 20);
+    x.fillStyle = 'rgba(255,255,255,.8)'; for (let i = 0; i < 60; i++) x.fillRect((i * 53) % W, (i * 29) % gy, 1.5, 1.5);
   }
   // luz/tono final
   x.fillStyle = 'rgba(0,0,0,.12)'; x.fillRect(0, 0, W, H);

@@ -8,7 +8,7 @@ import * as CANNON from 'cannon-es';
 const CONFIG = {
   GAME_NAME: 'CALL OF WASHED',
   GAME_TAG: { es: 'La Conflagración · 1939–1945', en: 'The Conflagration · 1939–1945' },
-  VERSION: '3.2.3', TITLE_EN: 'WarTime',
+  VERSION: '3.3.0', TITLE_EN: 'WarTime',
 
   SIM_HZ: 60,               // timestep fijo de la simulación
   PHYS_SUBSTEPS: 2,         // sub-pasos de cannon por tick (120 Hz efectivos)
@@ -300,6 +300,7 @@ const CONFIG = {
       iron: { es: 'Alza y punto de mira', en: 'Iron sights', d: { es: 'Las de fábrica: alza de hoja graduada y punto de mira con túnel.', en: 'Factory leaf sight and hooded front post.' }, lvl: 1 },
       x2: { es: 'Mira telescópica 2,5x', en: '2.5x telescopic sight', d: { es: 'Tubo de acero sobre anillas. Más aumento y precisión; apuntas más lento.', en: 'Steel tube on rings. More zoom and precision; slower to aim.' }, lvl: 10 },
       x4: { es: 'Mira telescópica 4x', en: '4x telescopic sight', d: { es: 'Largo alcance. Apuntas bastante más lento y pierdes visión periférica.', en: 'Long range. Noticeably slower to aim and a narrower view.' }, lvl: 30 },
+      x8: { es: 'Mira telescópica 8x', en: '8x telescopic sight', d: { es: 'Tubo largo de tirador de élite: ocho aumentos para el tiro lejano. Apuntas más lento y el pulso se nota más.', en: 'Long marksman\'s tube: eight power for long shots. Slower to aim and every heartbeat shows.' }, lvl: 18 },
       scope: { es: 'Mira telescópica fija', en: 'Fixed telescopic sight', d: { es: 'Retícula de tres postes y torreta de alza por clics de 100 m.', en: 'Three-post reticle and a 100 m-per-click elevation turret.' }, lvl: 1 },
       none: { es: 'De fábrica', en: 'Factory', d: { es: 'Sin modificar.', en: 'Unmodified.' }, lvl: 1 },
       comp: { es: 'Compensador de boca', en: 'Muzzle compensator', d: { es: 'Desvía los gases hacia arriba: menos retroceso vertical, fogonazo más grande.', en: 'Vents gas upward: less vertical recoil, bigger flash.' }, lvl: 2 },
@@ -442,7 +443,7 @@ CONFIG.CAMP_DIFF_ORDER = ['lectura', 'recluta', 'veterano', 'relojero'];
 (() => {
   const mk = (o) => ({ optic: ['iron'], muzzle: ['none'], barrel: ['none'], grip: ['none'], mag: ['std'], stock: ['none'], ammo: ['fmj'], ...o });
   const BOLT = { optic: ['iron', 'x2', 'x4'], muzzle: ['none', 'bayo', 'fhider', 'supp'], barrel: ['none', 'long', 'short', 'heavy'], grip: ['none', 'sling', 'bipod'], mag: ['std', 'fast'], stock: ['none', 'skel', 'pad'], ammo: ['fmj', 'ap', 'hp'] };
-  const SCOPED = { optic: ['scope'], muzzle: ['none', 'fhider', 'supp', 'brake'], barrel: ['none', 'long', 'heavy'], grip: ['none', 'sling', 'bipod'], mag: ['std', 'fast'], stock: ['none', 'pad'], ammo: ['fmj', 'ap', 'hp'] };
+  const SCOPED = { optic: ['scope', 'x8'], muzzle: ['none', 'fhider', 'supp', 'brake'], barrel: ['none', 'long', 'heavy'], grip: ['none', 'sling', 'bipod'], mag: ['std', 'fast'], stock: ['none', 'pad'], ammo: ['fmj', 'ap', 'hp'] };
   CONFIG.ATTACH.slots = {
     rifle: mk(BOLT), dmr: mk(BOLT),
     battle: mk({ optic: ['iron', 'x2', 'x4'], muzzle: ['none', 'fhider', 'bayo', 'supp'], barrel: ['none', 'long', 'short'], grip: ['none', 'sling'], mag: ['std', 'ext', 'fast'], stock: ['none', 'pad'], ammo: ['fmj', 'ap', 'hp'] }),

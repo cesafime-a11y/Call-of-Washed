@@ -8,7 +8,7 @@ const ATT_SLOTS = CONFIG.ATTACH.order;
 // aumento por mira y familia de arma
 const ZOOM_FAMILY = {
   rifle: { iron: 1.3, x2: 2.5, x4: 3.6 }, smg: { iron: 1.18 }, shotgun: { iron: 1.12 },
-  sniper: { scope: 4.0 }, mk2: { scope: 2.5 }, lmg: { iron: 1.3, x2: 2.3 },
+  sniper: { scope: 4.0, x8: 8.0 }, mk2: { scope: 2.5, x8: 8.0 }, lmg: { iron: 1.3, x2: 2.3 },
 };
 const ZOOM_OF = { rifle: 'rifle', dmr: 'rifle', battle: 'rifle', smg: 'smg', tsmg: 'smg', shotgun: 'shotgun', dbl: 'shotgun', sniper: 'sniper', mk2: 'mk2', lmg: 'lmg', mg2: 'lmg' };
 const OPTIC_ZOOM = new Proxy({}, { get: (_, id) => ZOOM_FAMILY[ZOOM_OF[id]] });
@@ -45,6 +45,7 @@ const ATT_FX = {
   // visor de tubo: al apuntar se mira por el ocular (pantalla de mira como los fusiles de tirador), no a través del tubo en 3D
   x2: (W) => { W.adsTime *= 1.22; W.ads *= 0.7; W.scope = true; },
   x4: (W) => { W.adsTime *= 1.42; W.ads *= 0.5; W.scope = true; W.moveMul = (W.moveMul || 1) * 0.98; W.fovNarrow = true; },
+  x8: (W) => { W.adsTime *= 1.2; W.scope = true; W.moveMul = (W.moveMul || 1) * 0.98; W.fovNarrow = true; W.swayMul = 1.25; },
   comp: (W) => { W.recoilV *= 0.78; W.recoilH *= 0.9; W.flash = (W.flash || 1) * 1.2; },
   supp: (W) => { W.suppressed = true; W.flash = (W.flash || 1) * 0.15; W.fall0 *= 0.85; W.fall1 *= 0.85; W.sound = 'supp'; W.adsTime *= 1.05; W.moveMul = (W.moveMul || 1) * 0.98; },
   fhider: (W) => { W.flash = (W.flash || 1) * 0.1; W.recoilV *= 0.95; },

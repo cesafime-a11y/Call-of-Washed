@@ -138,7 +138,7 @@ const Input = {
     const s = this.state;
     s.jump = this.is('jump');
     s.crouch = this.is('crouch');
-    s.sprint = this.is('sprint');
+    s.sprint = this.is('sprint'); s.breath = s.sprint;
     s.grenade = this.is('grenade');
     const now = performance.now(); let lean = 0;
     if (this.holdT.shoulder && now - this.holdT.shoulder > 170 && this.is('shoulder')) lean -= 1;
@@ -173,7 +173,7 @@ const Input = {
     if (edge(3)) { s.cycleDir = 1; s.cycleCount++; }
     if (edge(10)) this.padSprint = !this.padSprint;
     if (ly > -0.4) this.padSprint = false;
-    if (this.padSprint) s.sprint = true;
+    if (this.padSprint) { s.sprint = true; s.breath = true; }
     if (edge(11)) s.meleeCount++;
     if (b(4)) s.grenade = true;
     if (edge(5)) BUS.emit('swapShoulder');

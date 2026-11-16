@@ -16,7 +16,7 @@ const MODES = {
 MODES.range = { id: 'range', name: { es: 'Campo de tiro', en: 'Shooting range' }, desc: { es: 'Practica con cualquier arma contra blancos fijos y móviles. No da experiencia.', en: 'Practise with any weapon on fixed and moving targets. Gives no XP.' }, teams: false, respawn: true, range: true, time: Infinity };
 const MODE_ORDER = ['tdm', 'ffa', 'dom', 'elim', 'tags', 'squads', 'gun'];
 // tamaño de cada mapa y modos que mejor le van
-const MAP_INFO = { pueblo: 'big', base: 'big', muelle: 'big', patio: 'small', bunker: 'small', cruce: 'small' };
+const MAP_INFO = { pueblo: 'big', base: 'big', muelle: 'big', estacion: 'big', corcovado: 'big', patio: 'small', bunker: 'small', cruce: 'small' };
 const MAP_IDEAL = { big: ['dom', 'tdm', 'ffa'], small: ['squads', 'gun', 'elim'] };
 
 // medallas: tier 1 bronce · 2 plata · 3 oro; shape = forma del emblema; g = símbolo
