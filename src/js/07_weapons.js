@@ -35,7 +35,7 @@ const Weapons = {
     // apuntar con mira
     const proneMove = f.proneT > 0.05 && f.proneT < 0.95;
     const busy = f.state !== 'stand' || !!f.mantle || f.meleeT > 0 || !!f.grenadeCook || f.throwT > 0 || proneMove;
-    const canAds = inp.aim && !f.sprinting && !busy && W.kind !== 'melee' && f.switchT <= 0.05 && !(W.scope && f.reloadT > 0);
+    const canAds = inp.aim && !f.sprinting && !busy && W.kind !== 'melee' && f.switchT <= 0.05 && !(f.reloadT > 0);   // 3.2.3: al recargar se baja la mira (antes el arma tapaba la pantalla)
     f.adsT = clamp(f.adsT + (canAds ? 1 : -1.4) * dt / ((W.adsTime || 0.2) * (f.armT > 0 ? CONFIG.WOUND.armAdsMul : 1)), 0, 1);
     // brazo herido o aturdido: la mira tiembla
     if (f.armT > 0 || f.dazeT > 0) {

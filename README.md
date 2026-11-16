@@ -1,6 +1,6 @@
 # Call of Washed: WarTime
 
-Versión actual: **3.2.2** (16-XI-2026). Juego en un solo HTML: `dist/Call of Washed.html`.
+Versión actual: **3.2.3** (16-XI-2026). Juego en un solo HTML: `dist/Call of Washed.html`.
 
 
 El juego se entrega como **un solo HTML**; este árbol es la fuente desde la que se arma.

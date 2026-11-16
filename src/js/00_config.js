@@ -8,7 +8,7 @@ import * as CANNON from 'cannon-es';
 const CONFIG = {
   GAME_NAME: 'CALL OF WASHED',
   GAME_TAG: { es: 'La Conflagración · 1939–1945', en: 'The Conflagration · 1939–1945' },
-  VERSION: '3.2.2', TITLE_EN: 'WarTime',
+  VERSION: '3.2.3', TITLE_EN: 'WarTime',
 
   SIM_HZ: 60,               // timestep fijo de la simulación
   PHYS_SUBSTEPS: 2,         // sub-pasos de cannon por tick (120 Hz efectivos)

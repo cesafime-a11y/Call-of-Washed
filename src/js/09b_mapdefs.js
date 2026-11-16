@@ -113,7 +113,7 @@ const MAPS = {
       B.horizon(0x7f705a, 22, 95, 150, { groundColor: 0x76694e });
       // A / B / C y armas
       B.dom('A', -30, 0, 0); B.dom('B', 0, 0, 9.5); B.dom('C', 30, 0, 0);
-      B.stand(11, 6.3, 21.4, 'sniper'); B.stand(0, 0, -23.6, 'rocket'); B.stand(-7.5, 0.06, -8.4, 'shotgun'); B.stand(7.5, 0.06, -8.4, 'shotgun');
+      B.stand(11, 6.3, 21.4, 'sniper'); B.stand(0, 0, -23.6, 'lmg');   // 3.2.3: el tubo antitanque queda fuera del juego por ahora B.stand(-7.5, 0.06, -8.4, 'shotgun'); B.stand(7.5, 0.06, -8.4, 'shotgun');
       // aparición libre (todos contra todos)
       for (const [x, z] of [[-42, 0], [42, 0], [0, -29.5], [0, 27], [-20, -24.5], [20, -24.5], [-22, 26], [22, 26], [-40, -24], [40, 24], [-12, 1], [12, -1], [-31, -10], [31, 10]]) B.spawn('ffa', x, 0, z);
       B.prop('tire', -14, 0, 2.5); B.prop('tire', 14.2, 0, -2.8); B.prop('can', 2.2, 0, 7.5); B.prop('can', -26.5, 0, 3.4); B.prop('bucket', -3.2, 0.06, -8.9);
@@ -185,7 +185,7 @@ const MAPS = {
         open: { w: [['door', 0.5, 0], ['win', 0.2, 1, 1.4], ['win', 0.5, 1, 1.4], ['win', 0.8, 1, 1.4]], e: [['door', 0.5, 0], ['win', 0.2, 1, 1.4], ['win', 0.5, 1, 1.4], ['win', 0.8, 1, 1.4]], n: [['win', 0.3, 1, 1.4], ['win', 0.7, 1, 1.4]], s: [['win', 0.5, 0], ['win', 0.3, 1, 1.4], ['win', 0.7, 1, 1.4]] } });
       B.deco(GEO.cyl(0.05, 0.05, 3, 4), 31.5, 8.3, 1.8, 0x3a3a3a); B.deco(GEO.box(0.6, 0.4, 0.6), 29, 7.0, -1.4, 0x8a8a84);
       B.dom('C', 22.5, 0, 0, 4.2);
-      B.stand(30, 3.3, 1.3, 'sniper'); B.stand(-27.3, -0.35, 0, 'shotgun'); B.stand(9.6, 4.0, -6.5, 'rocket');
+      B.stand(30, 3.3, 1.3, 'sniper'); B.stand(-27.3, -0.35, 0, 'shotgun'); B.stand(9.6, 4.0, -6.5, 'lmg');   // 3.2.3: el tubo antitanque queda fuera del juego por ahora
       for (const s of [-1, 1]) {
         const Z = (v) => s * v;
         // barracas
@@ -271,7 +271,7 @@ const MAPS = {
       B.barrel(0.8, 0, -14); B.barrel(-1.6, 0, 14.4); B.barrel(9.8, 0, 3.6); B.barrel(-9.6, 0, -3.4);
       B.sandbags(-2.5, -2.6, 2.5, -2.6, { h: 0.9 }); B.sandbags(-2.5, 2.6, 2.5, 2.6, { h: 0.9 });
       B.dom('B', 0, 0, 0, 4.2);
-      B.stand(0, 0, -6.8, 'rocket');
+      B.stand(0, 0, -6.8, 'lmg');   // 3.2.3: el tubo antitanque queda fuera del juego por ahora
       // muelle de grúas y oficina (C)
       for (const [x, z] of [[27, -26.5], [27, -13.5], [41, -26.5], [41, -13.5]]) B.box(x - 0.45, 0, z - 0.45, x + 0.45, 14, z + 0.45, { pattern: PAT.HAZARD, color: 0xb8902a, kind: 'pole' });
       B.decoBox(26.5, 14, -27, 27.5, 15.2, -13, 0xb8902a); B.decoBox(40.5, 14, -27, 41.5, 15.2, -13, 0xb8902a);

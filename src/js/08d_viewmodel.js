@@ -66,7 +66,7 @@ const VM_WRIST = HAND_WRIST, VM_WRIST_ARM = 0.062;
 const VM = {
   active: false, inited: false, models: {}, fits: {}, cur: null, curId: null, armKey: '',
   kz: 0, krx: 0, kry: 0, krz: 0, land: 0, latK: 0, vyK: 0, swayX: 0, swayY: 0, lastYaw: null, lastPitch: 0,
-  sprintK: 0, reloadK: 0, hideK: 0, shadeK: 1, skyK: 1, shadeT: 0, flashT: 0, baseFov: 54,
+  sprintK: 0, reloadK: 0, hideK: 0, shadeK: 1, skyK: 1, shadeT: 0, flashT: 0, baseFov: 62,   // 3.2.3: antes 54; el arma se veía demasiado cerca
   init() {
     const S = this.scene = new THREE.Scene();
     this.cam = new THREE.PerspectiveCamera(this.baseFov, 1, 0.01, 30);
@@ -156,6 +156,7 @@ const VM = {
     const f = this.replay ? Replay.vmState : G.local, ads = f ? smooth01(f.adsT) : 0, k = 1 - 0.45 * ads;
     this.kz = Math.min(0.16, this.kz + P.kick * k); this.krx = Math.min(0.5, this.krx + P.rot * (0.6 + 0.4 * k)); this.kry += frand(-1, 1) * P.rot * 0.25; this.krz += frand(-1, 1) * P.rot * 0.6;
     this.trigK = 1;
+    if (W.bolt && (W.kind !== 'melee')) { this.cycT = 0; this.cycId = weapon; }
     this.flashT = 0.05; this.flash.rotation.z = frand(0, TAU); this.flash.scale.setScalar(frand(0.09, 0.13) * (W.flash ?? 1) * (weapon === 'shotgun' ? 1.4 : 1));
   },
   // punto local del arma (o el expulsor) → mundo, conservando la posición en pantalla
@@ -185,7 +186,9 @@ const VM = {
     const M = this.cur, U = M.userData, P = VM_POSE[id] || VM_POSE.rifle;
     // 3.2.2: recarga por tipo de arma (cargador, peine, cartuchos); si el arma no tiene datos se usa la animación antigua
     const isSecW = CONFIG.WEAPONS[id] && CONFIG.WEAPONS[id].slot === 'secondary';
-    const RL = id !== 'knife' && rlInfo(M, isSecW) ? (f.reloadT > 0 ? vmReload(M, clamp(1 - f.reloadT / Math.max(0.01, f.reloadTotal), 0, 1), isSecW, this._rl || (this._rl = {})) : (vmReloadRest(M), null)) : (animMag(M, f), null);
+    let RL = id !== 'knife' && rlInfo(M, isSecW) ? (f.reloadT > 0 ? vmReload(M, clamp(1 - f.reloadT / Math.max(0.01, f.reloadTotal), 0, 1), isSecW, this._rl || (this._rl = {})) : (vmReloadRest(M), null)) : (animMag(M, f), null);
+    // 3.2.2: cerrojo tras cada disparo (se arma en kick); si llega la recarga o se cambia de arma se corta
+    if (this.cycT != null) { if (!this.cycHold) this.cycT += dt; const k = (this.cycT - 0.1) / 0.62; if (k >= 1 || f.reloadT > 0 || this.cycId !== id) this.cycT = null; else if (k > 0) { const c = vmBoltCycle(M, k, this._cy || (this._cy = {})); if (c) RL = c; } }
     this.props.clip.visible = !!(RL && RL.clip); this.props.shells.visible = !!(RL && RL.shells);
     if (RL && (RL.clip || RL.shells)) { const pr = RL.clip ? this.props.clip : this.props.shells; pr.position.copy(RL.propP); pr.quaternion.copy(RL.propQ); pr.updateMatrix(); if (RL.clip) pr.userData.rounds.position.y = -RL.push * 0.058, pr.userData.rounds.visible = RL.push < 0.97; }
     const ads = smooth01(f.adsT);

@@ -27,11 +27,14 @@ function boltRifle(H, p) {
   // puente trasero y cola del cerrojo con la aleta del seguro
   rb(0.03, 0.02, 0.04, 0, by + 0.006, 0.07, GUN.metal, 0.006); tb(0.0125, 0.045, 0, by + 0.004, 0.105, GUN.metal, 10); bx(0.006, 0.022, 0.012, 0.004, by + 0.022, 0.118, GUN.steel);
   // cerrojo: cuerpo brillante y manilla (recta o acodada hacia abajo en los de mira)
+  const mvBolt = vm && !p.semi; if (mvBolt) B.tag = 'bolt';   // 3.2.2: en primera persona el cerrojo es pieza móvil (se acciona tras cada disparo y al recargar)
   tb(0.0105, 0.11, 0, by + 0.012, 0.0, GUN.steel, 10);
   if (p.semi) { bx(0.006, 0.016, 0.03, -0.022, by + 0.004, 0.01, GUN.steel); B.add(GEO.sphere(0.009, 8, 6), -0.03, by + 0.004, 0.01, GUN.dark); }
   else if (p.bent) { B.add(GEO.cyl(0.005, 0.005, 0.055, 6), 0.03, by - 0.006, 0.045, GUN.steel, { rz: X + 0.75 }); B.add(GEO.sphere(vm ? 0.009 : 0.012, 10, 8), 0.05, by - 0.026, 0.05, GUN.steel); }
   else if (vm) { B.add(GEO.cyl(0.004, 0.004, 0.045, 6), 0.026, by - 0.004, 0.05, GUN.steel, { rz: X + 0.5 }); B.add(GEO.sphere(0.008, 10, 8), 0.047, by - 0.016, 0.05, GUN.steel); }   // 3.1.3: en primera persona la manilla baja y más pequeña, fuera de la vista
   else { B.add(GEO.cyl(0.005, 0.005, 0.06, 6), 0.035, by + 0.004, 0.045, GUN.steel, { rz: X }); B.add(GEO.sphere(0.0115, 10, 8), 0.066, by + 0.004, 0.045, GUN.steel); }
+  if (mvBolt) { B.tag = null; const kn = p.bent ? [0.05, -0.026, 0.05] : [0.047, -0.016, 0.05];
+    Object.assign(u, { rl: 'clip', boltKind: 'bolt', by: by + 0.012, pivots: { bolt: new THREE.Vector3(0, by + 0.012, 0) }, knob: new THREE.Vector3(kn[0], kn[1] - 0.012, kn[2]) }); }
   // cañón (más corto con el recortado) y punto de mira con túnel
   const blen = -0.155 - muzz;
   tb(0.0098, blen, 0, by, -0.155 - blen / 2, GUN.dark, 10);
@@ -275,16 +278,38 @@ function periodGun(id, H) {
     }
     // ---- revólver de oficial: tambor de seis, cañón con nervio, cachas de nogal y anilla
     case 'magnum': {
-      const wood = 0x553420;
-      rb(0.034, 0.05, 0.2, 0, 0.08, -0.07, GUN.metal, 0.009); tb(0.0175, 0.12, 0, 0.075, 0.0, GUN.metal);
-      for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3; B.add(GEO.box(0.006, 0.006, 0.07), Math.cos(a) * 0.0175, 0.075 + Math.sin(a) * 0.0175, 0.0, GUN.dark, { rz: a }); }
-      rb(0.03, 0.11, 0.05, 0, -0.01, 0.075, wood, 0.012, { rx: -0.2 }); rb(0.024, 0.026, 0.1, 0, 0.058, -0.2, GUN.metal, 0.006); tb(0.012, 0.19, 0, 0.087, -0.19, GUN.metal); bx(0.008, 0.008, 0.19, 0, 0.1, -0.19, GUN.metal);
-      tb(0.0145, 0.012, 0, 0.087, -0.29, GUN.dark); rb(0.016, 0.03, 0.026, 0, 0.09, 0.03, GUN.dark, 0.005, { rx: -0.5 });
-      B.add(GEO.torus(0.0075, 0.0018, 10, 4), 0, -0.07, 0.1, GUN.steel, { ry: X });
-      bx(0.008, 0.008, 0.09, 0, 0.032, 0.0, GUN.metal); bx(0.008, 0.03, 0.008, 0, 0.046, -0.045, GUN.metal); bx(0.008, 0.016, 0.02, 0, 0.044, 0.0, GUN.dark, { rx: 0.3 });
-      if (vm) B.add(_halfMoon || (_halfMoon = new THREE.CylinderGeometry(0.012, 0.012, 0.0035, 14, 1, false, 0, Math.PI)), 0, 0.1205, -0.27, GUN.dark, { rz: Math.PI / 2 }).add(b(0.0035, 0.02, 0.03), 0, 0.106, -0.27, GUN.dark).add(b(0.005, 0.024, 0.01), -0.0085, 0.12, 0.0, GUN.dark).add(b(0.005, 0.024, 0.01), 0.0085, 0.12, 0.0, GUN.dark);   // media luna y ranura del armazón
-      else B.add(b(0.01, 0.014, 0.012), 0, 0.118, -0.27, GUN.dark);
-      Object.assign(u, { sightY: 0.132, fore: new THREE.Vector3(-0.03, -0.02, 0.02), mag: new THREE.Vector3(0, 0.04, -0.01), muzzle: new THREE.Vector3(0, 0.087, -0.3), adsDist: 0.4 });
+      // 3.2.3: revólver de oficial de armazón cerrado: tambor de seis con estrías y bocas de recámara, cañón con banda y vaina del extractor,
+      // martillo con espuela, guardamonte redondo, cachas de nogal con remate de acero y anilla para el cordón
+      const wood = 0x5a3620, st = GUN.steel, mt = GUN.metal, dk = GUN.dark, cy = 0.0755, by = 0.087;
+      // armazón: puente superior, cuna del tambor, escudo trasero y frente donde rosca el cañón
+      bx(0.02, 0.008, 0.066, 0, by + 0.013, -0.026, mt); rb(0.02, 0.016, 0.066, 0, cy - 0.022, -0.026, mt, 0.004);
+      rb(0.026, 0.05, 0.014, 0, cy - 0.002, 0.004, mt, 0.006); rb(0.022, 0.03, 0.014, 0, by - 0.006, -0.064, mt, 0.005);
+      for (const sx of [-1, 1]) bx(0.002, 0.012, 0.03, sx * 0.0125, cy - 0.006, 0.02, mt);
+      // tambor con estrías, bocas de las recámaras y eje
+      B.tag = 'mag'; tb(0.019, 0.042, 0, cy, -0.028, st, 18);
+      for (let i = 0; i < 6; i++) { const a = Math.PI / 2 + i * Math.PI / 3, af = a + Math.PI / 6;
+        tb(0.0048, 0.002, Math.cos(a) * 0.0115, cy + Math.sin(a) * 0.0115, -0.0495, dk, 8);
+        bx(0.004, 0.003, 0.028, Math.cos(af) * 0.0182, cy + Math.sin(af) * 0.0182, -0.03, dk, { rz: af }); }
+      tb(0.004, 0.006, 0, cy, -0.051, mt, 8); B.tag = null;
+      // cañón con banda superior, punto de mira y vaina del extractor debajo
+      tb(0.0088, 0.15, 0, by, -0.143, mt, 14); tb(0.0098, 0.012, 0, by, -0.212, mt, 14); tb(0.0042, 0.004, 0, by, -0.219, dk, 10);
+      bx(0.0065, 0.006, 0.148, 0, by + 0.009, -0.143, mt); bx(0.003, 0.013, 0.012, 0, by + 0.016, -0.208, dk);
+      tb(0.0052, 0.09, 0, cy - 0.006, -0.11, mt, 10); tb(0.0062, 0.008, 0, cy - 0.006, -0.158, st, 10);
+      // alza: muesca en el puente superior
+      for (const sx of [-1, 1]) bx(0.004, 0.006, 0.008, sx * 0.0045, by + 0.019, 0.004, dk);
+      // martillo con espuela estriada, pasador y retén del tambor
+      bx(0.007, 0.024, 0.01, 0, by + 0.004, 0.014, st, { rx: -0.45 }); bx(0.008, 0.005, 0.016, 0, by + 0.017, 0.024, st, { rx: -0.2 });
+      bx(0.006, 0.006, 0.008, -0.013, cy + 0.004, 0.006, st); B.add(GEO.sphere(0.003, 8, 6), 0.0132, cy - 0.016, 0.0, mt);
+      // guardamonte y gatillo
+      B.add(GEO.torus(0.016, 0.0024, 8, 20, Math.PI * 1.15), 0, cy - 0.03, 0.002, mt, { ry: X, rz: Math.PI * 0.95 });
+      bx(0.006, 0.02, 0.006, 0, cy - 0.036, 0.004, dk, { rx: 0.3 });
+      // empuñadura en caída: cachas de nogal, lomo y remate de acero, anilla del cordón
+      rb(0.028, 0.092, 0.034, 0, cy - 0.072, 0.036, wood, 0.012, { rx: -0.32 });
+      bx(0.012, 0.096, 0.008, 0, cy - 0.068, 0.054, mt, { rx: -0.32 }); bx(0.024, 0.008, 0.036, 0, cy - 0.118, 0.054, mt, { rx: -0.32 });
+      for (const sx of [-1, 1]) B.add(GEO.sphere(0.0035, 8, 6), sx * 0.0145, cy - 0.07, 0.04, mt);
+      B.add(GEO.torus(0.0065, 0.0015, 8, 12), 0, cy - 0.13, 0.064, st, { ry: X });
+      Object.assign(u, { sightY: by + 0.022, fore: new THREE.Vector3(-0.03, cy - 0.07, 0.02), mag: new THREE.Vector3(0, cy, -0.028), muzzle: new THREE.Vector3(0, by, -0.222), adsDist: 0.4, rl: 'cyl',
+        grip: { y: cy - 0.06, z: 0.04, tilt: -0.32, w: 0.028 } });
       break;
     }
     // ---- tubo antitanque de un solo uso: tubo fino, cabeza gruesa, alza de hoja y palanca de disparo

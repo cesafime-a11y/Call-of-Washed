@@ -63,7 +63,7 @@ function protoGun(id, H, u0) {
   // mano derecha: centro de la garganta de la culata (fusiles y escopeta) o de la empuñadura de pistola
   const pg = F.pg !== false && (isSec || ['smg', 'tsmg', 'mg2'].includes(id)), gy = rh[1] + (pg ? 0.01 : 0.021), gz = rh[2] + (pg ? 0 : 0.015);
   Object.assign(u, { sightY: sy, fore: isSec ? new THREE.Vector3(-0.03, gy + dy - 0.02, gz - 0.02) : fore, mag: magPos, muzzle: new THREE.Vector3(0, by, mz), adsDist: u0.adsDist,
-    grip: { y: gy + dy, z: gz - 0.02, tilt: F.tilt, w: F.w }, adsZ: isSec ? -PG.adsZ : Math.min(-PG.adsZ, pg && id !== 'mg2' ? zb : Math.max(0.2, zb - 0.09)), proto: pid });   // 3.2.2: el ojo queda sobre el lomo de la culata, no detrás de la cantonera (así no se ve el arma cortada por detrás)
+    grip: { y: gy + dy, z: gz - 0.02, tilt: F.tilt, w: F.w }, adsZ: isSec ? -PG.adsZ : Math.min(-PG.adsZ, pg && id !== 'mg2' ? zb + 0.06 : Math.max(0.2, zb - 0.09)), proto: pid });   // 3.2.2: el ojo queda sobre el lomo de la culata, no detrás de la cantonera (así no se ve el arma cortada por detrás)
   // empuñadura de pistola: la mano se coloca midiendo la pieza (nudillos en la cara delantera, palma pegada al costado)
   if (pg) { const sg = sliceGrip(B, gy + dy, gz); if (sg) { u.grip.z = sg.z0 + 0.04 - 0.02; u.grip.w = sg.w * 2; u.gripSlice = sg; } }
   else { u.grip.roll = F.roll ?? 0; u.grip.y += F.gup ?? 0; u.grip.z += F.gz ?? 0; }

@@ -25,7 +25,7 @@ function rlInfo(M, isSec) {
   const mm = U.magMesh; let st = U.rl || null, bb = null;
   if (mm) { mm.geometry.computeBoundingBox(); bb = mm.geometry.boundingBox; }
   if (!st && bb && RL_AUTO[U.id]) st = bb.max.x - bb.min.x > (bb.max.y - bb.min.y) * 1.2 && bb.min.x < -0.05 ? 'side' : 'bottom';
-  if ((st === 'bottom' || st === 'side' || st === 'grip') && !bb) st = null;
+  if ((st === 'bottom' || st === 'side' || st === 'grip' || st === 'cyl') && !bb) st = null;
   if (st === 'clip' && !(U.parts && U.parts.bolt && U.knob)) st = null;
   if (st === 'shells' && !(U.parts && U.parts.barrels)) st = null;
   if (!st) return (U._rl = null);
@@ -34,6 +34,7 @@ function rlInfo(M, isSec) {
     I.c = bb.getCenter(new THREE.Vector3());
     if (st === 'bottom') { I.G = new THREE.Vector3(bb.min.x - 0.0155, bb.min.y + Math.min(0.05, (bb.max.y - bb.min.y) * 0.45), bb.min.z + 0.04); I.Q = new THREE.Quaternion(); I.O1 = new THREE.Vector3(0, -0.1, 0.012); I.O2 = new THREE.Vector3(-0.07, -0.16, 0.1); I.R2 = [0.35, 0, -0.4]; }
     else if (st === 'side') { I.G = new THREE.Vector3(bb.min.x + Math.min(0.05, (bb.max.x - bb.min.x) * 0.45), bb.min.y - 0.0155, bb.min.z + 0.04); I.Q = RL_QUP.clone(); I.O1 = new THREE.Vector3(-0.07, -0.015, 0); I.O2 = new THREE.Vector3(-0.02, -0.2, 0.1); I.R2 = [0.3, 0, 0.6]; }
+    else if (st === 'cyl') { I.G = new THREE.Vector3(bb.min.x - 0.014, I.c.y - 0.008, I.c.z + 0.01); I.Q = RL_QUP.clone(); I.O1 = new THREE.Vector3(-0.03, -0.014, 0); }
     else { I.G = new THREE.Vector3(I.c.x, bb.min.y - 0.017, bb.max.z - 0.012); I.Q = RL_QUP.clone(); I.O1 = new THREE.Vector3(0, -0.092, 0.039); I.O2 = new THREE.Vector3(-0.05, -0.3, 0.1); I.R2 = [0.3, 0, -0.3]; }
   }
   return (U._rl = I);
@@ -53,7 +54,14 @@ function vmReload(M, t, isSec, o) {
   const mm = U.magMesh, P = U.parts || {}, gp = U.grip, st = I.st;
   let boltZ = 0, boltR = 0;
   const key = (i, tt, x, y, z, q) => { const k = o.K[i]; k[0] = tt; k[1].set(x, y, z); k[2].copy(q); };
-  if (st === 'bottom' || st === 'side' || st === 'grip') {
+  if (st === 'cyl') {   // revólver: el tambor sale a la izquierda, la mano lo vacía, trae los cartuchos y lo cierra
+    const out = rss(0.08, 0.18, t) - rss(0.78, 0.86, t), po = rss(0.3, 0.4, t) - rss(0.52, 0.64, t);
+    mm.position.copy(I.O1).multiplyScalar(out); mm.rotation.set(0, 0, 0); mm.visible = true;
+    o.Lp.copy(I.G).addScaledVector(I.O1, out).lerp(_rlV.set(-0.12, -0.24, 0.16), po); o.Lq.copy(I.Q); o.Lw = rss(0.02, 0.1, t) - rss(0.84, 0.92, t);
+    o.Lpose = o.Lw > 0.45 ? 'pinch' : null; o.shells = po > 0.05 && t > 0.4; o.propP.copy(o.Lp).add(_rlV2.set(0.012, 0.03, -0.03)); o.propQ.identity();
+    o.seat = t > 0.84 && t < 0.9 ? Math.sin((t - 0.84) / 0.06 * Math.PI) : 0;
+    const k = rss(0.02, 0.14, t) - rss(0.8, 0.92, t); o.rx = -0.3 * k; o.py = -0.03 * k; o.tiltK = 0.2;
+  } else if (st === 'bottom' || st === 'side' || st === 'grip') {
     const w = rss(0.03, 0.12, t) - rss(0.68, 0.76, t), sx = rss(0.12, 0.2, t) - rss(0.56, 0.66, t), dn = rss(0.2, 0.32, t) - rss(0.44, 0.56, t);
     _rlE.set(I.R2[0] * dn, I.R2[1] * dn, I.R2[2] * dn); _rlQ.setFromEuler(_rlE);
     // el cargador gira sobre su centro y se desplaza: primero sale de su alojamiento, luego baja a la cartuchera
@@ -120,4 +128,18 @@ function buildReloadProps() {
   for (const s of [-1, 1]) { const c = new THREE.Mesh(new THREE.CylinderGeometry(0.0088, 0.0088, 0.05, 10), red); c.rotation.x = Math.PI / 2; c.position.set(s * 0.0118, 0, 0); const h = new THREE.Mesh(new THREE.CylinderGeometry(0.0092, 0.0092, 0.012, 10), brass); h.rotation.x = Math.PI / 2; h.position.set(s * 0.0118, 0, 0.03); shells.add(c, h); }
   clip.visible = shells.visible = false;
   return { clip, shells };
+}
+// accionar el cerrojo tras cada disparo (fusiles de cerrojo): k = avance 0..1. La mano derecha suelta la garganta, sube la manilla,
+// tira hacia atrás (sale la vaina), empuja, la baja y vuelve. Devuelve en o lo mismo que vmReload (solo la mano derecha).
+function vmBoltCycle(M, k, o) {
+  const U = M.userData, P = U.parts || {}; if (!P.bolt || !U.knob) return null;
+  if (!o.Rp) { o.Lp = new THREE.Vector3(); o.Rp = new THREE.Vector3(); o.Lq = new THREE.Quaternion(); o.Rq = new THREE.Quaternion(); }
+  const r = rss(0.08, 0.24, k) - rss(0.78, 0.92, k), z = rss(0.24, 0.45, k) - rss(0.55, 0.76, k), a = r * 1.05, c = Math.cos(a), s = Math.sin(a);
+  P.bolt.position.copy(U.pivots.bolt); P.bolt.position.z += z * 0.095; P.bolt.rotation.set(0, 0, a);
+  const kx = U.knob.x * c - U.knob.y * s, ky = U.knob.x * s + U.knob.y * c;
+  o.Rp.set(kx + 0.028, U.by + ky - 0.004, U.knob.z + z * 0.095 + 0.032); o.Rq.setFromEuler(_rlE.set(-0.15, 0, 0.35, 'YXZ')); _rlE.order = 'XYZ';
+  o.Rw = rss(0, 0.1, k) - rss(0.88, 1, k); o.Rpose = o.Rw > 0.4 ? 'pinch' : null;
+  o.Lw = 0; o.Lpose = null; o.tiltK = 0; o.py = 0; o.seat = 0; o.clip = o.shells = false; o.push = 0;
+  o.rx = 0.05 * (r + z) * 0.5; o.eject = k > 0.4 && k < 0.5;
+  return o;
 }
