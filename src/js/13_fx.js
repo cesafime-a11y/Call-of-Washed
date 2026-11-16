@@ -169,6 +169,7 @@ const FX = {
     for (const d of [this.holes, this.splats, this.scorches]) { d.m.count = 0; d.cur = 0; d.grow.length = 0; }
     for (const L of this.lights) { L.on = false; L.l.intensity = 0; }
     for (const c of this.C) c.life = 0; for (const f of this.F) f.life = 0; for (const t of this.T) t.t = 1;
+    if (this.D) { for (const d of this.D) G.root.remove(d.obj); this.D.length = 0; }
   },
   get gore() { return CONFIG.GORE[G.settings.gore] || CONFIG.GORE.low; },
   groundAt(pos) { const q = PHYS.groundBelow(pos.x, pos.z, pos.y + 0.2, 30); return q ? q.y : -999; },
@@ -177,6 +178,7 @@ const FX = {
     if (!this.inited) return;
     const onLand = (x, y, z, size, flags) => { if (flags === 1) this.decal(this.splats, _v6.set(x, y, z), UP, size * frand(1.6, 2.6), BLOOD[(Math.random() * 3) | 0]); };
     this.smoke.update(dt); this.soft.update(dt, onLand); this.glow.update(dt);
+    this.updateDrops(dt);
     // trazadoras: un destello corto que viaja por la trayectoria
     for (let i = 0; i < this.maxTr; i++) {
       const t = this.T[i]; if (t.t >= 1) continue;
@@ -266,6 +268,52 @@ const FX = {
     c.v.copy(right).multiplyScalar(frand(2.2, 3.4)).add(_v3.set(0, frand(1.8, 3), 0)).add(_v4.copy(f.vel).multiplyScalar(0.7));
     c.r.set(0, f.yaw, 0); c.life = 4; c.rest = false; c.b = 0;
     c.gy = this.groundAt(c.p);
+  },
+  // 3.4.1: piezas sueltas de la recarga (cargador vacío, peine, vainas de escopeta): caen, rebotan, giran y se quedan en el suelo un rato
+  dropPiece(obj, vel, o) {
+    if (!this.inited) return;
+    if (!this.D) this.D = [];
+    while (this.D.length >= 10) { const d = this.D.shift(); G.root.remove(d.obj); }
+    // eje más delgado de la pieza: es el que queda vertical cuando se asienta (el cargador queda tumbado)
+    const q0 = obj.quaternion.clone(), p0 = obj.position.clone(); obj.quaternion.identity(); obj.position.set(0, 0, 0); obj.updateMatrixWorld(true);
+    const sz = new THREE.Box3().setFromObject(obj).getSize(new THREE.Vector3()); obj.quaternion.copy(q0); obj.position.copy(p0);
+    const thin = sz.x <= sz.y && sz.x <= sz.z ? 'x' : sz.y <= sz.z ? 'y' : 'z';
+    o.half = Math.max(0.004, Math.min(sz.x, sz.y, sz.z) / 2);
+    G.root.add(obj);
+    const h = o.heavy || 1;
+    this.D.push({ obj, v: vel.clone(), w: new THREE.Vector3(frand(-6, 6), frand(-4, 4), frand(-8, 8)).multiplyScalar(1 / Math.sqrt(h)), half: o.half || 0.02, heavy: h, life: o.life || 20, life0: o.life || 20, gy: this.groundAt(obj.position), b: 0, rest: false, shells: !!o.shells, thin });
+  },
+  casingsAt(p, n, vel) {
+    if (!this.inited) return;
+    for (let i = 0; i < n; i++) {
+      const c = this.C[this.cCursor]; this.cCursor = (this.cCursor + 1) % this.maxC;
+      c.p.copy(p).add(_v1.set(frand(-0.02, 0.02), frand(-0.02, 0.02), frand(-0.02, 0.02)));
+      c.v.set(frand(-0.4, 0.4), frand(-0.8, 0.2), frand(-0.4, 0.4)); if (vel) c.v.addScaledVector(vel, 0.7);
+      c.r.set(frand(0, 3), frand(0, 3), 0); c.life = 12; c.rest = false; c.b = 0; c.gy = this.groundAt(c.p);
+    }
+  },
+  updateDrops(dt) {
+    if (!this.D || !this.D.length) return;
+    for (let i = this.D.length - 1; i >= 0; i--) {
+      const d = this.D[i], O = d.obj; d.life -= dt;
+      if (d.life <= 0) { G.root.remove(O); this.D.splice(i, 1); continue; }
+      if (!d.rest) {
+        d.v.y -= 9.8 * dt; O.position.addScaledVector(d.v, dt);
+        _q1.setFromEuler(_e1.set(d.w.x * dt, d.w.y * dt, d.w.z * dt)); O.quaternion.multiply(_q1);
+        if (O.position.y < d.gy + d.half && d.v.y < 0) {
+          O.position.y = d.gy + d.half;
+          const sp = -d.v.y;
+          if (d.b++ < 3 && sp > 0.8) BUS.emit('magDrop', { p: O.position, k: Math.min(1, sp / 5), heavy: d.heavy, shells: d.shells });
+          d.v.y = sp * (d.heavy > 0.8 ? 0.22 : 0.38); d.v.x *= 0.45; d.v.z *= 0.45; d.w.multiplyScalar(0.4);
+          if (sp < 1.1) {   // se asienta: plano sobre el suelo, conservando el giro horizontal
+            d.rest = true; _v1.set(0, 0, -1).applyQuaternion(O.quaternion); const yw = Math.atan2(-_v1.x, -_v1.z);
+            const fl = Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2; d.tq = new THREE.Quaternion().setFromEuler(_e1.set(d.thin === 'z' ? fl : 0, yw, d.thin === 'x' ? fl : 0, 'YXZ')); _e1.order = 'XYZ';
+          }
+        }
+      }
+      else if (d.tq) O.quaternion.slerp(d.tq, 1 - Math.exp(-14 * dt));
+      if (d.life < 1.5) O.scale.setScalar(Math.max(0.01, d.life / 1.5));
+    }
   },
   // escombros por material
   chunks(pos, color, n, size, speed, dir) {

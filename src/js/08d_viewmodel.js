@@ -169,6 +169,39 @@ const VM = {
     return out.set(p.x * k, p.y * k, p.z).applyMatrix4(G.camera.matrixWorld);
   },
   ejectWorld(out) { return this.mapLocal(_vmEject, out); },
+  // pieza del arma (en coordenadas del arma) → objeto suelto en el mundo que cae y rebota (FX.dropPiece)
+  dropFrom(M, src, at, q, f, v, opt) {
+    const w = new THREE.Group(), c = src.clone(true); c.traverse((o) => { o.castShadow = true; o.matrixAutoUpdate = true; }); c.visible = true; c.position.set(0, 0, 0); c.quaternion.identity(); w.add(c);
+    if (opt && opt.center) { c.position.copy(opt.center).negate(); c.quaternion.identity(); c.scale.set(1, 1, 1); }
+    this.mapLocal(at, w.position);
+    w.quaternion.copy(G.camera.getWorldQuaternion(_vmQ2)).multiply(M.quaternion).multiply(q);
+    const vel = _vmV2.copy(v).applyQuaternion(_vmQ2).add(f.vel || _vmV3.set(0, 0, 0));
+    FX.dropPiece(w, vel, opt || {});
+  },
+  reloadDrops(M, f) {
+    const I = rlInfo(M), U = M.userData; if (!I) return;
+    const t = clamp(1 - f.reloadT / Math.max(0.01, f.reloadTotal), 0, 1);
+    if (t + 0.05 < (this._dropT || 0)) this._dropN = 0;
+    this._dropT = t;
+    const mm = U.magMesh, st = I.st, done = this._dropN || 0;
+    if ((st === 'bottom' || st === 'side' || st === 'grip') && mm) {
+      if (t >= 0.2 && !done) {   // el cargador sale de su alojamiento y se suelta
+        this._dropN = 1;
+        const cw = _vmV.copy(I.c).applyQuaternion(mm.quaternion).add(mm.position);
+        this.dropFrom(M, mm, cw, mm.quaternion, f, _vmV3.set(st === 'side' ? -0.6 : 0.15, -0.6, 0.1), { center: I.c, half: 0.016, heavy: 1, life: 25 });
+      }
+      if (t >= 0.2 && t < 0.4) mm.visible = false;   // la mano baja vacía a la cartuchera y vuelve con el cargador nuevo
+    } else if (st === 'clip' && this._rl && !done && t >= 0.732) {   // el peine vacío salta al cerrar el cerrojo
+      this._dropN = 1; const pr = this.props.clip, r = pr.userData.rounds.visible; pr.userData.rounds.visible = false;
+      this.dropFrom(M, pr, this._rl.propP, this._rl.propQ, f, _vmV3.set(0.9, 1.6, 0.2), { half: 0.004, heavy: 0.4, life: 25 });
+      pr.userData.rounds.visible = r;
+    } else if (st === 'shells' && !done && t >= 0.15) {   // al abrir la bisagra saltan las dos vainas
+      this._dropN = 1; const piv = U.pivots && U.pivots.barrels;
+      if (piv) this.dropFrom(M, this.props.shells, _vmV.copy(piv).add(_vmV3.set(0, 0.02, 0.04)), _vmQ.identity(), f, _vmV3.set(0.4, 1.5, 1.6), { half: 0.009, heavy: 0.3, life: 25, shells: 1 });
+    } else if (st === 'cyl' && !done && t >= 0.3) {   // revólver: la mano vacía el tambor y caen las seis vainas
+      this._dropN = 1; FX.casingsAt(this.mapLocal(_vmV.copy(I.c).add(I.O1), _vmV3), 6, f.vel);
+    }
+  },
 
   update(dt) {
     // en la cámara de derribo se ve el arma del asesino desde sus ojos
@@ -242,6 +275,8 @@ const VM = {
     pz += this.kz; rx += this.krx; ry += this.kry; py += this.krx * 0.04;
     rz += this.krz; px += this.swayX + bx; py += this.swayY + by; rz += this.swayX * 1.4; ry += this.swayX * 0.7; rx += this.swayY * 0.7;
     M.position.set(px, py, pz); M.rotation.set(rx, ry, rz, 'YXZ'); M.updateMatrix();
+    // 3.4.1: al recargar, el cargador vacío (o el peine, las vainas de escopeta o las del revólver) cae al suelo
+    if (f.reloadT > 0 && !this.replay && id !== 'knife' && RL) this.reloadDrops(M, f); else this._dropN = 0;
     M.visible = !(nade || mantle) || hk < 0.5;
     // manos
     let showL = true;

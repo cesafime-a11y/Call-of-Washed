@@ -379,6 +379,7 @@ function bindGameFx() {
   BUS.on('kill', (ev) => { const p = ev.pos.clone(); setTimeout(() => AUDIO.play('bodyfall', p, 0.8, { throttle: 0.05 }), 450); });
   BUS.on('blockBroken', (b) => AUDIO.play('break', _v1.set((b.min.x + b.max.x) / 2, b.max.y, (b.min.z + b.max.z) / 2), 0.8, { throttle: 0.05 }));
   BUS.on('casing', (p) => { if (near(p, 10)) AUDIO.play('casing', p, 0.5, { throttle: 0.03 }); });
+  BUS.on('magDrop', (e) => { if (near(e.p, 14)) AUDIO.play(e.shells ? 'shellDrop' : 'magDrop', e.p, 0.35 + 0.5 * e.k, { heavy: e.heavy, throttle: 0.05 }); });
   BUS.on('weaponSwitch', (f) => { if (f === G.local) AUDIO.play('cloth', null, 0.35); });
   BUS.on('smoke', (c) => AUDIO.play('smoke', c.pos, 0.8));
   BUS.on('shellIncoming', (p) => { if (near(p, 70)) AUDIO.play('whistle', p, 1.2, { throttle: 0.05 }); });
@@ -413,7 +414,7 @@ function boot() {
 }
 // ganchos para pruebas automatizadas (no afectan el juego)
 window.__COW = {
-  gloveHandGeo, classKeys, setClass, curClassKey, className, linkSlots, MODES_RANGE: MODES.range, THREE, PartBatch, weaponGeometry, _wmCache, buildWeaponModel, SoldierView, Mannequin, PART_NAMES, SKEL, Fighter, OPERATORS, CAMOS, HELMETS, FACES, VESTS, PACKS, PADS, WSKINS, classLoadout, makeBlock, PAT, OnlineUI, BUS, G, VM, Smoke, Streaks, Progress, CONFIG, Rules, Env, UI, PHYS, MapSys, CAM, Input, Replay, FX, Props, NET, Combat, Weapons, MODES, MAPS, Corpses, Grenades, WorldItems, BotNoise, L, Tags, LADDER, Zombies, ZombieBrain, Inv, ITEMS, AUDIO, CS, Renderer, Post, DmgNums, Camp, Campaign, Scenes, SCENES, CAMPAIGN, Store, weaponIconURL, Ballistics, BAL,
+  gloveHandGeo, classKeys, setClass, curClassKey, className, linkSlots, MODES_RANGE: MODES.range, THREE, PartBatch, weaponGeometry, _wmCache, buildWeaponModel, SoldierView, Mannequin, PART_NAMES, SKEL, Fighter, OPERATORS, CAMOS, HELMETS, FACES, VESTS, PACKS, PADS, WSKINS, classLoadout, makeBlock, PAT, OnlineUI, BUS, G, VM, Smoke, Streaks, Progress, CONFIG, Rules, Env, UI, PHYS, MapSys, CAM, Input, Replay, FX, Props, NET, Combat, Weapons, MODES, MAPS, Corpses, Grenades, WorldItems, BotNoise, L, Tags, LADDER, Zombies, ZombieBrain, Inv, ITEMS, AUDIO, CS, Renderer, Post, DmgNums, Camp, Campaign, Scenes, SceneWalk, SCENES, CAMPAIGN, Store, weaponIconURL, Ballistics, BAL,
   simulate(sec, viewEvery = 4) {
     const n = Math.round(sec / STEP);
     for (let i = 0; i < n; i++) {

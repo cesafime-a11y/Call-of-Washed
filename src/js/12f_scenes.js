@@ -17,11 +17,11 @@ const Scenes = {
     d.id = 'scene'; d.hidden = true;
     d.innerHTML = `<div class="sc-look"></div><div class="sc-marks"></div><div class="sc-goal" hidden></div>
       <div class="sc-box" hidden><p class="sc-txt"></p><span class="sc-next">E ▸</span></div>
-      <div class="sc-choice" hidden></div><div class="sc-black"></div>
+      <div class="sc-choice" hidden></div><div class="sc-use" hidden></div><div class="sc-black"></div>
       <div class="sc-card" hidden><small class="sc-k"></small><h1 class="sc-t"></h1><p class="sc-h"></p></div>`;
     app.appendChild(d);
     this.el = { root: d, look: d.querySelector('.sc-look'), marks: d.querySelector('.sc-marks'), goal: d.querySelector('.sc-goal'), box: d.querySelector('.sc-box'), txt: d.querySelector('.sc-txt'), next: d.querySelector('.sc-next'),
-      choice: d.querySelector('.sc-choice'), black: d.querySelector('.sc-black'), card: d.querySelector('.sc-card'), k: d.querySelector('.sc-k'), t: d.querySelector('.sc-t'), h: d.querySelector('.sc-h') };
+      choice: d.querySelector('.sc-choice'), black: d.querySelector('.sc-black'), card: d.querySelector('.sc-card'), use: d.querySelector('.sc-use'), k: d.querySelector('.sc-k'), t: d.querySelector('.sc-t'), h: d.querySelector('.sc-h') };
     window.addEventListener('keydown', (e) => this.onKey(e, true));
     window.addEventListener('keyup', (e) => this.onKey(e, false));
     window.addEventListener('mousedown', (e) => this.onMouse(e, true));
@@ -33,13 +33,13 @@ const Scenes = {
     if (!this.on || !this.S) return;
     if (e.code === 'KeyQ') this.S.lookKey = down;
     if (!down || e.repeat || !this.live()) return;
-    if (e.code === 'KeyE' || e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); this.advance(); }
+    if (e.code === 'KeyE' || e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); if (!this.S.line && !this.S.choice && this.S.fire && e.code === 'KeyE') this.S.fire(this.S); else if (!this.S.line && this.S.useT && e.code !== 'Space') SceneWalk.use(this.S); else this.advance(); }
     if (/^Digit[1-4]$/.test(e.code) || /^Numpad[1-4]$/.test(e.code)) this.pick(+e.code.slice(-1));
   },
   onMouse(e, down) {
     if (!this.on || !this.S) return;
     if (e.button === 1) { this.S.lookMouse = down; if (down) e.preventDefault(); }
-    if (e.button === 0 && down && this.live() && Input.locked) this.advance();
+    if (e.button === 0 && down && this.live() && Input.locked) { if (!this.S.line && !this.S.choice && this.S.fire) this.S.fire(this.S); else if (!this.S.line && this.S.useT) SceneWalk.use(this.S); else this.advance(); }
   },
 
   // ---------------- arranque y parada ----------------
@@ -62,7 +62,7 @@ const Scenes = {
     const S = this.S;
     if (S && S.script.teardown) { try { S.script.teardown(S); } catch (e) { reportError(e); } }
     this.on = false; this.S = null;
-    if (this.built) { this.el.root.hidden = true; this.el.box.hidden = true; this.el.choice.hidden = true; this.el.card.hidden = true; this.el.goal.hidden = true; this.el.marks.innerHTML = ''; this.el.look.style.opacity = 0; }
+    if (this.built) { this.el.use.hidden = true; this.el.root.hidden = true; this.el.box.hidden = true; this.el.choice.hidden = true; this.el.card.hidden = true; this.el.goal.hidden = true; this.el.marks.innerHTML = ''; this.el.look.style.opacity = 0; }
     if (G.renderer) G.renderer.domElement.style.filter = '';
     if (CAM.override && !silent) CAM.override = null;
     SceneAudio.stopAll();
@@ -121,7 +121,7 @@ const Scenes = {
     // mirar alrededor: la vista sale del ratón, con límites (va sentado y esposado)
     const inp = Input.state;
     let dy = inp.yaw - S.yawC; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
-    if (Math.abs(dy) > S.yawR) inp.yaw = S.yawC + Math.sign(dy) * S.yawR;
+    if (Math.abs(dy) > S.yawR && !(S.walk && S.walk.on)) inp.yaw = S.yawC + Math.sign(dy) * S.yawR;
     inp.pitch = clamp(inp.pitch, S.pitchMin, S.pitchMax);
     S.yaw = inp.yaw; S.pitch = inp.pitch;
     // Mirar: el mundo se desatura un poco y el sonido se afila
@@ -131,6 +131,7 @@ const Scenes = {
     this.el.look.style.opacity = S.look.toFixed(2);
     SceneAudio.sharpen(S.look);
     if (S.script.update) { try { S.script.update(S, dt, rawDt); } catch (e) { reportError(e); } }
+    SceneWalk.tick(S, dt, rawDt);
     // cámara
     const cam = G.camera;
     cam.position.copy(S.eye);

@@ -198,6 +198,10 @@ const AUDIO = {
       case 'pin': this.nz(o, t, 0.03, 0.35, 'highpass', 5000); this.osc(o, 'triangle', 3200, 2800, t + 0.03, 0.1, 0.08); break;
       case 'throw': this.nz(o, t, 0.3, 0.3, 'bandpass', 400, 1600, 2, 0.05); break;
       case 'nadeBounce': this.osc(o, 'triangle', r(1100, 1500), r(700, 900), t, 0.1, 0.25); this.nz(o, t, 0.03, 0.3, 'bandpass', 2500, 0, 3); break;
+      case 'magDrop': { const h = opt.heavy || 1;   // 3.4.1: cargador de chapa contra el suelo: golpe sordo y un repique metálico corto
+        this.nz(o, t, 0.05, 0.5, 'lowpass', 900, 200, 0.8); this.osc(o, 'triangle', r(700, 900) / h, r(480, 600) / h, t, 0.09, 0.22);
+        this.osc(o, 'square', r(1900, 2400), r(1500, 1800), t + 0.004, 0.05, 0.05); this.nz(o, t + 0.01, 0.03, 0.22, 'bandpass', r(2600, 3400), 0, 3); break; }
+      case 'shellDrop': this.osc(o, 'sine', r(900, 1200), r(700, 800), t, 0.06, 0.08); this.nz(o, t, 0.03, 0.2, 'lowpass', 1400, 400, 0.8); break;
       case 'casing': this.osc(o, 'sine', r(3600, 4800), r(3000, 3500), t, 0.08, 0.06); this.osc(o, 'sine', r(5200, 6000), r(4200, 4800), t + 0.05, 0.05, 0.03); break;
       case 'step': {
         const s = opt.surface || 'concrete';

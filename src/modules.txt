@@ -38,6 +38,14 @@ data_mannequin.js
 12d_inventory.js
 12e_campaign.js
 12f_scenes.js
+12g_walk.js
+12h_cap1.js
+12i_campkit.js
+12j_cap2.js
+12k_cap3.js
+12l_cap4.js
+12m_cap5.js
+12n_cap6.js
 13_fx.js
 13c_post.js
 13d_env.js
