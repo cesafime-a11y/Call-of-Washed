@@ -156,7 +156,7 @@ const VM = {
     const f = this.replay ? Replay.vmState : G.local, ads = f ? smooth01(f.adsT) : 0, k = 1 - 0.45 * ads;
     this.kz = Math.min(0.16, this.kz + P.kick * k); this.krx = Math.min(0.5, this.krx + P.rot * (0.6 + 0.4 * k)); this.kry += frand(-1, 1) * P.rot * 0.25; this.krz += frand(-1, 1) * P.rot * 0.6;
     this.trigK = 1;
-    if (W.bolt && (W.kind !== 'melee')) { this.cycT = 0; this.cycId = weapon; }
+    if (W.bolt && (W.kind !== 'melee')) { this.cycT = 0; this.cycId = weapon; if (!this.replay) setTimeout(() => { if (this.cycT != null && this.cycId === weapon) AUDIO.play('bolt', null, 0.55, { k: weapon, throttle: 0.2 }); }, 140); }
     this.flashT = 0.05; this.flash.rotation.z = frand(0, TAU); this.flash.scale.setScalar(frand(0.09, 0.13) * (W.flash ?? 1) * (weapon === 'shotgun' ? 1.4 : 1));
   },
   // punto local del arma (o el expulsor) → mundo, conservando la posición en pantalla

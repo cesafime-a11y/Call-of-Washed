@@ -1,0 +1,108 @@
+/* ---------- 3.4.0: HUD de época (1939–1945) ----------
+   El HUD de partida deja de ser un panel táctico moderno: es material de campaña. Fichas de cartulina escritas a máquina,
+   cifras estarcidas en tinta, latón como único brillo y rojo de sello para lo urgente. Cada pieza sigue en su sitio
+   y con el mismo marcado (solo cambia la piel), con sombra suficiente para leerse sobre cielo, nieve o noche. */
+:root {
+  --h-paper: rgba(230,220,195,.93); --h-paper2: rgba(214,201,166,.94); --h-ink: #2a2219; --h-ink2: #5a4c36; --h-red: #9c2b22; --h-brass: #b8913f; --h-brass2: #d6b25e;
+  --f-sten: 'Stardos Stencil', 'Barlow Condensed', 'Impact', sans-serif;
+  --h-card: 0 1px 0 rgba(255,255,255,.35) inset, 0 3px 10px rgba(0,0,0,.45), 0 0 0 1px rgba(60,44,22,.45);
+  --h-grain: repeating-linear-gradient(0deg, rgba(90,70,40,.05) 0 1px, transparent 1px 3px);
+}
+#hud { font-family: var(--f-type); }
+
+/* ---- marcador: dos fichas de cartulina y un reloj de bolsillo ---- */
+#score { width: 470px; gap: 0; filter: drop-shadow(0 3px 6px rgba(0,0,0,.45)); align-items: center; }
+.tscore, .tscore.mine, .tscore.them { background: var(--h-grain), var(--h-paper); clip-path: none; border: 0; box-shadow: var(--h-card); padding: 5px 14px 6px; color: var(--h-ink); position: relative; }
+.tscore.mine { border-radius: 2px 0 0 2px; padding-right: 30px; } .tscore.them { border-radius: 0 2px 2px 0; padding-left: 30px; }
+.tscore::before { content: ''; position: absolute; left: 10px; right: 10px; top: auto; bottom: 3px; height: 2px; background: var(--tc); opacity: .85; }
+.tscore.mine { --tc: #24406e; } .tscore.them { --tc: var(--h-red); }
+.tscore .tn { font: 11px var(--f-type); letter-spacing: .22em; color: var(--h-ink2); text-shadow: none; }
+.tscore b { font: 700 34px var(--f-sten); color: var(--h-ink); text-shadow: none; line-height: .95; letter-spacing: .02em; }
+.tscore .tbar { height: 2px; background: rgba(42,34,25,.14); }
+.tscore .tbar i { box-shadow: none !important; background: var(--tc) !important; }
+.pips i { background: rgba(42,34,25,.18); } .alive i { background: rgba(42,34,25,.25); }
+.timer { position: relative; z-index: 2; margin: 0 -18px; width: 92px; height: 92px; min-width: 0; padding: 0; display: grid; place-content: center; border-radius: 50%; clip-path: none;
+  background: radial-gradient(circle at 50% 42%, #f1e8d0 0 55%, #e2d5b2 70%, #cdbb8c 100%); color: var(--h-ink);
+  box-shadow: 0 0 0 3px #8a6a2c, 0 0 0 5px var(--h-brass2), 0 0 0 7px #6e5220, 0 5px 12px rgba(0,0,0,.55); font: 700 24px var(--f-sten); letter-spacing: .02em; text-shadow: none; line-height: 1; text-align: center; }
+.timer::before { content: ''; position: absolute; left: 50%; top: -15px; width: 14px; height: 12px; transform: translateX(-50%); border-radius: 50% 50% 3px 3px; background: linear-gradient(180deg, var(--h-brass2), #8a6a2c); box-shadow: 0 0 0 1px #5a4218; }
+.timer::after { display: block; content: ''; position: absolute; inset: 7px; border-radius: 50%; background: repeating-conic-gradient(from -1deg, rgba(42,34,25,.55) 0 2deg, transparent 2deg 30deg); -webkit-mask: radial-gradient(circle, transparent 0 calc(100% - 6px), #000 calc(100% - 5px)); mask: radial-gradient(circle, transparent 0 calc(100% - 6px), #000 calc(100% - 5px)); box-shadow: none; left: 7px; right: 7px; bottom: 7px; height: auto; }
+.timer small { font: 9px var(--f-type); letter-spacing: .18em; color: var(--h-red); margin-top: 3px; }
+.dom { background: var(--h-paper) !important; border-color: var(--h-ink) !important; color: var(--h-ink); border-radius: 50%; }
+.dom.mine { border-color: #24406e !important; box-shadow: inset 0 0 0 3px rgba(36,64,110,.5); } .dom.them { border-color: var(--h-red) !important; box-shadow: inset 0 0 0 3px rgba(156,43,34,.5); }
+.dom b { font-family: var(--f-sten); color: var(--h-ink); }
+.ladrow span { background: var(--h-paper); color: var(--h-ink); clip-path: none; box-shadow: var(--h-card); font-family: var(--f-type); }
+
+/* ---- plano en caja de latón (minimapa) y regla de rumbo ---- */
+#radar { border-radius: 50%; box-shadow: 0 0 0 2px #5a4218, 0 0 0 4px var(--h-brass2), 0 0 0 6px #6e5220, 0 6px 16px rgba(0,0,0,.55); }
+#compass { background: linear-gradient(180deg, rgba(232,222,196,.0) 0, rgba(232,222,196,.9) 22%, rgba(220,207,172,.92) 100%); border-top: 2px solid var(--h-brass); border-bottom: 2px solid #8a6a2c; border-radius: 2px;
+  -webkit-mask: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); mask: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
+
+/* ---- parte de bajas: tiras de telegrama ---- */
+.kf, .kf.me { background: var(--h-grain), var(--h-paper); clip-path: none; border: 0; border-radius: 1px; box-shadow: 0 2px 6px rgba(0,0,0,.4); color: var(--h-ink); text-shadow: none; padding: 3px 12px; font: 14px var(--f-type); letter-spacing: .03em; }
+.kf.me { box-shadow: 0 2px 6px rgba(0,0,0,.4), inset 0 -2px 0 var(--h-red); }
+.kf.me .nm:first-child { color: var(--h-red); }
+.kf .how { color: var(--h-ink2); font: 10px var(--f-type); letter-spacing: .1em; }
+.kf .how .hs { color: var(--h-red); }
+.kf .nm { color: var(--h-ink); }
+
+/* ---- ficha de estado: SALUD escrita a máquina, cifra estarcida y barra de tinta ---- */
+#status { gap: 6px; }
+.hpwrap { background: var(--h-grain), var(--h-paper); border: 0; border-left: 4px solid var(--h-red); box-shadow: var(--h-card); padding: 6px 16px 7px 12px; border-radius: 1px; display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: 12px; row-gap: 2px; align-items: end; }
+.hpwrap::after { content: 'SALUD'; position: static; grid-column: 1 / -1; grid-row: 1; font: 10px var(--f-type); letter-spacing: .3em; color: var(--h-ink2); text-shadow: none; margin: 0; }
+#hp-num { grid-column: 1; grid-row: 2; font: 700 40px var(--f-sten); color: var(--h-ink); text-shadow: none; line-height: .85; min-width: 64px; margin: 0; }
+#hp-num.low { color: var(--h-red); }
+.hpbar { grid-column: 2; grid-row: 2; align-self: center; width: 180px; height: 10px; margin: 4px 0 0; transform: none; border: 1px solid rgba(42,34,25,.6); border-radius: 0; background: rgba(42,34,25,.08); box-shadow: none; }
+.hpbar::after { display: block; background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 1px), rgba(230,220,195,.95) calc(10% - 1px) 10%); }
+#hp-fill, #hp-fill.mid { background: repeating-linear-gradient(115deg, #2a2219 0 2px, #3d3224 2px 4px); box-shadow: none; border-radius: 0; }
+#hp-fill.low { background: repeating-linear-gradient(115deg, #8e2318 0 2px, #a8382a 2px 4px); box-shadow: none; animation: blinkhp .5s infinite alternate; }
+#hp-ghost { background: rgba(156,43,34,.55); border-radius: 0; opacity: .7; }
+.chips { gap: 6px; padding: 0; }
+.chip, .chip.off { background: var(--h-paper2); clip-path: none; border: 0; box-shadow: 0 2px 5px rgba(0,0,0,.35); color: var(--h-ink); text-shadow: none; font: 13px var(--f-type); padding: 2px 9px; border-radius: 1px; }
+.chip.off { opacity: .55; }
+#streak-box .sk { background: var(--h-paper2); clip-path: none; border: 0; box-shadow: 0 2px 5px rgba(0,0,0,.35); color: var(--h-ink); text-shadow: none; padding: 2px 10px; }
+#streak-box .sk .lbl, #streak-box .sk .nx { color: var(--h-ink); font-family: var(--f-type); text-shadow: none; }
+#streak-box .pips i { background: rgba(42,34,25,.2); } #streak-box .pips i.on { background: var(--h-red); }
+
+/* ---- etiqueta del armero: nombre a máquina, sello rojo del modo, cifra estarcida y cartuchos de latón ---- */
+#weapon { text-shadow: none; }
+#weapon .wcard { background: var(--h-grain), var(--h-paper); border: 0; border-right: 4px solid var(--h-brass); box-shadow: var(--h-card); padding: 7px 14px 8px 18px; border-radius: 1px; gap: 2px; justify-items: end; }
+.wtop { gap: 10px; align-items: center; }
+#w-name { font: 13px var(--f-type); letter-spacing: .14em; color: var(--h-ink); text-shadow: none; }
+#w-mode { font: 700 10px var(--f-sten); letter-spacing: .2em; color: var(--h-red); border: 1.5px solid var(--h-red); padding: 1px 5px 0; transform: rotate(-4deg); opacity: .85; border-radius: 2px; }
+#ammo-mag { font: 700 56px var(--f-sten); color: var(--h-ink); text-shadow: none; line-height: .85; }
+#ammo-res { font: 20px var(--f-type); color: var(--h-ink2); text-shadow: none; }
+#weapon.low #ammo-mag { color: var(--h-red); }
+#w-icon { filter: sepia(1) brightness(.35) contrast(1.4); opacity: .85; height: 24px; }
+#ammo-strip { height: auto; min-height: 4px; width: auto; max-width: 190px; background: none; }
+#ammo-strip.pips { display: flex; gap: 3px; justify-content: flex-end; }
+#ammo-strip.pips i { width: 7px; height: 22px; max-width: none; flex: 0 0 7px; position: relative; box-shadow: none; border-radius: 3px 3px 1px 1px; background: linear-gradient(90deg, #8a6a2c, #e0c070 45%, #a8822e); }
+#ammo-strip.pips i u { position: absolute; left: 1px; right: 1px; top: -1px; height: 8px; border-radius: 3px 3px 0 0; background: linear-gradient(90deg, #6e5638, #b49870 45%, #7a6040); }
+#ammo-strip.pips i::after { content: ''; position: absolute; left: 0; right: 0; bottom: 2px; height: 1px; background: rgba(60,40,10,.6); }
+#ammo-strip.pips i.off { background: transparent; box-shadow: inset 0 0 0 1px rgba(42,34,25,.35); }
+#ammo-strip.pips i.off u, #ammo-strip.pips i.off::after { display: none; }
+#ammo-strip.bar { height: 6px; width: 170px; background: rgba(42,34,25,.12); border: 1px solid rgba(42,34,25,.45); }
+#ammo-strip.bar b { background: repeating-linear-gradient(90deg, #a8822e 0 3px, #e0c070 3px 5px); }
+#ammo-strip.bar s { opacity: .4; }
+#ammo-strip.prog b { background: var(--h-ink); }
+#slots { gap: 2px; margin-top: 3px; }
+#slots b, #slots b.cur { clip-path: none; border-radius: 3px 3px 0 0; height: 20px; padding: 0 8px; font: 12px var(--f-type); letter-spacing: .06em; text-shadow: none; border: 0; }
+#slots b { background: rgba(214,201,166,.85); color: var(--h-ink2); box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+#slots b.cur { background: var(--h-ink); color: #e6dcc3; }
+#slots b kbd { background: none; border: 0; color: inherit; opacity: .7; font-family: var(--f-type); }
+.kchip { background: rgba(214,201,166,.85); clip-path: none; color: var(--h-ink); text-shadow: none; font: 11px var(--f-type); padding: 2px 8px; border-radius: 1px; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+
+/* ---- retícula de tinta clara y avisos mecanografiados ---- */
+#crosshair i, #crosshair b { background: rgba(240,232,210,.95); box-shadow: 0 0 0 1px rgba(30,22,12,.6); }
+#ahint { font: 13px var(--f-type); letter-spacing: .16em; }
+#ahint .rb { background: rgba(240,232,210,.25); } #ahint .rb i { background: var(--h-brass2); }
+#prompt, #spectate { background: var(--h-paper); color: var(--h-ink); clip-path: none; border: 0; box-shadow: var(--h-card); font-family: var(--f-type); backdrop-filter: none; text-shadow: none; }
+#prompt kbd, #spectate kbd { background: var(--h-ink); color: #e6dcc3; border: 0; }
+#death .dk { background: var(--h-grain), var(--h-paper); color: var(--h-ink); clip-path: none; border: 0; border-top: 3px solid var(--h-red); box-shadow: var(--h-card); font-family: var(--f-type); backdrop-filter: none; }
+#death .dk b { font-family: var(--f-sten); color: var(--h-red); text-shadow: none; }
+#death .dk .lbl, #death .dk .w { color: var(--h-ink2); }
+.toast { background: var(--h-grain), var(--h-paper); color: var(--h-ink); clip-path: none; border: 0; border-left: 4px solid var(--h-red); box-shadow: var(--h-card); font: 14px var(--f-type); letter-spacing: .04em; backdrop-filter: none; text-shadow: none; }
+.toast kbd { background: var(--h-ink); color: #e6dcc3; border: 0; }
+.rngbox { background: var(--h-grain), var(--h-paper); color: var(--h-ink); clip-path: none; border-top: 3px solid var(--h-brass); box-shadow: var(--h-card); }
+.rngbox * { text-shadow: none; } .rngbox b, .rngbox .rtop b { color: var(--h-ink); font-family: var(--f-sten); } .rngbox small, .rngbox em { color: var(--h-ink2); font-family: var(--f-type); }
+#net-ind, #fps { background: var(--h-paper); color: var(--h-ink); text-shadow: none; font-family: var(--f-type); }
+#center-msg .mid { font-family: var(--f-sten); letter-spacing: .08em; }

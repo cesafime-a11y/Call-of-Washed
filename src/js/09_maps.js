@@ -866,13 +866,13 @@ function buildMinimap() {
   const b = MapSys.bounds, W = b.x1 - b.x0, Hh = b.z1 - b.z0;
   const px = 3, cv = document.createElement('canvas'); cv.width = Math.ceil(W * px); cv.height = Math.ceil(Hh * px);
   const x = cv.getContext('2d');
-  x.fillStyle = '#20231d'; x.fillRect(0, 0, cv.width, cv.height);
+  x.fillStyle = '#d6c9a2'; x.fillRect(0, 0, cv.width, cv.height);
   const list = PHYS.blocks.filter((k) => k.solid && k.kind !== 'bound').sort((p, q) => p.max.y - q.max.y);
   for (const k of list) {
     const top = k.max.y;
-    if (k.kind === 'floor' && top <= 0.1 && top > -0.5) { x.fillStyle = k.pattern === PAT.ASPHALT ? '#2b2c2a' : '#3a3d33'; }
-    else if (top < -0.5) x.fillStyle = '#191b16';
-    else { const l = clamp(70 + top * 18, 70, 190); x.fillStyle = `rgb(${l},${l * 0.98},${l * 0.9})`; }
+    if (k.kind === 'floor' && top <= 0.1 && top > -0.5) { x.fillStyle = k.pattern === PAT.ASPHALT ? '#bfb08a' : '#cdbf98'; }
+    else if (top < -0.5) x.fillStyle = '#a99a74';
+    else { const l = clamp(150 - top * 11, 62, 150); x.fillStyle = `rgb(${l | 0},${(l * 0.86) | 0},${(l * 0.66) | 0})`; }
     x.fillRect((k.min.x - b.x0) * px, (k.min.z - b.z0) * px, Math.max(1, (k.max.x - k.min.x) * px), Math.max(1, (k.max.z - k.min.z) * px));
   }
   return { canvas: cv, px, x0: b.x0, z0: b.z0, w: W, h: Hh };

@@ -874,7 +874,7 @@ const UI = {
       const pips = max <= 12, key = 'a' + max + ':' + (pips ? inv.mag : Math.round(inv.mag / max * 60));
       if (st.strip !== key) {
         st.strip = key;
-        if (pips) strip.innerHTML = Array.from({ length: max }, (_, i) => `<i class="${i < max - inv.mag ? 'off' : ''}"></i>`).join('');
+        if (pips) strip.innerHTML = Array.from({ length: max }, (_, i) => `<i class="${i < max - inv.mag ? 'off' : ''}"><u></u></i>`).join('');
         else strip.innerHTML = `<b style="width:${Math.max(0, Math.min(100, 100 * inv.mag / max)).toFixed(1)}%"></b><s style="--n:${Math.max(1, Math.round(max / 5))}"></s>`;
         strip.className = pips ? 'pips' : 'bar';
       }
@@ -1023,25 +1023,25 @@ const UI = {
     const px = f.pos.x, pz = f.pos.z, yaw = f.input.yaw;
     c.save();
     c.beginPath(); c.arc(cx, cy, R, 0, TAU); c.clip();
-    c.fillStyle = 'rgba(12,14,10,0.78)'; c.fillRect(0, 0, W, H);
+    c.fillStyle = '#d6c9a2'; c.fillRect(0, 0, W, H);
     c.translate(cx, cy); c.rotate(yaw); c.scale(s, s);
-    c.globalAlpha = 0.85;
+    c.globalAlpha = 0.95;
     c.drawImage(mm.canvas, mm.x0 - px, mm.z0 - pz, mm.w, mm.h);
     c.globalAlpha = 1;
     const dot = (x, z, r, col) => { c.fillStyle = col; c.beginPath(); c.arc(x - px, z - pz, r / s, 0, TAU); c.fill(); };
-    if (G.mode.tags) for (const t of Tags.list) dot(t.x, t.z, 3.4, t.vt === f.team ? '#5ab8ff' : '#ff6a3a');
+    if (G.mode.tags) for (const t of Tags.list) dot(t.x, t.z, 3.4, t.vt === f.team ? '#24406e' : '#a3241a');
     if (G.mode.dom) MapSys.dom.forEach((d, i) => {
-      const st = G.match.dom[i], col = st.owner < 0 ? '#cfc8b0' : st.owner === f.team ? '#5ab8ff' : '#ff5040';
+      const st = G.match.dom[i], col = st.owner < 0 ? '#5a4c34' : st.owner === f.team ? '#24406e' : '#a3241a';
       c.strokeStyle = col; c.lineWidth = 2 / s; c.beginPath(); c.arc(d.x - px, d.z - pz, d.r, 0, TAU); c.stroke();
       c.save(); c.translate(d.x - px, d.z - pz); c.rotate(-yaw); c.scale(1 / s, 1 / s); c.fillStyle = col; c.font = '700 12px "Barlow Condensed", sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(d.id, 0, 0); c.restore();
     });
     const jam = Streaks.jammed(f);
     for (const o of G.fighters) {
       if (o === f || !o.alive) continue;
-      if (!Rules.isEnemy(f, o)) dot(o.pos.x, o.pos.z, 3.4, '#5ab8ff');
-      else if (!jam && (G.time - (o.lastLoudT ?? -9) < 1.6 || Streaks.revealed(f, o))) dot(o.pos.x, o.pos.z, 3.6, '#ff5040');
+      if (!Rules.isEnemy(f, o)) dot(o.pos.x, o.pos.z, 3.4, '#24406e');
+      else if (!jam && (G.time - (o.lastLoudT ?? -9) < 1.6 || Streaks.revealed(f, o))) dot(o.pos.x, o.pos.z, 3.8, '#a3241a');
     }
-    for (const cr of Streaks.crates) if (cr.t > 1.6) dot(cr.x, cr.z, 3, '#8fe07a');
+    for (const cr of Streaks.crates) if (cr.t > 1.6) dot(cr.x, cr.z, 3, '#3f5a24');
     c.restore();
     if (jam) { // estática: el radar enemigo está interferido
       c.save(); c.beginPath(); c.arc(cx, cy, R, 0, TAU); c.clip();
@@ -1049,10 +1049,17 @@ const UI = {
       c.restore();
     }
     // jugador al centro, mirando hacia arriba
-    c.fillStyle = '#f2ead0'; c.beginPath(); c.moveTo(cx, cy - 7); c.lineTo(cx + 5, cy + 5); c.lineTo(cx, cy + 2); c.lineTo(cx - 5, cy + 5); c.closePath(); c.fill();
-    c.strokeStyle = 'rgba(230,226,211,0.35)'; c.lineWidth = 1.5; c.beginPath(); c.arc(cx, cy, R, 0, TAU); c.stroke();
-    c.fillStyle = 'rgba(230,226,211,0.7)'; c.font = '600 10px "Barlow Condensed", sans-serif'; c.textAlign = 'center';
-    c.fillText('N', cx + (R - 9) * Math.sin(yaw), cy - (R - 9) * Math.cos(yaw) + 3);
+    // 3.4.0: viñeta de papel viejo, flecha de tinta y rosa de los vientos grabada en el bisel de latón
+    const vg = c.createRadialGradient(cx, cy, R * 0.45, cx, cy, R); vg.addColorStop(0, 'rgba(60,40,15,0)'); vg.addColorStop(1, 'rgba(60,40,15,0.38)');
+    c.save(); c.beginPath(); c.arc(cx, cy, R, 0, TAU); c.clip(); c.fillStyle = vg; c.fillRect(0, 0, W, H); c.restore();
+    c.fillStyle = '#2a2219'; c.beginPath(); c.moveTo(cx, cy - 8); c.lineTo(cx + 5.5, cy + 6); c.lineTo(cx, cy + 2.5); c.lineTo(cx - 5.5, cy + 6); c.closePath(); c.fill();
+    c.strokeStyle = '#8a6a2c'; c.lineWidth = 5; c.beginPath(); c.arc(cx, cy, R - 1.5, 0, TAU); c.stroke();
+    c.strokeStyle = '#d6b25e'; c.lineWidth = 1.2; c.beginPath(); c.arc(cx, cy, R - 4.2, 0, TAU); c.stroke();
+    for (let i = 0; i < 16; i++) { const a = i * TAU / 16 - yaw, r0 = R - (i % 4 ? 3.2 : 0.2); c.strokeStyle = 'rgba(40,28,10,0.8)'; c.lineWidth = i % 4 ? 0.8 : 1.4; c.beginPath(); c.moveTo(cx + Math.sin(-a) * r0, cy - Math.cos(-a) * r0); c.lineTo(cx + Math.sin(-a) * (R - 0.5), cy - Math.cos(-a) * (R - 0.5)); c.stroke(); }
+    const nx = cx + (R - 13) * Math.sin(yaw), ny = cy - (R - 13) * Math.cos(yaw);
+    c.fillStyle = '#e6dcc3'; c.beginPath(); c.arc(nx, ny, 7, 0, TAU); c.fill(); c.strokeStyle = '#8a6a2c'; c.lineWidth = 1; c.stroke();
+    c.fillStyle = '#9c2b22'; c.font = '700 11px "Stardos Stencil", "Barlow Condensed", sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText('N', nx, ny + 0.5);
   },
   drawCompass() {
     const cv = this.el.compass, f = G.local; if (!cv || cv.hidden) return;
@@ -1066,24 +1073,24 @@ const UI = {
     c.textAlign = 'center'; c.textBaseline = 'middle';
     for (let d = Math.floor((hd - 66) / 5) * 5; d <= hd + 66; d += 5) {
       const x = X(d * Math.PI / 180), dd = ((d % 360) + 360) % 360, big = dd % 45 === 0, mid = dd % 15 === 0;
-      c.strokeStyle = big ? 'rgba(242,234,208,.95)' : 'rgba(231,226,208,.5)'; c.lineWidth = big ? 2 : 1;
-      c.beginPath(); c.moveTo(x, H - 3); c.lineTo(x, H - 3 - (big ? 11 : mid ? 7 : 4)); c.stroke();
-      if (big) { c.font = '700 15px "Barlow Condensed", sans-serif'; c.fillStyle = dd % 90 === 0 ? '#f0c46a' : '#e7e2d0'; c.fillText(names[dd], x, H - 23); }
-      else if (dd % 30 === 0) { c.font = '600 10px "Barlow Condensed", sans-serif'; c.fillStyle = 'rgba(231,226,208,.65)'; c.fillText(String(dd), x, H - 19); }
+      c.strokeStyle = big ? 'rgba(42,34,25,.95)' : 'rgba(42,34,25,.55)'; c.lineWidth = big ? 2 : 1;
+      c.beginPath(); c.moveTo(x, H - 4); c.lineTo(x, H - 4 - (big ? 10 : mid ? 7 : 4)); c.stroke();
+      if (big) { c.font = '700 15px "Stardos Stencil", "Barlow Condensed", sans-serif'; c.fillStyle = dd % 90 === 0 ? '#9c2b22' : '#2a2219'; c.fillText(names[dd], x, H - 23); }
+      else if (dd % 30 === 0) { c.font = '10px "Special Elite", "Courier New", monospace'; c.fillStyle = 'rgba(42,34,25,.7)'; c.fillText(String(dd), x, H - 21); }
     }
     // objetivos: puntos de Dominio, placas y cajas de suministro
     const mark = (x, z, label, col, r) => {
       const px = clamp(X(Math.atan2(x - f.pos.x, -(z - f.pos.z))), 14, W - 14), off = px <= 14 || px >= W - 14;
-      c.globalAlpha = off ? 0.55 : 1; c.fillStyle = 'rgba(12,14,10,.85)'; c.beginPath(); c.arc(px, 11, r + 2, 0, TAU); c.fill();
+      c.globalAlpha = off ? 0.55 : 1; c.fillStyle = 'rgba(42,34,25,.9)'; c.beginPath(); c.arc(px, 11, r + 2, 0, TAU); c.fill();
       c.fillStyle = col; c.beginPath(); c.arc(px, 11, r, 0, TAU); c.fill();
       if (label) { c.fillStyle = '#10120d'; c.font = '700 13px "Barlow Condensed", sans-serif'; c.fillText(label, px, 11.5); }
       c.globalAlpha = 1;
     };
-    if (G.mode.dom && G.match) MapSys.dom.forEach((d, i) => { const st = G.match.dom[i]; if (st) mark(d.x, d.z, 'ABC'[i] || String(i + 1), st.owner < 0 ? '#cfc8b0' : st.owner === f.team ? '#5ab8ff' : '#ff5040', 8); });
+    if (G.mode.dom && G.match) MapSys.dom.forEach((d, i) => { const st = G.match.dom[i]; if (st) mark(d.x, d.z, 'ABC'[i] || String(i + 1), st.owner < 0 ? '#e6dcc3' : st.owner === f.team ? '#7a9cd0' : '#d0503e', 8); });
     if (G.mode.tags) { let n = 0; for (const t of Tags.list) { if (n++ > 6) break; mark(t.x, t.z, '', t.vt === f.team ? '#5ab8ff' : '#ff6a3a', 4); } }
     for (const cr of Streaks.crates) if (cr.t > 1.6) mark(cr.x, cr.z, '▣', '#8fe07a', 7);
     // centro: guía y rumbo
-    c.fillStyle = '#f0c46a'; c.beginPath(); c.moveTo(cx - 6, 0); c.lineTo(cx + 6, 0); c.lineTo(cx, 8); c.closePath(); c.fill();
+    c.fillStyle = '#9c2b22'; c.beginPath(); c.moveTo(cx - 6, 0); c.lineTo(cx + 6, 0); c.lineTo(cx, 8); c.closePath(); c.fill();
   },
   center(html, ms = 1200, cls = '') {
     const c = this.el['center-msg']; c.className = 'hud-pad ' + cls; c.innerHTML = html; clearTimeout(this._ct);

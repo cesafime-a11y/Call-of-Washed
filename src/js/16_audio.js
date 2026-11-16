@@ -79,11 +79,32 @@ const AUDIO = {
   },
   // disparo: transitorio + cuerpo + golpe grave + cola
   gun(o, t, P) {
+    // 3.4.0: de lejos el fogonazo llega antes que el estampido (340 m/s) y el valle devuelve el disparo en dos o tres ecos
+    const d = this._d || 0;
+    if (d > 45) { t += Math.min(2.4, d / 340); P = { ...P, crack: P.crack * 0.55, crackF: (P.crackF || 3000) * 0.6, bodyF: P.bodyF * clamp(1 - d / 900, 0.35, 1) }; }
+    if (!this.indoor || this.indoor < 0.5) { const n = d > 200 ? 3 : 2; for (let i = 0; i < n; i++) this.nz(o, t + 0.32 + i * (0.41 + i * 0.17) + d / 2200, 0.5 + i * 0.25, (P.tailV || 0.2) * (0.5 - i * 0.12), 'lowpass', 700 - i * 160, 140, 0.5, 0.05); }
+    // culatazo grave con un poco de saturación (pólvora de la época: más humo, más golpe)
+    if (P.thumpV > 0.6) this.osc(o, 'triangle', P.thumpF * 0.55, P.thumpF * 0.25, t, P.thumpD * 1.6, P.thumpV * 0.25);
     this.nz(o, t, 0.025, P.crack, 'highpass', P.crackF || 3000);
     this.nz(o, t, P.body, P.bodyV, 'lowpass', P.bodyF, P.bodyF * 0.25, 0.7);
     this.osc(o, 'sine', P.thumpF, P.thumpF * 0.35, t, P.thumpD, P.thumpV);
     if (P.tail) this.nz(o, t + 0.03, P.tail, P.tailV, 'lowpass', 900, 160, 0.5, 0.03);
   },
+  // corneta: notas con ataque de labio, vibrato leve y timbre de latón (diente de sierra filtrado)
+  bugle(dest, t, notes, vol = 0.1) {
+    const c = this.ctx; let tt = t;
+    for (const [f, d] of notes) {
+      const os = c.createOscillator(), o2 = c.createOscillator(), fl = c.createBiquadFilter(), g = c.createGain(), lfo = c.createOscillator(), lg = c.createGain();
+      os.type = 'sawtooth'; o2.type = 'triangle'; os.frequency.setValueAtTime(f * 0.97, tt); os.frequency.exponentialRampToValueAtTime(f, tt + 0.04); o2.frequency.value = f * 2;
+      lfo.frequency.value = 5.2; lg.gain.value = f * 0.004; lfo.connect(lg); lg.connect(os.frequency);
+      fl.type = 'lowpass'; fl.frequency.setValueAtTime(900, tt); fl.frequency.exponentialRampToValueAtTime(2600, tt + 0.06); fl.Q.value = 1.4;
+      g.gain.setValueAtTime(0.0001, tt); g.gain.exponentialRampToValueAtTime(vol, tt + 0.035); g.gain.setValueAtTime(vol * 0.85, tt + Math.max(0.05, d - 0.06)); g.gain.exponentialRampToValueAtTime(0.0001, tt + d + 0.08);
+      const g2 = c.createGain(); g2.gain.value = 0.25; os.connect(fl); o2.connect(g2); g2.connect(fl); fl.connect(g); g.connect(dest);
+      os.start(tt); o2.start(tt); lfo.start(tt); os.stop(tt + d + 0.12); o2.stop(tt + d + 0.12); lfo.stop(tt + d + 0.12);
+      tt += d + 0.03;
+    }
+  },
+  brass(dest, t, f, vol = 0.06) { for (const [k, g, d] of [[1, 1, 1.1], [2.76, 0.4, 0.5], [5.4, 0.18, 0.25]]) this.osc(dest, 'sine', f * k, f * k * 0.998, t, d, vol * g, 0.002); },
   play(name, pos, vol = 1, opt = {}) {
     if (!this.ok || this.ctx.state !== 'running') return;
     const nowT = this.ctx.currentTime;
@@ -100,6 +121,7 @@ const AUDIO = {
     win.push(nowT);
     this.last[name] = nowT;
     const wet = { kal: 0.55, pdw: 0.4, dmr: 0.7, lmg: 0.55, magnum: 0.55, rifle: 0.5, smg: 0.45, shotgun: 0.55, sniper: 0.7, pistol: 0.4, rocket: 0.5, explosion: 0.8, nadeBounce: 0.2, break: 0.4, supp: 0.12, jet: 0.5, whistle: 0.2, smoke: 0.15 }[name] || 0;
+    this._d = pos ? this.lp.distanceTo(pos) : 0;
     const o = this.out(pos, vol, wet); if (!o) return;
     const t = nowT + 0.004, p = opt.pitch || 1, r = (a, b) => a + Math.random() * (b - a);
     switch (name) {
@@ -108,7 +130,7 @@ const AUDIO = {
       case 'pistol': this.gun(o, t, { crack: 0.7, crackF: 3600, body: 0.09, bodyV: 0.6, bodyF: 2900 * p, thumpF: 190, thumpD: 0.07, thumpV: 0.4, tail: 0.4, tailV: 0.12 }); break;
       case 'kal': this.gun(o, t, { crack: 1.0, crackF: 2700, body: 0.2, bodyV: 0.95, bodyF: 2100 * p, thumpF: 120, thumpD: 0.15, thumpV: 0.85, tail: 0.85, tailV: 0.26 }); break;
       case 'pdw': this.gun(o, t, { crack: 0.55, crackF: 4300, body: 0.08, bodyV: 0.55, bodyF: 3600 * p, thumpF: 200, thumpD: 0.06, thumpV: 0.35, tail: 0.35, tailV: 0.11 }); break;
-      case 'dmr': this.gun(o, t, { crack: 1.0, crackF: 2900, body: 0.22, bodyV: 1.0, bodyF: 2300 * p, thumpF: 120, thumpD: 0.18, thumpV: 0.9, tail: 1.2, tailV: 0.3 }); this.nz(o, t + 0.2, 0.04, 0.15, 'bandpass', 2000, 0, 4); break;
+      case 'rifle2': case 'dmr': this.gun(o, t, { crack: 1.0, crackF: 2900, body: 0.22, bodyV: 1.0, bodyF: 2300 * p, thumpF: 120, thumpD: 0.18, thumpV: 0.9, tail: 1.2, tailV: 0.3 }); this.nz(o, t + 0.2, 0.04, 0.15, 'bandpass', 2000, 0, 4); break;
       case 'lmg': this.gun(o, t, { crack: 0.95, crackF: 2500, body: 0.18, bodyV: 0.9, bodyF: 1900 * p, thumpF: 105, thumpD: 0.16, thumpV: 0.95, tail: 0.9, tailV: 0.28 }); break;
       case 'magnum': this.gun(o, t, { crack: 1.0, crackF: 2300, body: 0.26, bodyV: 1.0, bodyF: 1700 * p, thumpF: 100, thumpD: 0.22, thumpV: 1.0, tail: 1.1, tailV: 0.3 }); break;
       case 'shotgun': this.gun(o, t, { crack: 0.8, crackF: 2400, body: 0.32, bodyV: 1.0, bodyF: 1800 * p, thumpF: 95, thumpD: 0.22, thumpV: 0.95, tail: 1.0, tailV: 0.3 }); this.nz(o, t + 0.45, 0.06, 0.25, 'bandpass', 1400, 0, 3); this.nz(o, t + 0.58, 0.05, 0.25, 'bandpass', 900, 0, 3); break;
@@ -119,9 +141,12 @@ const AUDIO = {
       case 'whistle': this.osc(o, 'sine', 1900, 600, t, 1.05, 0.09, 0.15); this.nz(o, t, 1.05, 0.06, 'bandpass', 1500, 500, 6, 0.2); break;
       case 'jet': { // pasada de bombardero de hélice: zumbido grave de dos motores que crece y se aleja
         this.nz(o, t, 6.5, 0.5, 'lowpass', 260, 520, 0.8, 2.6); this.osc(o, 'sawtooth', 78, 70, t + 0.4, 5.6, 0.07, 2.2); this.osc(o, 'sawtooth', 83, 74, t + 0.4, 5.6, 0.06, 2.2); this.osc(o, 'square', 39, 36, t + 0.6, 5.2, 0.04, 2.2); break; }
-      case 'radio': this.nz(o, t, 0.05, 0.12, 'bandpass', 2400, 0, 2); this.osc(o, 'square', 1250, 1250, t + 0.05, 0.06, 0.035); this.osc(o, 'square', 1650, 1650, t + 0.13, 0.08, 0.035); this.nz(o, t + 0.22, 0.12, 0.1, 'bandpass', 1800, 900, 1.5); break;
-      case 'alarm': for (let i = 0; i < 3; i++) this.osc(o, 'sawtooth', 620, 560, t + i * 0.22, 0.16, 0.05); break;
-      case 'streak': [587, 784, 988].forEach((f, i) => this.osc(o, 'triangle', f, f, t + i * 0.08, 0.28, 0.1)); this.osc(o, 'sine', 196, 196, t, 0.5, 0.12); break;
+      // teléfono de campaña: timbre de magneto y clic de horquilla
+      case 'radio': for (let i = 0; i < 6; i++) { this.osc(o, 'square', 880, 860, t + i * 0.045, 0.035, 0.03); this.nz(o, t + i * 0.045, 0.02, 0.06, 'bandpass', 3400, 0, 6); } this.nz(o, t + 0.34, 0.03, 0.18, 'bandpass', 1700, 0, 3); break;
+      // sirena de manivela que sube y baja
+      case 'alarm': { const c = this.ctx, os = c.createOscillator(), g = c.createGain(), f = c.createBiquadFilter(); os.type = 'sawtooth'; os.frequency.setValueAtTime(260, t); os.frequency.exponentialRampToValueAtTime(760, t + 0.9); os.frequency.exponentialRampToValueAtTime(420, t + 1.7);
+        f.type = 'bandpass'; f.frequency.value = 900; f.Q.value = 0.7; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.06, t + 0.3); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.8); os.connect(f); f.connect(g); g.connect(o); os.start(t); os.stop(t + 1.85); break; }
+      case 'streak': this.bugle(o, t, [[392, 0.1], [523, 0.1], [659, 0.32]], 0.1); break;
       case 'prone': this.nz(o, t, 0.25, 0.28, 'lowpass', 900, 250, 0.8, 0.03); this.osc(o, 'sine', 95, 50, t + 0.18, 0.12, 0.25); break;
       case 'rocket': this.nz(o, t, 0.5, 0.8, 'bandpass', 300, 2400, 1.5, 0.01); this.osc(o, 'sine', 90, 40, t, 0.3, 0.8); this.nz(o, t + 0.05, 1.2, 0.35, 'lowpass', 900, 200, 0.6, 0.05); break;
       case 'explosion':
@@ -132,14 +157,17 @@ const AUDIO = {
       case 'knifeWall': this.nz(o, t, 0.04, 0.5, 'highpass', 3000); this.osc(o, 'triangle', 2400, 1800, t, 0.12, 0.12); break;
       case 'hit': this.nz(o, t, 0.07, 0.55, 'lowpass', 1100, 250); this.osc(o, 'sine', 130, 60, t, 0.08, 0.45); break;
       // impactos: un tic seco con golpe grave; cabeza = campanilla; pared = metálico; explosión = golpe sordo
-      case 'hitmark': { const q = opt.pitch || 1; this.osc(o, 'square', 1900 * q, 1500 * q, t, 0.035, 0.07); this.osc(o, 'sine', 340, 170, t, 0.06, 0.16); this.nz(o, t, 0.022, 0.16, 'highpass', 5500); break; }
-      case 'headshot': this.osc(o, 'sine', 2700, 2550, t, 0.2, 0.14); this.osc(o, 'triangle', 4050, 3900, t, 0.1, 0.05); this.osc(o, 'sine', 420, 200, t, 0.07, 0.18); this.nz(o, t, 0.03, 0.24, 'highpass', 6500); break;
+      // 3.4.0: impactos de época: golpe seco de tela y carne (sin pitido electrónico); la cabeza, un chasquido de casco
+      case 'hitmark': { const q = opt.pitch || 1; this.nz(o, t, 0.06, 0.32, 'lowpass', 1300 * q, 300, 0.9); this.osc(o, 'sine', 210 * q, 90, t, 0.07, 0.2); this.nz(o, t, 0.012, 0.08, 'bandpass', 2600 * q, 0, 2); break; }
+      case 'headshot': this.nz(o, t, 0.02, 0.22, 'bandpass', 3200, 0, 3); this.osc(o, 'triangle', 1480, 1320, t, 0.09, 0.05); this.osc(o, 'sine', 240, 100, t, 0.08, 0.22); this.nz(o, t + 0.01, 0.07, 0.2, 'lowpass', 900, 250); break;
       case 'hitpen': this.osc(o, 'sawtooth', 1150, 850, t, 0.06, 0.05); this.osc(o, 'sine', 1650, 1500, t, 0.12, 0.07); this.nz(o, t, 0.05, 0.22, 'bandpass', 2200, 0, 2.5); this.osc(o, 'sine', 260, 130, t, 0.07, 0.14); break;
       case 'hitboom': this.osc(o, 'sine', 190, 80, t, 0.12, 0.28); this.nz(o, t, 0.09, 0.28, 'lowpass', 1000, 300); this.osc(o, 'triangle', 900, 700, t, 0.05, 0.05); break;
-      case 'killconfirm': this.osc(o, 'sine', 880, 870, t, 0.1, 0.13); this.osc(o, 'triangle', 1320, 1310, t + 0.07, 0.14, 0.1); this.osc(o, 'sine', 210, 80, t, 0.14, 0.22); this.nz(o, t, 0.03, 0.2, 'highpass', 4500); break;
-      case 'killhead': [1175, 1568, 2349].forEach((f, i) => this.osc(o, 'sine', f, f, t + i * 0.055, 0.16, 0.11)); this.osc(o, 'sine', 230, 80, t, 0.16, 0.26); this.nz(o, t, 0.04, 0.28, 'highpass', 6000); break;
-      case 'levelup': [523, 659, 784, 1046].forEach((f, i) => { this.osc(o, 'triangle', f, f, t + i * 0.085, 0.35, 0.1); this.osc(o, 'sine', f * 2, f * 2, t + i * 0.085, 0.25, 0.03); }); this.nz(o, t + 0.3, 0.5, 0.06, 'highpass', 6000, 9000, 0.5, 0.1); break;
-      case 'camo': [1568, 2093, 2637].forEach((f, i) => this.osc(o, 'sine', f, f, t + i * 0.07, 0.4, 0.08)); this.osc(o, 'triangle', 784, 784, t, 0.3, 0.08); break;
+      // baja: el cuerpo que cae lejos y un golpe de tambor apagado (no una campanilla)
+      case 'killconfirm': this.osc(o, 'sine', 120, 52, t, 0.22, 0.32); this.nz(o, t, 0.14, 0.22, 'lowpass', 700, 160, 0.8); this.nz(o, t + 0.02, 0.05, 0.1, 'bandpass', 1500, 0, 1.5); break;
+      case 'killhead': this.osc(o, 'sine', 130, 50, t, 0.26, 0.34); this.nz(o, t, 0.16, 0.24, 'lowpass', 800, 160, 0.8); this.nz(o, t, 0.02, 0.16, 'bandpass', 3000, 0, 3); this.osc(o, 'triangle', 1480, 1300, t, 0.1, 0.04); break;
+      // ascenso: toque de corneta (cuatro notas de la serie natural)
+      case 'levelup': this.bugle(o, t, [[392, 0.16], [523, 0.16], [659, 0.16], [784, 0.6]], 0.12); break;
+      case 'camo': this.bugle(o, t, [[523, 0.12], [659, 0.12], [784, 0.4]], 0.1); break;
       case 'whiz': this.nz(o, t, 0.12, 0.5, 'bandpass', r(2500, 4000), r(1200, 1800), 6, 0.01); this.nz(o, t, 0.02, 0.35, 'highpass', 6000); break;
       case 'ric': this.osc(o, 'sine', r(2600, 3600), r(1200, 1800), t, 0.25, 0.1); break;
       case 'impact': this.nz(o, t, 0.05, 0.3, 'bandpass', opt.f || 1800, 0, 1.5); break;
@@ -161,6 +189,11 @@ const AUDIO = {
         }
         break;
       }
+      case 'bolt': { const k = opt.k === 'sniper' ? 0.92 : 1;
+        this.nz(o, t, 0.035, 0.3, 'bandpass', 1900 * k, 0, 4); this.osc(o, 'square', 520 * k, 380, t, 0.025, 0.035);
+        this.nz(o, t + 0.11, 0.09, 0.26, 'bandpass', 1300 * k, 2100 * k, 2.2, 0.01); this.nz(o, t + 0.14, 0.03, 0.18, 'highpass', 4200);
+        this.nz(o, t + 0.3, 0.07, 0.3, 'bandpass', 1500 * k, 900, 2.4, 0.005); this.osc(o, 'sine', 240, 140, t + 0.36, 0.05, 0.12);
+        this.nz(o, t + 0.43, 0.03, 0.34, 'bandpass', 2300 * k, 0, 5); this.osc(o, 'square', 330, 260, t + 0.43, 0.03, 0.04); break; }
       case 'dry': this.nz(o, t, 0.02, 0.3, 'highpass', 4000); this.osc(o, 'square', 1800, 1700, t, 0.015, 0.05); break;
       case 'pin': this.nz(o, t, 0.03, 0.35, 'highpass', 5000); this.osc(o, 'triangle', 3200, 2800, t + 0.03, 0.1, 0.08); break;
       case 'throw': this.nz(o, t, 0.3, 0.3, 'bandpass', 400, 1600, 2, 0.05); break;
@@ -173,6 +206,9 @@ const AUDIO = {
         else if (s === 'metal') { this.nz(o, t, 0.04, 0.3, 'bandpass', r(900, 1300), 0, 2); this.osc(o, 'triangle', r(320, 420), 250, t, 0.12, 0.08); }
         else if (s === 'wood') { this.nz(o, t, 0.06, 0.35, 'lowpass', r(600, 900), 200, 0.8); this.osc(o, 'sine', r(140, 180), 90, t, 0.06, 0.15); }
         else { this.nz(o, t, 0.05, 0.32, 'bandpass', r(1200, 1900), 0, 1.4); this.nz(o, t, 0.03, 0.12, 'highpass', 4500); }
+        // 3.4.0: botas claveteadas: un tintineo corto sobre piedra, adoquín y metal; crujido de grava en tierra
+        if (s === 'concrete' || s === 'metal') this.osc(o, 'sine', r(3800, 5200), r(3000, 3600), t + 0.008, 0.04, 0.012);
+        if (s === 'dirt') this.nz(o, t + 0.03, 0.05, 0.07, 'bandpass', r(2600, 3600), 0, 3);
         break;
       }
       case 'land': this.nz(o, t, 0.12, 0.5, 'lowpass', 600, 150); this.osc(o, 'sine', 110, 50, t, 0.1, 0.35); break;
@@ -184,15 +220,22 @@ const AUDIO = {
       case 'pain': { const c = this.ctx, os = c.createOscillator(), g = c.createGain(), f = c.createBiquadFilter(); os.type = 'sawtooth'; os.frequency.setValueAtTime(r(140, 170) * p, t); os.frequency.exponentialRampToValueAtTime(r(95, 115) * p, t + 0.18); f.type = 'bandpass'; f.frequency.value = 650; f.Q.value = 3; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.18, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.2); os.connect(f); f.connect(g); g.connect(o); os.start(t); os.stop(t + 0.25); break; }
       case 'break': this.nz(o, t, 0.4, 0.6, 'lowpass', 1600, 250); for (let i = 0; i < 4; i++) this.nz(o, t + i * 0.05 + r(0, 0.03), 0.05, 0.3, 'bandpass', r(500, 1500), 0, 2); break;
       case 'pickup': this.nz(o, t, 0.05, 0.3, 'bandpass', 1500, 0, 3); this.nz(o, t + 0.12, 0.06, 0.3, 'bandpass', 1100, 0, 3); break;
-      case 'beep': this.osc(o, 'sine', 760, 760, t, 0.12, 0.2); break;
-      case 'go': this.osc(o, 'sawtooth', 380, 400, t, 0.5, 0.06); this.osc(o, 'sawtooth', 570, 600, t, 0.5, 0.04); this.osc(o, 'sine', 760, 760, t, 0.5, 0.1); break;
-      case 'win': [392, 523, 659, 784].forEach((f, i) => this.osc(o, 'triangle', f, f, t + i * 0.12, 0.5, 0.1)); break;
-      case 'lose': [440, 415, 349, 294].forEach((f, i) => this.osc(o, 'triangle', f, f, t + i * 0.16, 0.5, 0.09)); break;
-      case 'capture': [523, 784, 1046].forEach((f, i) => this.osc(o, 'triangle', f, f, t + i * 0.07, 0.3, 0.1)); break;
-      case 'medal': this.osc(o, 'triangle', 880, 880, t, 0.16, 0.1); this.osc(o, 'triangle', 1320, 1320, t + 0.08, 0.2, 0.08); break;
-      case 'medal2': [784, 1175, 1568].forEach((f, i) => this.osc(o, 'triangle', f, f, t + i * 0.07, 0.22, 0.09)); break;
-      case 'medal3': [659, 988, 1319, 1976].forEach((f, i) => this.osc(o, 'triangle', f, f, t + i * 0.075, 0.3, 0.09)); this.osc(o, 'sine', 330, 330, t, 0.6, 0.12); this.nz(o, t, 0.4, 0.05, 'highpass', 6000, 9000, 0.5, 0.05); break;
-      case 'ui': this.osc(o, 'triangle', 1250, 900, t, 0.04, 0.08); this.osc(o, 'sine', 2100, 1900, t, 0.025, 0.03); this.nz(o, t, 0.012, 0.05, 'highpass', 5500); break;
+      // cuenta atrás: tic de reloj de bolsillo; salida: silbato de oficial (de trinchera)
+      case 'beep': this.nz(o, t, 0.025, 0.28, 'bandpass', 3100, 0, 7); this.osc(o, 'sine', 1900, 1900, t, 0.03, 0.06); break;
+      case 'go': { const c = this.ctx, os = c.createOscillator(), g = c.createGain(), lfo = c.createOscillator(), lg = c.createGain(); os.type = 'triangle'; os.frequency.value = 2650; lfo.frequency.value = 38; lg.gain.value = 120; lfo.connect(lg); lg.connect(os.frequency);
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.09, t + 0.03); g.gain.setValueAtTime(0.09, t + 0.55); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.75); os.connect(g); g.connect(o); os.start(t); lfo.start(t); os.stop(t + 0.8); lfo.stop(t + 0.8);
+        this.nz(o, t, 0.75, 0.05, 'bandpass', 2600, 0, 3, 0.03); break; }
+      // fin de partida: corneta (victoria: diana; derrota: toque de silencio)
+      case 'win': this.bugle(o, t, [[523, 0.14], [659, 0.14], [784, 0.14], [1046, 0.3], [784, 0.14], [1046, 0.7]], 0.12); break;
+      case 'lose': this.bugle(o, t, [[392, 0.5], [392, 0.18], [523, 1.0], [392, 0.5], [523, 0.18], [659, 1.1]], 0.1); break;
+      case 'capture': this.bugle(o, t, [[523, 0.1], [784, 0.3]], 0.1); break;
+      // medallas: campanilla de latón (más golpes cuanto mayor la medalla)
+      case 'medal': this.brass(o, t, 1320, 0.06); break;
+      case 'medal2': this.brass(o, t, 1175, 0.06); this.brass(o, t + 0.12, 1568, 0.05); break;
+      case 'medal3': this.brass(o, t, 988, 0.07); this.brass(o, t + 0.12, 1319, 0.06); this.brass(o, t + 0.24, 1976, 0.05); break;
+      // menús: tecla de máquina de escribir
+      case 'ui': this.nz(o, t, 0.018, 0.22, 'bandpass', 2400, 0, 2.5); this.osc(o, 'square', 190, 120, t, 0.02, 0.05); this.nz(o, t + 0.022, 0.03, 0.08, 'lowpass', 900, 0, 1); break;
+      case 'uibell': this.brass(o, t, 2793, 0.04); break;
       case 'distant': {
         const k = opt.k;
         if (k === 'boom') { this.nz(o, t, 2.2, 0.5, 'lowpass', 300, 60, 0.6, 0.05); this.osc(o, 'sine', 55, 25, t, 1.5, 0.45); }

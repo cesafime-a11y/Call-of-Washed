@@ -413,7 +413,7 @@ function boot() {
 }
 // ganchos para pruebas automatizadas (no afectan el juego)
 window.__COW = {
-  gloveHandGeo, classKeys, setClass, curClassKey, className, linkSlots, MODES_RANGE: MODES.range, THREE, PartBatch, weaponGeometry, _wmCache, buildWeaponModel, SoldierView, Mannequin, PART_NAMES, SKEL, Fighter, OPERATORS, CAMOS, HELMETS, FACES, VESTS, PACKS, PADS, WSKINS, classLoadout, makeBlock, PAT, OnlineUI, BUS, G, VM, Smoke, Streaks, Progress, CONFIG, Rules, Env, UI, PHYS, MapSys, CAM, Input, Replay, FX, Props, NET, Combat, Weapons, MODES, MAPS, Corpses, Grenades, WorldItems, BotNoise, L, Tags, LADDER, Zombies, ZombieBrain, Inv, ITEMS, AUDIO, Renderer, Post, DmgNums, Camp, Campaign, Scenes, SCENES, CAMPAIGN, Store, weaponIconURL, Ballistics, BAL,
+  gloveHandGeo, classKeys, setClass, curClassKey, className, linkSlots, MODES_RANGE: MODES.range, THREE, PartBatch, weaponGeometry, _wmCache, buildWeaponModel, SoldierView, Mannequin, PART_NAMES, SKEL, Fighter, OPERATORS, CAMOS, HELMETS, FACES, VESTS, PACKS, PADS, WSKINS, classLoadout, makeBlock, PAT, OnlineUI, BUS, G, VM, Smoke, Streaks, Progress, CONFIG, Rules, Env, UI, PHYS, MapSys, CAM, Input, Replay, FX, Props, NET, Combat, Weapons, MODES, MAPS, Corpses, Grenades, WorldItems, BotNoise, L, Tags, LADDER, Zombies, ZombieBrain, Inv, ITEMS, AUDIO, CS, Renderer, Post, DmgNums, Camp, Campaign, Scenes, SCENES, CAMPAIGN, Store, weaponIconURL, Ballistics, BAL,
   simulate(sec, viewEvery = 4) {
     const n = Math.round(sec / STEP);
     for (let i = 0; i < n; i++) {

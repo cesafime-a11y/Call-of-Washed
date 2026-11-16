@@ -46,5 +46,6 @@ data_mannequin.js
 15b_ui.js
 15c_dmgnums.js
 16_audio.js
+16b_audio2.js
 17_replay.js
 18_loop.js
