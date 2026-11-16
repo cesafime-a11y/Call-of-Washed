@@ -1146,6 +1146,114 @@ kbd { font-family: var(--f-type); font-weight: 400; }
 .mitem span { text-transform: uppercase; white-space: nowrap; }
 .mitem small { white-space: nowrap; text-transform: uppercase; }
 @media (max-height: 820px) { .mainnav { margin-top: 14px; gap: 0; } .mitem { padding-top: 4px; padding-bottom: 4px; } .mitem span { font-size: 20px; } }
+/* ---------- 3.4.0: HUD de época (1939–1945) ----------
+   El HUD de partida deja de ser un panel táctico moderno: es material de campaña. Fichas de cartulina escritas a máquina,
+   cifras estarcidas en tinta, latón como único brillo y rojo de sello para lo urgente. Cada pieza sigue en su sitio
+   y con el mismo marcado (solo cambia la piel), con sombra suficiente para leerse sobre cielo, nieve o noche. */
+:root {
+  --h-paper: rgba(230,220,195,.93); --h-paper2: rgba(214,201,166,.94); --h-ink: #2a2219; --h-ink2: #5a4c36; --h-red: #9c2b22; --h-brass: #b8913f; --h-brass2: #d6b25e;
+  --f-sten: 'Stardos Stencil', 'Barlow Condensed', 'Impact', sans-serif;
+  --h-card: 0 1px 0 rgba(255,255,255,.35) inset, 0 3px 10px rgba(0,0,0,.45), 0 0 0 1px rgba(60,44,22,.45);
+  --h-grain: repeating-linear-gradient(0deg, rgba(90,70,40,.05) 0 1px, transparent 1px 3px);
+}
+#hud { font-family: var(--f-type); }
+
+/* ---- marcador: dos fichas de cartulina y un reloj de bolsillo ---- */
+#score { width: 470px; gap: 0; filter: drop-shadow(0 3px 6px rgba(0,0,0,.45)); align-items: center; }
+.tscore, .tscore.mine, .tscore.them { background: var(--h-grain), var(--h-paper); clip-path: none; border: 0; box-shadow: var(--h-card); padding: 5px 14px 6px; color: var(--h-ink); position: relative; }
+.tscore.mine { border-radius: 2px 0 0 2px; padding-right: 30px; } .tscore.them { border-radius: 0 2px 2px 0; padding-left: 30px; }
+.tscore::before { content: ''; position: absolute; left: 10px; right: 10px; top: auto; bottom: 3px; height: 2px; background: var(--tc); opacity: .85; }
+.tscore.mine { --tc: #24406e; } .tscore.them { --tc: var(--h-red); }
+.tscore .tn { font: 11px var(--f-type); letter-spacing: .22em; color: var(--h-ink2); text-shadow: none; }
+.tscore b { font: 700 34px var(--f-sten); color: var(--h-ink); text-shadow: none; line-height: .95; letter-spacing: .02em; }
+.tscore .tbar { height: 2px; background: rgba(42,34,25,.14); }
+.tscore .tbar i { box-shadow: none !important; background: var(--tc) !important; }
+.pips i { background: rgba(42,34,25,.18); } .alive i { background: rgba(42,34,25,.25); }
+.timer { position: relative; z-index: 2; margin: 0 -18px; width: 92px; height: 92px; min-width: 0; padding: 0; display: grid; place-content: center; border-radius: 50%; clip-path: none;
+  background: radial-gradient(circle at 50% 42%, #f1e8d0 0 55%, #e2d5b2 70%, #cdbb8c 100%); color: var(--h-ink);
+  box-shadow: 0 0 0 3px #8a6a2c, 0 0 0 5px var(--h-brass2), 0 0 0 7px #6e5220, 0 5px 12px rgba(0,0,0,.55); font: 700 24px var(--f-sten); letter-spacing: .02em; text-shadow: none; line-height: 1; text-align: center; }
+.timer::before { content: ''; position: absolute; left: 50%; top: -15px; width: 14px; height: 12px; transform: translateX(-50%); border-radius: 50% 50% 3px 3px; background: linear-gradient(180deg, var(--h-brass2), #8a6a2c); box-shadow: 0 0 0 1px #5a4218; }
+.timer::after { display: block; content: ''; position: absolute; inset: 7px; border-radius: 50%; background: repeating-conic-gradient(from -1deg, rgba(42,34,25,.55) 0 2deg, transparent 2deg 30deg); -webkit-mask: radial-gradient(circle, transparent 0 calc(100% - 6px), #000 calc(100% - 5px)); mask: radial-gradient(circle, transparent 0 calc(100% - 6px), #000 calc(100% - 5px)); box-shadow: none; left: 7px; right: 7px; bottom: 7px; height: auto; }
+.timer small { font: 9px var(--f-type); letter-spacing: .18em; color: var(--h-red); margin-top: 3px; }
+.dom { background: var(--h-paper) !important; border-color: var(--h-ink) !important; color: var(--h-ink); border-radius: 50%; }
+.dom.mine { border-color: #24406e !important; box-shadow: inset 0 0 0 3px rgba(36,64,110,.5); } .dom.them { border-color: var(--h-red) !important; box-shadow: inset 0 0 0 3px rgba(156,43,34,.5); }
+.dom b { font-family: var(--f-sten); color: var(--h-ink); }
+.ladrow span { background: var(--h-paper); color: var(--h-ink); clip-path: none; box-shadow: var(--h-card); font-family: var(--f-type); }
+
+/* ---- plano en caja de latón (minimapa) y regla de rumbo ---- */
+#radar { border-radius: 50%; box-shadow: 0 0 0 2px #5a4218, 0 0 0 4px var(--h-brass2), 0 0 0 6px #6e5220, 0 6px 16px rgba(0,0,0,.55); }
+#compass { background: linear-gradient(180deg, rgba(232,222,196,.0) 0, rgba(232,222,196,.9) 22%, rgba(220,207,172,.92) 100%); border-top: 2px solid var(--h-brass); border-bottom: 2px solid #8a6a2c; border-radius: 2px;
+  -webkit-mask: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); mask: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
+
+/* ---- parte de bajas: tiras de telegrama ---- */
+.kf, .kf.me { background: var(--h-grain), var(--h-paper); clip-path: none; border: 0; border-radius: 1px; box-shadow: 0 2px 6px rgba(0,0,0,.4); color: var(--h-ink); text-shadow: none; padding: 3px 12px; font: 14px var(--f-type); letter-spacing: .03em; }
+.kf.me { box-shadow: 0 2px 6px rgba(0,0,0,.4), inset 0 -2px 0 var(--h-red); }
+.kf.me .nm:first-child { color: var(--h-red); }
+.kf .how { color: var(--h-ink2); font: 10px var(--f-type); letter-spacing: .1em; }
+.kf .how .hs { color: var(--h-red); }
+.kf .nm { color: var(--h-ink); }
+
+/* ---- ficha de estado: SALUD escrita a máquina, cifra estarcida y barra de tinta ---- */
+#status { gap: 6px; }
+.hpwrap { background: var(--h-grain), var(--h-paper); border: 0; border-left: 4px solid var(--h-red); box-shadow: var(--h-card); padding: 6px 16px 7px 12px; border-radius: 1px; display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: 12px; row-gap: 2px; align-items: end; }
+.hpwrap::after { content: 'SALUD'; position: static; grid-column: 1 / -1; grid-row: 1; font: 10px var(--f-type); letter-spacing: .3em; color: var(--h-ink2); text-shadow: none; margin: 0; }
+#hp-num { grid-column: 1; grid-row: 2; font: 700 40px var(--f-sten); color: var(--h-ink); text-shadow: none; line-height: .85; min-width: 64px; margin: 0; }
+#hp-num.low { color: var(--h-red); }
+.hpbar { grid-column: 2; grid-row: 2; align-self: center; width: 180px; height: 10px; margin: 4px 0 0; transform: none; border: 1px solid rgba(42,34,25,.6); border-radius: 0; background: rgba(42,34,25,.08); box-shadow: none; }
+.hpbar::after { display: block; background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 1px), rgba(230,220,195,.95) calc(10% - 1px) 10%); }
+#hp-fill, #hp-fill.mid { background: repeating-linear-gradient(115deg, #2a2219 0 2px, #3d3224 2px 4px); box-shadow: none; border-radius: 0; }
+#hp-fill.low { background: repeating-linear-gradient(115deg, #8e2318 0 2px, #a8382a 2px 4px); box-shadow: none; animation: blinkhp .5s infinite alternate; }
+#hp-ghost { background: rgba(156,43,34,.55); border-radius: 0; opacity: .7; }
+.chips { gap: 6px; padding: 0; }
+.chip, .chip.off { background: var(--h-paper2); clip-path: none; border: 0; box-shadow: 0 2px 5px rgba(0,0,0,.35); color: var(--h-ink); text-shadow: none; font: 13px var(--f-type); padding: 2px 9px; border-radius: 1px; }
+.chip.off { opacity: .55; }
+#streak-box .sk { background: var(--h-paper2); clip-path: none; border: 0; box-shadow: 0 2px 5px rgba(0,0,0,.35); color: var(--h-ink); text-shadow: none; padding: 2px 10px; }
+#streak-box .sk .lbl, #streak-box .sk .nx { color: var(--h-ink); font-family: var(--f-type); text-shadow: none; }
+#streak-box .pips i { background: rgba(42,34,25,.2); } #streak-box .pips i.on { background: var(--h-red); }
+
+/* ---- etiqueta del armero: nombre a máquina, sello rojo del modo, cifra estarcida y cartuchos de latón ---- */
+#weapon { text-shadow: none; }
+#weapon .wcard { background: var(--h-grain), var(--h-paper); border: 0; border-right: 4px solid var(--h-brass); box-shadow: var(--h-card); padding: 7px 14px 8px 18px; border-radius: 1px; gap: 2px; justify-items: end; }
+.wtop { gap: 10px; align-items: center; }
+#w-name { font: 13px var(--f-type); letter-spacing: .14em; color: var(--h-ink); text-shadow: none; }
+#w-mode { font: 700 10px var(--f-sten); letter-spacing: .2em; color: var(--h-red); border: 1.5px solid var(--h-red); padding: 1px 5px 0; transform: rotate(-4deg); opacity: .85; border-radius: 2px; }
+#ammo-mag { font: 700 56px var(--f-sten); color: var(--h-ink); text-shadow: none; line-height: .85; }
+#ammo-res { font: 20px var(--f-type); color: var(--h-ink2); text-shadow: none; }
+#weapon.low #ammo-mag { color: var(--h-red); }
+#w-icon { filter: sepia(1) brightness(.35) contrast(1.4); opacity: .85; height: 24px; }
+#ammo-strip { height: auto; min-height: 4px; width: auto; max-width: 190px; background: none; }
+#ammo-strip.pips { display: flex; gap: 3px; justify-content: flex-end; }
+#ammo-strip.pips i { width: 7px; height: 22px; max-width: none; flex: 0 0 7px; position: relative; box-shadow: none; border-radius: 3px 3px 1px 1px; background: linear-gradient(90deg, #8a6a2c, #e0c070 45%, #a8822e); }
+#ammo-strip.pips i u { position: absolute; left: 1px; right: 1px; top: -1px; height: 8px; border-radius: 3px 3px 0 0; background: linear-gradient(90deg, #6e5638, #b49870 45%, #7a6040); }
+#ammo-strip.pips i::after { content: ''; position: absolute; left: 0; right: 0; bottom: 2px; height: 1px; background: rgba(60,40,10,.6); }
+#ammo-strip.pips i.off { background: transparent; box-shadow: inset 0 0 0 1px rgba(42,34,25,.35); }
+#ammo-strip.pips i.off u, #ammo-strip.pips i.off::after { display: none; }
+#ammo-strip.bar { height: 6px; width: 170px; background: rgba(42,34,25,.12); border: 1px solid rgba(42,34,25,.45); }
+#ammo-strip.bar b { background: repeating-linear-gradient(90deg, #a8822e 0 3px, #e0c070 3px 5px); }
+#ammo-strip.bar s { opacity: .4; }
+#ammo-strip.prog b { background: var(--h-ink); }
+#slots { gap: 2px; margin-top: 3px; }
+#slots b, #slots b.cur { clip-path: none; border-radius: 3px 3px 0 0; height: 20px; padding: 0 8px; font: 12px var(--f-type); letter-spacing: .06em; text-shadow: none; border: 0; }
+#slots b { background: rgba(214,201,166,.85); color: var(--h-ink2); box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+#slots b.cur { background: var(--h-ink); color: #e6dcc3; }
+#slots b kbd { background: none; border: 0; color: inherit; opacity: .7; font-family: var(--f-type); }
+.kchip { background: rgba(214,201,166,.85); clip-path: none; color: var(--h-ink); text-shadow: none; font: 11px var(--f-type); padding: 2px 8px; border-radius: 1px; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+
+/* ---- retícula de tinta clara y avisos mecanografiados ---- */
+#crosshair i, #crosshair b { background: rgba(240,232,210,.95); box-shadow: 0 0 0 1px rgba(30,22,12,.6); }
+#ahint { font: 13px var(--f-type); letter-spacing: .16em; }
+#ahint .rb { background: rgba(240,232,210,.25); } #ahint .rb i { background: var(--h-brass2); }
+#prompt, #spectate { background: var(--h-paper); color: var(--h-ink); clip-path: none; border: 0; box-shadow: var(--h-card); font-family: var(--f-type); backdrop-filter: none; text-shadow: none; }
+#prompt kbd, #spectate kbd { background: var(--h-ink); color: #e6dcc3; border: 0; }
+#death .dk { background: var(--h-grain), var(--h-paper); color: var(--h-ink); clip-path: none; border: 0; border-top: 3px solid var(--h-red); box-shadow: var(--h-card); font-family: var(--f-type); backdrop-filter: none; }
+#death .dk b { font-family: var(--f-sten); color: var(--h-red); text-shadow: none; }
+#death .dk .lbl, #death .dk .w { color: var(--h-ink2); }
+.toast { background: var(--h-grain), var(--h-paper); color: var(--h-ink); clip-path: none; border: 0; border-left: 4px solid var(--h-red); box-shadow: var(--h-card); font: 14px var(--f-type); letter-spacing: .04em; backdrop-filter: none; text-shadow: none; }
+.toast kbd { background: var(--h-ink); color: #e6dcc3; border: 0; }
+.rngbox { background: var(--h-grain), var(--h-paper); color: var(--h-ink); clip-path: none; border-top: 3px solid var(--h-brass); box-shadow: var(--h-card); }
+.rngbox * { text-shadow: none; } .rngbox b, .rngbox .rtop b { color: var(--h-ink); font-family: var(--f-sten); } .rngbox small, .rngbox em { color: var(--h-ink2); font-family: var(--f-type); }
+#net-ind, #fps { background: var(--h-paper); color: var(--h-ink); text-shadow: none; font-family: var(--f-type); }
+#center-msg .mid { font-family: var(--f-sten); letter-spacing: .08em; }
 </style>
 <div id="app">
   <div id="gl"></div>
@@ -7950,7 +8058,7 @@ const VM = {
     const f = this.replay ? Replay.vmState : G.local, ads = f ? smooth01(f.adsT) : 0, k = 1 - 0.45 * ads;
     this.kz = Math.min(0.16, this.kz + P.kick * k); this.krx = Math.min(0.5, this.krx + P.rot * (0.6 + 0.4 * k)); this.kry += frand(-1, 1) * P.rot * 0.25; this.krz += frand(-1, 1) * P.rot * 0.6;
     this.trigK = 1;
-    if (W.bolt && (W.kind !== 'melee')) { this.cycT = 0; this.cycId = weapon; }
+    if (W.bolt && (W.kind !== 'melee')) { this.cycT = 0; this.cycId = weapon; if (!this.replay) setTimeout(() => { if (this.cycT != null && this.cycId === weapon) AUDIO.play('bolt', null, 0.55, { k: weapon, throttle: 0.2 }); }, 140); }
     this.flashT = 0.05; this.flash.rotation.z = frand(0, TAU); this.flash.scale.setScalar(frand(0.09, 0.13) * (W.flash ?? 1) * (weapon === 'shotgun' ? 1.4 : 1));
   },
   // punto local del arma (o el expulsor) → mundo, conservando la posición en pantalla
@@ -9379,13 +9487,13 @@ function buildMinimap() {
   const b = MapSys.bounds, W = b.x1 - b.x0, Hh = b.z1 - b.z0;
   const px = 3, cv = document.createElement('canvas'); cv.width = Math.ceil(W * px); cv.height = Math.ceil(Hh * px);
   const x = cv.getContext('2d');
-  x.fillStyle = '#20231d'; x.fillRect(0, 0, cv.width, cv.height);
+  x.fillStyle = '#d6c9a2'; x.fillRect(0, 0, cv.width, cv.height);
   const list = PHYS.blocks.filter((k) => k.solid && k.kind !== 'bound').sort((p, q) => p.max.y - q.max.y);
   for (const k of list) {
     const top = k.max.y;
-    if (k.kind === 'floor' && top <= 0.1 && top > -0.5) { x.fillStyle = k.pattern === PAT.ASPHALT ? '#2b2c2a' : '#3a3d33'; }
-    else if (top < -0.5) x.fillStyle = '#191b16';
-    else { const l = clamp(70 + top * 18, 70, 190); x.fillStyle = `rgb(${l},${l * 0.98},${l * 0.9})`; }
+    if (k.kind === 'floor' && top <= 0.1 && top > -0.5) { x.fillStyle = k.pattern === PAT.ASPHALT ? '#bfb08a' : '#cdbf98'; }
+    else if (top < -0.5) x.fillStyle = '#a99a74';
+    else { const l = clamp(150 - top * 11, 62, 150); x.fillStyle = `rgb(${l | 0},${(l * 0.86) | 0},${(l * 0.66) | 0})`; }
     x.fillRect((k.min.x - b.x0) * px, (k.min.z - b.z0) * px, Math.max(1, (k.max.x - k.min.x) * px), Math.max(1, (k.max.z - k.min.z) * px));
   }
   return { canvas: cv, px, x0: b.x0, z0: b.z0, w: W, h: Hh };
@@ -15812,7 +15920,7 @@ const UI = {
       const pips = max <= 12, key = 'a' + max + ':' + (pips ? inv.mag : Math.round(inv.mag / max * 60));
       if (st.strip !== key) {
         st.strip = key;
-        if (pips) strip.innerHTML = Array.from({ length: max }, (_, i) => `<i class="${i < max - inv.mag ? 'off' : ''}"></i>`).join('');
+        if (pips) strip.innerHTML = Array.from({ length: max }, (_, i) => `<i class="${i < max - inv.mag ? 'off' : ''}"><u></u></i>`).join('');
         else strip.innerHTML = `<b style="width:${Math.max(0, Math.min(100, 100 * inv.mag / max)).toFixed(1)}%"></b><s style="--n:${Math.max(1, Math.round(max / 5))}"></s>`;
         strip.className = pips ? 'pips' : 'bar';
       }
@@ -15961,25 +16069,25 @@ const UI = {
     const px = f.pos.x, pz = f.pos.z, yaw = f.input.yaw;
     c.save();
     c.beginPath(); c.arc(cx, cy, R, 0, TAU); c.clip();
-    c.fillStyle = 'rgba(12,14,10,0.78)'; c.fillRect(0, 0, W, H);
+    c.fillStyle = '#d6c9a2'; c.fillRect(0, 0, W, H);
     c.translate(cx, cy); c.rotate(yaw); c.scale(s, s);
-    c.globalAlpha = 0.85;
+    c.globalAlpha = 0.95;
     c.drawImage(mm.canvas, mm.x0 - px, mm.z0 - pz, mm.w, mm.h);
     c.globalAlpha = 1;
     const dot = (x, z, r, col) => { c.fillStyle = col; c.beginPath(); c.arc(x - px, z - pz, r / s, 0, TAU); c.fill(); };
-    if (G.mode.tags) for (const t of Tags.list) dot(t.x, t.z, 3.4, t.vt === f.team ? '#5ab8ff' : '#ff6a3a');
+    if (G.mode.tags) for (const t of Tags.list) dot(t.x, t.z, 3.4, t.vt === f.team ? '#24406e' : '#a3241a');
     if (G.mode.dom) MapSys.dom.forEach((d, i) => {
-      const st = G.match.dom[i], col = st.owner < 0 ? '#cfc8b0' : st.owner === f.team ? '#5ab8ff' : '#ff5040';
+      const st = G.match.dom[i], col = st.owner < 0 ? '#5a4c34' : st.owner === f.team ? '#24406e' : '#a3241a';
       c.strokeStyle = col; c.lineWidth = 2 / s; c.beginPath(); c.arc(d.x - px, d.z - pz, d.r, 0, TAU); c.stroke();
       c.save(); c.translate(d.x - px, d.z - pz); c.rotate(-yaw); c.scale(1 / s, 1 / s); c.fillStyle = col; c.font = '700 12px "Barlow Condensed", sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(d.id, 0, 0); c.restore();
     });
     const jam = Streaks.jammed(f);
     for (const o of G.fighters) {
       if (o === f || !o.alive) continue;
-      if (!Rules.isEnemy(f, o)) dot(o.pos.x, o.pos.z, 3.4, '#5ab8ff');
-      else if (!jam && (G.time - (o.lastLoudT ?? -9) < 1.6 || Streaks.revealed(f, o))) dot(o.pos.x, o.pos.z, 3.6, '#ff5040');
+      if (!Rules.isEnemy(f, o)) dot(o.pos.x, o.pos.z, 3.4, '#24406e');
+      else if (!jam && (G.time - (o.lastLoudT ?? -9) < 1.6 || Streaks.revealed(f, o))) dot(o.pos.x, o.pos.z, 3.8, '#a3241a');
     }
-    for (const cr of Streaks.crates) if (cr.t > 1.6) dot(cr.x, cr.z, 3, '#8fe07a');
+    for (const cr of Streaks.crates) if (cr.t > 1.6) dot(cr.x, cr.z, 3, '#3f5a24');
     c.restore();
     if (jam) { // estática: el radar enemigo está interferido
       c.save(); c.beginPath(); c.arc(cx, cy, R, 0, TAU); c.clip();
@@ -15987,10 +16095,17 @@ const UI = {
       c.restore();
     }
     // jugador al centro, mirando hacia arriba
-    c.fillStyle = '#f2ead0'; c.beginPath(); c.moveTo(cx, cy - 7); c.lineTo(cx + 5, cy + 5); c.lineTo(cx, cy + 2); c.lineTo(cx - 5, cy + 5); c.closePath(); c.fill();
-    c.strokeStyle = 'rgba(230,226,211,0.35)'; c.lineWidth = 1.5; c.beginPath(); c.arc(cx, cy, R, 0, TAU); c.stroke();
-    c.fillStyle = 'rgba(230,226,211,0.7)'; c.font = '600 10px "Barlow Condensed", sans-serif'; c.textAlign = 'center';
-    c.fillText('N', cx + (R - 9) * Math.sin(yaw), cy - (R - 9) * Math.cos(yaw) + 3);
+    // 3.4.0: viñeta de papel viejo, flecha de tinta y rosa de los vientos grabada en el bisel de latón
+    const vg = c.createRadialGradient(cx, cy, R * 0.45, cx, cy, R); vg.addColorStop(0, 'rgba(60,40,15,0)'); vg.addColorStop(1, 'rgba(60,40,15,0.38)');
+    c.save(); c.beginPath(); c.arc(cx, cy, R, 0, TAU); c.clip(); c.fillStyle = vg; c.fillRect(0, 0, W, H); c.restore();
+    c.fillStyle = '#2a2219'; c.beginPath(); c.moveTo(cx, cy - 8); c.lineTo(cx + 5.5, cy + 6); c.lineTo(cx, cy + 2.5); c.lineTo(cx - 5.5, cy + 6); c.closePath(); c.fill();
+    c.strokeStyle = '#8a6a2c'; c.lineWidth = 5; c.beginPath(); c.arc(cx, cy, R - 1.5, 0, TAU); c.stroke();
+    c.strokeStyle = '#d6b25e'; c.lineWidth = 1.2; c.beginPath(); c.arc(cx, cy, R - 4.2, 0, TAU); c.stroke();
+    for (let i = 0; i < 16; i++) { const a = i * TAU / 16 - yaw, r0 = R - (i % 4 ? 3.2 : 0.2); c.strokeStyle = 'rgba(40,28,10,0.8)'; c.lineWidth = i % 4 ? 0.8 : 1.4; c.beginPath(); c.moveTo(cx + Math.sin(-a) * r0, cy - Math.cos(-a) * r0); c.lineTo(cx + Math.sin(-a) * (R - 0.5), cy - Math.cos(-a) * (R - 0.5)); c.stroke(); }
+    const nx = cx + (R - 13) * Math.sin(yaw), ny = cy - (R - 13) * Math.cos(yaw);
+    c.fillStyle = '#e6dcc3'; c.beginPath(); c.arc(nx, ny, 7, 0, TAU); c.fill(); c.strokeStyle = '#8a6a2c'; c.lineWidth = 1; c.stroke();
+    c.fillStyle = '#9c2b22'; c.font = '700 11px "Stardos Stencil", "Barlow Condensed", sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText('N', nx, ny + 0.5);
   },
   drawCompass() {
     const cv = this.el.compass, f = G.local; if (!cv || cv.hidden) return;
@@ -16004,24 +16119,24 @@ const UI = {
     c.textAlign = 'center'; c.textBaseline = 'middle';
     for (let d = Math.floor((hd - 66) / 5) * 5; d <= hd + 66; d += 5) {
       const x = X(d * Math.PI / 180), dd = ((d % 360) + 360) % 360, big = dd % 45 === 0, mid = dd % 15 === 0;
-      c.strokeStyle = big ? 'rgba(242,234,208,.95)' : 'rgba(231,226,208,.5)'; c.lineWidth = big ? 2 : 1;
-      c.beginPath(); c.moveTo(x, H - 3); c.lineTo(x, H - 3 - (big ? 11 : mid ? 7 : 4)); c.stroke();
-      if (big) { c.font = '700 15px "Barlow Condensed", sans-serif'; c.fillStyle = dd % 90 === 0 ? '#f0c46a' : '#e7e2d0'; c.fillText(names[dd], x, H - 23); }
-      else if (dd % 30 === 0) { c.font = '600 10px "Barlow Condensed", sans-serif'; c.fillStyle = 'rgba(231,226,208,.65)'; c.fillText(String(dd), x, H - 19); }
+      c.strokeStyle = big ? 'rgba(42,34,25,.95)' : 'rgba(42,34,25,.55)'; c.lineWidth = big ? 2 : 1;
+      c.beginPath(); c.moveTo(x, H - 4); c.lineTo(x, H - 4 - (big ? 10 : mid ? 7 : 4)); c.stroke();
+      if (big) { c.font = '700 15px "Stardos Stencil", "Barlow Condensed", sans-serif'; c.fillStyle = dd % 90 === 0 ? '#9c2b22' : '#2a2219'; c.fillText(names[dd], x, H - 23); }
+      else if (dd % 30 === 0) { c.font = '10px "Special Elite", "Courier New", monospace'; c.fillStyle = 'rgba(42,34,25,.7)'; c.fillText(String(dd), x, H - 21); }
     }
     // objetivos: puntos de Dominio, placas y cajas de suministro
     const mark = (x, z, label, col, r) => {
       const px = clamp(X(Math.atan2(x - f.pos.x, -(z - f.pos.z))), 14, W - 14), off = px <= 14 || px >= W - 14;
-      c.globalAlpha = off ? 0.55 : 1; c.fillStyle = 'rgba(12,14,10,.85)'; c.beginPath(); c.arc(px, 11, r + 2, 0, TAU); c.fill();
+      c.globalAlpha = off ? 0.55 : 1; c.fillStyle = 'rgba(42,34,25,.9)'; c.beginPath(); c.arc(px, 11, r + 2, 0, TAU); c.fill();
       c.fillStyle = col; c.beginPath(); c.arc(px, 11, r, 0, TAU); c.fill();
       if (label) { c.fillStyle = '#10120d'; c.font = '700 13px "Barlow Condensed", sans-serif'; c.fillText(label, px, 11.5); }
       c.globalAlpha = 1;
     };
-    if (G.mode.dom && G.match) MapSys.dom.forEach((d, i) => { const st = G.match.dom[i]; if (st) mark(d.x, d.z, 'ABC'[i] || String(i + 1), st.owner < 0 ? '#cfc8b0' : st.owner === f.team ? '#5ab8ff' : '#ff5040', 8); });
+    if (G.mode.dom && G.match) MapSys.dom.forEach((d, i) => { const st = G.match.dom[i]; if (st) mark(d.x, d.z, 'ABC'[i] || String(i + 1), st.owner < 0 ? '#e6dcc3' : st.owner === f.team ? '#7a9cd0' : '#d0503e', 8); });
     if (G.mode.tags) { let n = 0; for (const t of Tags.list) { if (n++ > 6) break; mark(t.x, t.z, '', t.vt === f.team ? '#5ab8ff' : '#ff6a3a', 4); } }
     for (const cr of Streaks.crates) if (cr.t > 1.6) mark(cr.x, cr.z, '▣', '#8fe07a', 7);
     // centro: guía y rumbo
-    c.fillStyle = '#f0c46a'; c.beginPath(); c.moveTo(cx - 6, 0); c.lineTo(cx + 6, 0); c.lineTo(cx, 8); c.closePath(); c.fill();
+    c.fillStyle = '#9c2b22'; c.beginPath(); c.moveTo(cx - 6, 0); c.lineTo(cx + 6, 0); c.lineTo(cx, 8); c.closePath(); c.fill();
   },
   center(html, ms = 1200, cls = '') {
     const c = this.el['center-msg']; c.className = 'hud-pad ' + cls; c.innerHTML = html; clearTimeout(this._ct);
@@ -16586,11 +16701,32 @@ const AUDIO = {
   },
   // disparo: transitorio + cuerpo + golpe grave + cola
   gun(o, t, P) {
+    // 3.4.0: de lejos el fogonazo llega antes que el estampido (340 m/s) y el valle devuelve el disparo en dos o tres ecos
+    const d = this._d || 0;
+    if (d > 45) { t += Math.min(2.4, d / 340); P = { ...P, crack: P.crack * 0.55, crackF: (P.crackF || 3000) * 0.6, bodyF: P.bodyF * clamp(1 - d / 900, 0.35, 1) }; }
+    if (!this.indoor || this.indoor < 0.5) { const n = d > 200 ? 3 : 2; for (let i = 0; i < n; i++) this.nz(o, t + 0.32 + i * (0.41 + i * 0.17) + d / 2200, 0.5 + i * 0.25, (P.tailV || 0.2) * (0.5 - i * 0.12), 'lowpass', 700 - i * 160, 140, 0.5, 0.05); }
+    // culatazo grave con un poco de saturación (pólvora de la época: más humo, más golpe)
+    if (P.thumpV > 0.6) this.osc(o, 'triangle', P.thumpF * 0.55, P.thumpF * 0.25, t, P.thumpD * 1.6, P.thumpV * 0.25);
     this.nz(o, t, 0.025, P.crack, 'highpass', P.crackF || 3000);
     this.nz(o, t, P.body, P.bodyV, 'lowpass', P.bodyF, P.bodyF * 0.25, 0.7);
     this.osc(o, 'sine', P.thumpF, P.thumpF * 0.35, t, P.thumpD, P.thumpV);
     if (P.tail) this.nz(o, t + 0.03, P.tail, P.tailV, 'lowpass', 900, 160, 0.5, 0.03);
   },
+  // corneta: notas con ataque de labio, vibrato leve y timbre de latón (diente de sierra filtrado)
+  bugle(dest, t, notes, vol = 0.1) {
+    const c = this.ctx; let tt = t;
+    for (const [f, d] of notes) {
+      const os = c.createOscillator(), o2 = c.createOscillator(), fl = c.createBiquadFilter(), g = c.createGain(), lfo = c.createOscillator(), lg = c.createGain();
+      os.type = 'sawtooth'; o2.type = 'triangle'; os.frequency.setValueAtTime(f * 0.97, tt); os.frequency.exponentialRampToValueAtTime(f, tt + 0.04); o2.frequency.value = f * 2;
+      lfo.frequency.value = 5.2; lg.gain.value = f * 0.004; lfo.connect(lg); lg.connect(os.frequency);
+      fl.type = 'lowpass'; fl.frequency.setValueAtTime(900, tt); fl.frequency.exponentialRampToValueAtTime(2600, tt + 0.06); fl.Q.value = 1.4;
+      g.gain.setValueAtTime(0.0001, tt); g.gain.exponentialRampToValueAtTime(vol, tt + 0.035); g.gain.setValueAtTime(vol * 0.85, tt + Math.max(0.05, d - 0.06)); g.gain.exponentialRampToValueAtTime(0.0001, tt + d + 0.08);
+      const g2 = c.createGain(); g2.gain.value = 0.25; os.connect(fl); o2.connect(g2); g2.connect(fl); fl.connect(g); g.connect(dest);
+      os.start(tt); o2.start(tt); lfo.start(tt); os.stop(tt + d + 0.12); o2.stop(tt + d + 0.12); lfo.stop(tt + d + 0.12);
+      tt += d + 0.03;
+    }
+  },
+  brass(dest, t, f, vol = 0.06) { for (const [k, g, d] of [[1, 1, 1.1], [2.76, 0.4, 0.5], [5.4, 0.18, 0.25]]) this.osc(dest, 'sine', f * k, f * k * 0.998, t, d, vol * g, 0.002); },
   play(name, pos, vol = 1, opt = {}) {
     if (!this.ok || this.ctx.state !== 'running') return;
     const nowT = this.ctx.currentTime;
@@ -16607,6 +16743,7 @@ const AUDIO = {
     win.push(nowT);
     this.last[name] = nowT;
     const wet = { kal: 0.55, pdw: 0.4, dmr: 0.7, lmg: 0.55, magnum: 0.55, rifle: 0.5, smg: 0.45, shotgun: 0.55, sniper: 0.7, pistol: 0.4, rocket: 0.5, explosion: 0.8, nadeBounce: 0.2, break: 0.4, supp: 0.12, jet: 0.5, whistle: 0.2, smoke: 0.15 }[name] || 0;
+    this._d = pos ? this.lp.distanceTo(pos) : 0;
     const o = this.out(pos, vol, wet); if (!o) return;
     const t = nowT + 0.004, p = opt.pitch || 1, r = (a, b) => a + Math.random() * (b - a);
     switch (name) {
@@ -16615,7 +16752,7 @@ const AUDIO = {
       case 'pistol': this.gun(o, t, { crack: 0.7, crackF: 3600, body: 0.09, bodyV: 0.6, bodyF: 2900 * p, thumpF: 190, thumpD: 0.07, thumpV: 0.4, tail: 0.4, tailV: 0.12 }); break;
       case 'kal': this.gun(o, t, { crack: 1.0, crackF: 2700, body: 0.2, bodyV: 0.95, bodyF: 2100 * p, thumpF: 120, thumpD: 0.15, thumpV: 0.85, tail: 0.85, tailV: 0.26 }); break;
       case 'pdw': this.gun(o, t, { crack: 0.55, crackF: 4300, body: 0.08, bodyV: 0.55, bodyF: 3600 * p, thumpF: 200, thumpD: 0.06, thumpV: 0.35, tail: 0.35, tailV: 0.11 }); break;
-      case 'dmr': this.gun(o, t, { crack: 1.0, crackF: 2900, body: 0.22, bodyV: 1.0, bodyF: 2300 * p, thumpF: 120, thumpD: 0.18, thumpV: 0.9, tail: 1.2, tailV: 0.3 }); this.nz(o, t + 0.2, 0.04, 0.15, 'bandpass', 2000, 0, 4); break;
+      case 'rifle2': case 'dmr': this.gun(o, t, { crack: 1.0, crackF: 2900, body: 0.22, bodyV: 1.0, bodyF: 2300 * p, thumpF: 120, thumpD: 0.18, thumpV: 0.9, tail: 1.2, tailV: 0.3 }); this.nz(o, t + 0.2, 0.04, 0.15, 'bandpass', 2000, 0, 4); break;
       case 'lmg': this.gun(o, t, { crack: 0.95, crackF: 2500, body: 0.18, bodyV: 0.9, bodyF: 1900 * p, thumpF: 105, thumpD: 0.16, thumpV: 0.95, tail: 0.9, tailV: 0.28 }); break;
       case 'magnum': this.gun(o, t, { crack: 1.0, crackF: 2300, body: 0.26, bodyV: 1.0, bodyF: 1700 * p, thumpF: 100, thumpD: 0.22, thumpV: 1.0, tail: 1.1, tailV: 0.3 }); break;
       case 'shotgun': this.gun(o, t, { crack: 0.8, crackF: 2400, body: 0.32, bodyV: 1.0, bodyF: 1800 * p, thumpF: 95, thumpD: 0.22, thumpV: 0.95, tail: 1.0, tailV: 0.3 }); this.nz(o, t + 0.45, 0.06, 0.25, 'bandpass', 1400, 0, 3); this.nz(o, t + 0.58, 0.05, 0.25, 'bandpass', 900, 0, 3); break;
@@ -16626,9 +16763,12 @@ const AUDIO = {
       case 'whistle': this.osc(o, 'sine', 1900, 600, t, 1.05, 0.09, 0.15); this.nz(o, t, 1.05, 0.06, 'bandpass', 1500, 500, 6, 0.2); break;
       case 'jet': { // pasada de bombardero de hélice: zumbido grave de dos motores que crece y se aleja
         this.nz(o, t, 6.5, 0.5, 'lowpass', 260, 520, 0.8, 2.6); this.osc(o, 'sawtooth', 78, 70, t + 0.4, 5.6, 0.07, 2.2); this.osc(o, 'sawtooth', 83, 74, t + 0.4, 5.6, 0.06, 2.2); this.osc(o, 'square', 39, 36, t + 0.6, 5.2, 0.04, 2.2); break; }
-      case 'radio': this.nz(o, t, 0.05, 0.12, 'bandpass', 2400, 0, 2); this.osc(o, 'square', 1250, 1250, t + 0.05, 0.06, 0.035); this.osc(o, 'square', 1650, 1650, t + 0.13, 0.08, 0.035); this.nz(o, t + 0.22, 0.12, 0.1, 'bandpass', 1800, 900, 1.5); break;
-      case 'alarm': for (let i = 0; i < 3; i++) this.osc(o, 'sawtooth', 620, 560, t + i * 0.22, 0.16, 0.05); break;
-      case 'streak': [587, 784, 988].forEach((f, i) => this.osc(o, 'triangle', f, f, t + i * 0.08, 0.28, 0.1)); this.osc(o, 'sine', 196, 196, t, 0.5, 0.12); break;
+      // teléfono de campaña: timbre de magneto y clic de horquilla
+      case 'radio': for (let i = 0; i < 6; i++) { this.osc(o, 'square', 880, 860, t + i * 0.045, 0.035, 0.03); this.nz(o, t + i * 0.045, 0.02, 0.06, 'bandpass', 3400, 0, 6); } this.nz(o, t + 0.34, 0.03, 0.18, 'bandpass', 1700, 0, 3); break;
+      // sirena de manivela que sube y baja
+      case 'alarm': { const c = this.ctx, os = c.createOscillator(), g = c.createGain(), f = c.createBiquadFilter(); os.type = 'sawtooth'; os.frequency.setValueAtTime(260, t); os.frequency.exponentialRampToValueAtTime(760, t + 0.9); os.frequency.exponentialRampToValueAtTime(420, t + 1.7);
+        f.type = 'bandpass'; f.frequency.value = 900; f.Q.value = 0.7; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.06, t + 0.3); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.8); os.connect(f); f.connect(g); g.connect(o); os.start(t); os.stop(t + 1.85); break; }
+      case 'streak': this.bugle(o, t, [[392, 0.1], [523, 0.1], [659, 0.32]], 0.1); break;
       case 'prone': this.nz(o, t, 0.25, 0.28, 'lowpass', 900, 250, 0.8, 0.03); this.osc(o, 'sine', 95, 50, t + 0.18, 0.12, 0.25); break;
       case 'rocket': this.nz(o, t, 0.5, 0.8, 'bandpass', 300, 2400, 1.5, 0.01); this.osc(o, 'sine', 90, 40, t, 0.3, 0.8); this.nz(o, t + 0.05, 1.2, 0.35, 'lowpass', 900, 200, 0.6, 0.05); break;
       case 'explosion':
@@ -16639,14 +16779,17 @@ const AUDIO = {
       case 'knifeWall': this.nz(o, t, 0.04, 0.5, 'highpass', 3000); this.osc(o, 'triangle', 2400, 1800, t, 0.12, 0.12); break;
       case 'hit': this.nz(o, t, 0.07, 0.55, 'lowpass', 1100, 250); this.osc(o, 'sine', 130, 60, t, 0.08, 0.45); break;
       // impactos: un tic seco con golpe grave; cabeza = campanilla; pared = metálico; explosión = golpe sordo
-      case 'hitmark': { const q = opt.pitch || 1; this.osc(o, 'square', 1900 * q, 1500 * q, t, 0.035, 0.07); this.osc(o, 'sine', 340, 170, t, 0.06, 0.16); this.nz(o, t, 0.022, 0.16, 'highpass', 5500); break; }
-      case 'headshot': this.osc(o, 'sine', 2700, 2550, t, 0.2, 0.14); this.osc(o, 'triangle', 4050, 3900, t, 0.1, 0.05); this.osc(o, 'sine', 420, 200, t, 0.07, 0.18); this.nz(o, t, 0.03, 0.24, 'highpass', 6500); break;
+      // 3.4.0: impactos de época: golpe seco de tela y carne (sin pitido electrónico); la cabeza, un chasquido de casco
+      case 'hitmark': { const q = opt.pitch || 1; this.nz(o, t, 0.06, 0.32, 'lowpass', 1300 * q, 300, 0.9); this.osc(o, 'sine', 210 * q, 90, t, 0.07, 0.2); this.nz(o, t, 0.012, 0.08, 'bandpass', 2600 * q, 0, 2); break; }
+      case 'headshot': this.nz(o, t, 0.02, 0.22, 'bandpass', 3200, 0, 3); this.osc(o, 'triangle', 1480, 1320, t, 0.09, 0.05); this.osc(o, 'sine', 240, 100, t, 0.08, 0.22); this.nz(o, t + 0.01, 0.07, 0.2, 'lowpass', 900, 250); break;
       case 'hitpen': this.osc(o, 'sawtooth', 1150, 850, t, 0.06, 0.05); this.osc(o, 'sine', 1650, 1500, t, 0.12, 0.07); this.nz(o, t, 0.05, 0.22, 'bandpass', 2200, 0, 2.5); this.osc(o, 'sine', 260, 130, t, 0.07, 0.14); break;
       case 'hitboom': this.osc(o, 'sine', 190, 80, t, 0.12, 0.28); this.nz(o, t, 0.09, 0.28, 'lowpass', 1000, 300); this.osc(o, 'triangle', 900, 700, t, 0.05, 0.05); break;
-      case 'killconfirm': this.osc(o, 'sine', 880, 870, t, 0.1, 0.13); this.osc(o, 'triangle', 1320, 1310, t + 0.07, 0.14, 0.1); this.osc(o, 'sine', 210, 80, t, 0.14, 0.22); this.nz(o, t, 0.03, 0.2, 'highpass', 4500); break;
-      case 'killhead': [1175, 1568, 2349].forEach((f, i) => this.osc(o, 'sine', f, f, t + i * 0.055, 0.16, 0.11)); this.osc(o, 'sine', 230, 80, t, 0.16, 0.26); this.nz(o, t, 0.04, 0.28, 'highpass', 6000); break;
-      case 'levelup': [523, 659, 784, 1046].forEach((f, i) => { this.osc(o, 'triangle', f, f, t + i * 0.085, 0.35, 0.1); this.osc(o, 'sine', f * 2, f * 2, t + i * 0.085, 0.25, 0.03); }); this.nz(o, t + 0.3, 0.5, 0.06, 'highpass', 6000, 9000, 0.5, 0.1); break;
-      case 'camo': [1568, 2093, 2637].forEach((f, i) => this.osc(o, 'sine', f, f, t + i * 0.07, 0.4, 0.08)); this.osc(o, 'triangle', 784, 784, t, 0.3, 0.08); break;
+      // baja: el cuerpo que cae lejos y un golpe de tambor apagado (no una campanilla)
+      case 'killconfirm': this.osc(o, 'sine', 120, 52, t, 0.22, 0.32); this.nz(o, t, 0.14, 0.22, 'lowpass', 700, 160, 0.8); this.nz(o, t + 0.02, 0.05, 0.1, 'bandpass', 1500, 0, 1.5); break;
+      case 'killhead': this.osc(o, 'sine', 130, 50, t, 0.26, 0.34); this.nz(o, t, 0.16, 0.24, 'lowpass', 800, 160, 0.8); this.nz(o, t, 0.02, 0.16, 'bandpass', 3000, 0, 3); this.osc(o, 'triangle', 1480, 1300, t, 0.1, 0.04); break;
+      // ascenso: toque de corneta (cuatro notas de la serie natural)
+      case 'levelup': this.bugle(o, t, [[392, 0.16], [523, 0.16], [659, 0.16], [784, 0.6]], 0.12); break;
+      case 'camo': this.bugle(o, t, [[523, 0.12], [659, 0.12], [784, 0.4]], 0.1); break;
       case 'whiz': this.nz(o, t, 0.12, 0.5, 'bandpass', r(2500, 4000), r(1200, 1800), 6, 0.01); this.nz(o, t, 0.02, 0.35, 'highpass', 6000); break;
       case 'ric': this.osc(o, 'sine', r(2600, 3600), r(1200, 1800), t, 0.25, 0.1); break;
       case 'impact': this.nz(o, t, 0.05, 0.3, 'bandpass', opt.f || 1800, 0, 1.5); break;
@@ -16668,6 +16811,11 @@ const AUDIO = {
         }
         break;
       }
+      case 'bolt': { const k = opt.k === 'sniper' ? 0.92 : 1;
+        this.nz(o, t, 0.035, 0.3, 'bandpass', 1900 * k, 0, 4); this.osc(o, 'square', 520 * k, 380, t, 0.025, 0.035);
+        this.nz(o, t + 0.11, 0.09, 0.26, 'bandpass', 1300 * k, 2100 * k, 2.2, 0.01); this.nz(o, t + 0.14, 0.03, 0.18, 'highpass', 4200);
+        this.nz(o, t + 0.3, 0.07, 0.3, 'bandpass', 1500 * k, 900, 2.4, 0.005); this.osc(o, 'sine', 240, 140, t + 0.36, 0.05, 0.12);
+        this.nz(o, t + 0.43, 0.03, 0.34, 'bandpass', 2300 * k, 0, 5); this.osc(o, 'square', 330, 260, t + 0.43, 0.03, 0.04); break; }
       case 'dry': this.nz(o, t, 0.02, 0.3, 'highpass', 4000); this.osc(o, 'square', 1800, 1700, t, 0.015, 0.05); break;
       case 'pin': this.nz(o, t, 0.03, 0.35, 'highpass', 5000); this.osc(o, 'triangle', 3200, 2800, t + 0.03, 0.1, 0.08); break;
       case 'throw': this.nz(o, t, 0.3, 0.3, 'bandpass', 400, 1600, 2, 0.05); break;
@@ -16680,6 +16828,9 @@ const AUDIO = {
         else if (s === 'metal') { this.nz(o, t, 0.04, 0.3, 'bandpass', r(900, 1300), 0, 2); this.osc(o, 'triangle', r(320, 420), 250, t, 0.12, 0.08); }
         else if (s === 'wood') { this.nz(o, t, 0.06, 0.35, 'lowpass', r(600, 900), 200, 0.8); this.osc(o, 'sine', r(140, 180), 90, t, 0.06, 0.15); }
         else { this.nz(o, t, 0.05, 0.32, 'bandpass', r(1200, 1900), 0, 1.4); this.nz(o, t, 0.03, 0.12, 'highpass', 4500); }
+        // 3.4.0: botas claveteadas: un tintineo corto sobre piedra, adoquín y metal; crujido de grava en tierra
+        if (s === 'concrete' || s === 'metal') this.osc(o, 'sine', r(3800, 5200), r(3000, 3600), t + 0.008, 0.04, 0.012);
+        if (s === 'dirt') this.nz(o, t + 0.03, 0.05, 0.07, 'bandpass', r(2600, 3600), 0, 3);
         break;
       }
       case 'land': this.nz(o, t, 0.12, 0.5, 'lowpass', 600, 150); this.osc(o, 'sine', 110, 50, t, 0.1, 0.35); break;
@@ -16691,15 +16842,22 @@ const AUDIO = {
       case 'pain': { const c = this.ctx, os = c.createOscillator(), g = c.createGain(), f = c.createBiquadFilter(); os.type = 'sawtooth'; os.frequency.setValueAtTime(r(140, 170) * p, t); os.frequency.exponentialRampToValueAtTime(r(95, 115) * p, t + 0.18); f.type = 'bandpass'; f.frequency.value = 650; f.Q.value = 3; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.18, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.2); os.connect(f); f.connect(g); g.connect(o); os.start(t); os.stop(t + 0.25); break; }
       case 'break': this.nz(o, t, 0.4, 0.6, 'lowpass', 1600, 250); for (let i = 0; i < 4; i++) this.nz(o, t + i * 0.05 + r(0, 0.03), 0.05, 0.3, 'bandpass', r(500, 1500), 0, 2); break;
       case 'pickup': this.nz(o, t, 0.05, 0.3, 'bandpass', 1500, 0, 3); this.nz(o, t + 0.12, 0.06, 0.3, 'bandpass', 1100, 0, 3); break;
-      case 'beep': this.osc(o, 'sine', 760, 760, t, 0.12, 0.2); break;
-      case 'go': this.osc(o, 'sawtooth', 380, 400, t, 0.5, 0.06); this.osc(o, 'sawtooth', 570, 600, t, 0.5, 0.04); this.osc(o, 'sine', 760, 760, t, 0.5, 0.1); break;
-      case 'win': [392, 523, 659, 784].forEach((f, i) => this.osc(o, 'triangle', f, f, t + i * 0.12, 0.5, 0.1)); break;
-      case 'lose': [440, 415, 349, 294].forEach((f, i) => this.osc(o, 'triangle', f, f, t + i * 0.16, 0.5, 0.09)); break;
-      case 'capture': [523, 784, 1046].forEach((f, i) => this.osc(o, 'triangle', f, f, t + i * 0.07, 0.3, 0.1)); break;
-      case 'medal': this.osc(o, 'triangle', 880, 880, t, 0.16, 0.1); this.osc(o, 'triangle', 1320, 1320, t + 0.08, 0.2, 0.08); break;
-      case 'medal2': [784, 1175, 1568].forEach((f, i) => this.osc(o, 'triangle', f, f, t + i * 0.07, 0.22, 0.09)); break;
-      case 'medal3': [659, 988, 1319, 1976].forEach((f, i) => this.osc(o, 'triangle', f, f, t + i * 0.075, 0.3, 0.09)); this.osc(o, 'sine', 330, 330, t, 0.6, 0.12); this.nz(o, t, 0.4, 0.05, 'highpass', 6000, 9000, 0.5, 0.05); break;
-      case 'ui': this.osc(o, 'triangle', 1250, 900, t, 0.04, 0.08); this.osc(o, 'sine', 2100, 1900, t, 0.025, 0.03); this.nz(o, t, 0.012, 0.05, 'highpass', 5500); break;
+      // cuenta atrás: tic de reloj de bolsillo; salida: silbato de oficial (de trinchera)
+      case 'beep': this.nz(o, t, 0.025, 0.28, 'bandpass', 3100, 0, 7); this.osc(o, 'sine', 1900, 1900, t, 0.03, 0.06); break;
+      case 'go': { const c = this.ctx, os = c.createOscillator(), g = c.createGain(), lfo = c.createOscillator(), lg = c.createGain(); os.type = 'triangle'; os.frequency.value = 2650; lfo.frequency.value = 38; lg.gain.value = 120; lfo.connect(lg); lg.connect(os.frequency);
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.09, t + 0.03); g.gain.setValueAtTime(0.09, t + 0.55); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.75); os.connect(g); g.connect(o); os.start(t); lfo.start(t); os.stop(t + 0.8); lfo.stop(t + 0.8);
+        this.nz(o, t, 0.75, 0.05, 'bandpass', 2600, 0, 3, 0.03); break; }
+      // fin de partida: corneta (victoria: diana; derrota: toque de silencio)
+      case 'win': this.bugle(o, t, [[523, 0.14], [659, 0.14], [784, 0.14], [1046, 0.3], [784, 0.14], [1046, 0.7]], 0.12); break;
+      case 'lose': this.bugle(o, t, [[392, 0.5], [392, 0.18], [523, 1.0], [392, 0.5], [523, 0.18], [659, 1.1]], 0.1); break;
+      case 'capture': this.bugle(o, t, [[523, 0.1], [784, 0.3]], 0.1); break;
+      // medallas: campanilla de latón (más golpes cuanto mayor la medalla)
+      case 'medal': this.brass(o, t, 1320, 0.06); break;
+      case 'medal2': this.brass(o, t, 1175, 0.06); this.brass(o, t + 0.12, 1568, 0.05); break;
+      case 'medal3': this.brass(o, t, 988, 0.07); this.brass(o, t + 0.12, 1319, 0.06); this.brass(o, t + 0.24, 1976, 0.05); break;
+      // menús: tecla de máquina de escribir
+      case 'ui': this.nz(o, t, 0.018, 0.22, 'bandpass', 2400, 0, 2.5); this.osc(o, 'square', 190, 120, t, 0.02, 0.05); this.nz(o, t + 0.022, 0.03, 0.08, 'lowpass', 900, 0, 1); break;
+      case 'uibell': this.brass(o, t, 2793, 0.04); break;
       case 'distant': {
         const k = opt.k;
         if (k === 'boom') { this.nz(o, t, 2.2, 0.5, 'lowpass', 300, 60, 0.6, 0.05); this.osc(o, 'sine', 55, 25, t, 1.5, 0.45); }
@@ -16784,6 +16942,83 @@ const Music = {
   },
 };
 
+// ---- 16b_audio2.js ----
+// =====================================================================
+// SONIDO 3.4.0 — ambiente de época y sonidos del modo historia
+// · Ambiente natural además de la batalla lejana: pájaros de día, grillos de noche, perros, campana de la iglesia,
+//   rachas de viento; todo sintetizado (sin muestras grabadas), muy bajo y con paneo.
+// · CS: sonidos de la campaña (traídos del prototipo v4): campanas de bronce con eco de valle, roce tras la pared,
+//   crujido del entibado, gota, tos, tren de vía estrecha, ametralladoras lejanas, rueda de la polea, carburo.
+// =====================================================================
+const CS = (() => {
+  const A = () => (AUDIO.ok && AUDIO.ctx && AUDIO.ctx.state === 'running' ? { ac: AUDIO.ctx, noise: AUDIO.noise, out: AUDIO.sfxGain } : null);
+  const env = (a, t, v, at, dur) => { const g = a.ac.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(Math.max(0.0001, v), t + at); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); return g; };
+  const noiseSrc = (a, t, dur) => { const s = a.ac.createBufferSource(); s.buffer = a.noise; s.loop = true; s.start(t, Math.random()); s.stop(t + dur + 0.05); return s; };
+  const filt = (a, type, f, q = 1) => { const x = a.ac.createBiquadFilter(); x.type = type; x.frequency.value = f; x.Q.value = q; return x; };
+  const out = (a, node, pan = 0) => { if (a.ac.createStereoPanner) { const p = a.ac.createStereoPanner(); p.pan.value = clamp(pan, -1, 1); node.connect(p); p.connect(a.out); } else node.connect(a.out); };
+  return {
+    // campanada de bronce: parciales inarmónicos con caída larga y ecos en las laderas (dist: metros al campanario)
+    bell(dist = 30, vol = 1, pan = 0) {
+      const a = A(); if (!a) return; const t0 = a.ac.currentTime + Math.min(3, dist / 340), base = 196;
+      const hit = (t, v, lp) => { const f = filt(a, 'lowpass', lp); for (const [k, g, d] of [[0.5, 0.5, 4.5], [1, 1, 3.6], [1.183, 0.5, 2.6], [1.506, 0.45, 2.2], [2, 0.35, 1.8], [2.5, 0.2, 1.2], [3.01, 0.12, 0.9]]) { const o = a.ac.createOscillator(); o.frequency.value = base * k * (1 + (Math.random() - 0.5) * 0.002); const e = env(a, t, v * g * 0.16, 0.005, d); o.connect(e); e.connect(f); o.start(t); o.stop(t + d + 0.1); }
+        const n = noiseSrc(a, t, 0.08), nf = filt(a, 'bandpass', 2400, 1.5), ne = env(a, t, v * 0.2, 0.002, 0.08); n.connect(nf); nf.connect(ne); ne.connect(f); out(a, f, pan); };
+      const k = vol * Math.min(1, 60 / Math.max(20, dist)) * 1.2; hit(t0, k, 6000 * Math.exp(-dist / 900) + 900);
+      for (const [d, g] of [[0.55, 0.35], [1.1, 0.25], [1.7, 0.18], [2.6, 0.1]]) hit(t0 + d, k * g, 1500);
+    },
+    scrape(vol = 0.25) { const a = A(); if (!a) return; const t = a.ac.currentTime; for (let i = 0; i < 3; i++) { const tt = t + i * (0.28 + Math.random() * 0.2), n = noiseSrc(a, tt, 0.22), f = filt(a, 'bandpass', 900 + Math.random() * 400, 2.5), e = env(a, tt, vol * (0.6 + Math.random() * 0.4), 0.04, 0.22); n.connect(f); f.connect(e); out(a, e, Math.random() * 0.2 - 0.1); } },
+    moan(vol = 0.12) { const a = A(); if (!a) return; const t = a.ac.currentTime, o = a.ac.createOscillator(); o.type = 'sawtooth'; o.frequency.setValueAtTime(118, t); o.frequency.linearRampToValueAtTime(96, t + 2.4); const f = filt(a, 'lowpass', 380, 0.8), e = env(a, t, vol, 0.6, 2.6); o.connect(f); f.connect(e); out(a, e); o.start(t); o.stop(t + 2.7); },
+    creak(vol = 0.5) { const a = A(); if (!a) return; const t = a.ac.currentTime; for (let i = 0; i < 7; i++) { const tt = t + i * 0.045 + Math.random() * 0.02, o = a.ac.createOscillator(); o.type = 'square'; o.frequency.value = 160 + Math.random() * 90; const f = filt(a, 'bandpass', 700, 4), e = env(a, tt, vol * 0.25, 0.003, 0.07); o.connect(f); f.connect(e); out(a, e); o.start(tt); o.stop(tt + 0.09); } const n = noiseSrc(a, t + 0.1, 0.4), f2 = filt(a, 'lowpass', 300), e2 = env(a, t + 0.1, vol * 0.3, 0.05, 0.4); n.connect(f2); f2.connect(e2); out(a, e2); },
+    drip(vol = 0.2) { const a = A(); if (!a) return; const t = a.ac.currentTime, o = a.ac.createOscillator(); o.frequency.setValueAtTime(1800, t); o.frequency.exponentialRampToValueAtTime(600, t + 0.05); const e = env(a, t, vol, 0.002, 0.08); o.connect(e); out(a, e, Math.random() - 0.5); o.start(t); o.stop(t + 0.1); },
+    cough(vol = 0.4) { const a = A(); if (!a) return; const t = a.ac.currentTime; for (let i = 0; i < 2; i++) { const tt = t + i * 0.3, n = noiseSrc(a, tt, 0.2), f = filt(a, 'bandpass', 500, 1.2), e = env(a, tt, vol, 0.01, 0.2); n.connect(f); f.connect(e); out(a, e); } },
+    whistle(dist = 60, n = 2) { const a = A(); if (!a) return; const t = a.ac.currentTime + dist / 340; for (let i = 0; i < n; i++) { const tt = t + i * 0.55; for (const fq of [740, 932, 1110]) { const o = a.ac.createOscillator(); o.type = 'triangle'; o.frequency.value = fq; const f = filt(a, 'lowpass', 3000 * Math.exp(-dist / 900) + 600), e = env(a, tt, 0.07 * Math.min(1, 80 / dist), 0.03, 0.4); o.connect(f); f.connect(e); out(a, e); o.start(tt); o.stop(tt + 0.45); } } },
+    chuff(dist = 40) { const a = A(); if (!a) return; const t = a.ac.currentTime, n = noiseSrc(a, t, 0.25), f = filt(a, 'bandpass', 500, 0.8), e = env(a, t, 0.25 * Math.min(1, 40 / Math.max(1, dist)), 0.02, 0.25); n.connect(f); f.connect(e); out(a, e); },
+    // ráfaga lejana de ametralladora: «como una sábana que se rasga despacio»
+    mgBurst(dist = 626, n = 8, pan = 0) { const a = A(); if (!a) return; const t = a.ac.currentTime + Math.min(2.2, dist / 340); for (let i = 0; i < n; i++) { const tt = t + i * 0.1 + Math.random() * 0.015, s = noiseSrc(a, tt, 0.12), f = filt(a, 'lowpass', 900, 0.7), e = env(a, tt, 0.16, 0.003, 0.14); s.connect(f); f.connect(e); out(a, e, pan); } },
+    shotFar(dist = 626, pan = 0) { const a = A(); if (!a) return; const t = a.ac.currentTime + Math.min(2.2, dist / 340), s = noiseSrc(a, t, 0.5), f = filt(a, 'lowpass', 700), e = env(a, t, 0.2, 0.003, 0.5); s.connect(f); f.connect(e); out(a, e, pan); },
+    retch(vol = 0.4) { const a = A(); if (!a) return; const t = a.ac.currentTime; for (let i = 0; i < 3; i++) { const tt = t + i * 0.55, n = noiseSrc(a, tt, 0.4), f = filt(a, 'lowpass', 420, 1.4), e = env(a, tt, vol * (1 - i * 0.2), 0.05, 0.4); n.connect(f); f.connect(e); out(a, e); } },
+    thump(vol = 0.5, dist = 40) { const a = A(); if (!a) return; const t = a.ac.currentTime + dist / 340, o = a.ac.createOscillator(); o.frequency.setValueAtTime(90, t); o.frequency.exponentialRampToValueAtTime(40, t + 0.15); const e = env(a, t, vol * Math.min(1, 30 / Math.max(1, dist)), 0.004, 0.2); o.connect(e); out(a, e); o.start(t); o.stop(t + 0.25); },
+    rung() { const a = A(); if (!a) return; const t = a.ac.currentTime; const o = a.ac.createOscillator(); o.type = 'triangle'; o.frequency.setValueAtTime(1500, t); o.frequency.exponentialRampToValueAtTime(900, t + 0.06); const e = env(a, t, 0.05, 0.002, 0.08); o.connect(e); out(a, e); o.start(t); o.stop(t + 0.1); },
+    lock() { const a = A(); if (!a) return; const t = a.ac.currentTime; for (const [d, f] of [[0, 1400], [0.2, 900]]) { const n = noiseSrc(a, t + d, 0.04), fl = filt(a, 'bandpass', f, 4), e = env(a, t + d, 0.3, 0.002, 0.05); n.connect(fl); fl.connect(e); out(a, e); } },
+    gate(vol = 0.3) { const a = A(); if (!a) return; const t = a.ac.currentTime, o = a.ac.createOscillator(); o.type = 'sawtooth'; o.frequency.setValueAtTime(240, t); o.frequency.linearRampToValueAtTime(180, t + 1.1); const f = filt(a, 'bandpass', 600, 6), e = env(a, t, vol * 0.2, 0.1, 1.2); o.connect(f); f.connect(e); out(a, e); o.start(t); o.stop(t + 1.25); },
+    // fondos que duran: carburo, viento de ladera, rueda de la polea, motor, multitud
+    loop(kind, vol = 0.2) {
+      const a = A(); if (!a) return null; const t = a.ac.currentTime, g = a.ac.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + 1.2); out(a, g); const nodes = [];
+      if (kind === 'rain' || kind === 'wind' || kind === 'hiss' || kind === 'crowd') { const s = a.ac.createBufferSource(); s.buffer = a.noise; s.loop = true; const f = filt(a, kind === 'rain' ? 'highpass' : 'bandpass', kind === 'rain' ? 1800 : kind === 'hiss' ? 3200 : kind === 'crowd' ? 520 : 400, kind === 'wind' ? 0.4 : kind === 'crowd' ? 0.5 : 1); s.connect(f); f.connect(g); s.start(); nodes.push(s);
+        if (kind === 'crowd') { const l = a.ac.createOscillator(); l.frequency.value = 0.3; const lg = a.ac.createGain(); lg.gain.value = vol * 0.35; l.connect(lg); lg.connect(g.gain); l.start(); nodes.push(l); } }
+      if (kind === 'engine') { const o = a.ac.createOscillator(); o.type = 'sawtooth'; o.frequency.value = 38; const f = filt(a, 'lowpass', 160); o.connect(f); f.connect(g); o.start(); nodes.push(o); const l = a.ac.createOscillator(); l.frequency.value = 3.3; const lg = a.ac.createGain(); lg.gain.value = 5; l.connect(lg); lg.connect(o.frequency); l.start(); nodes.push(l); }
+      if (kind === 'wheel') { const o = a.ac.createOscillator(); o.type = 'triangle'; o.frequency.value = 410; const f = filt(a, 'bandpass', 420, 6), am = a.ac.createGain(); am.gain.value = 0.3; const l = a.ac.createOscillator(); l.frequency.value = 1.6; const lg = a.ac.createGain(); lg.gain.value = 0.3; l.connect(lg); lg.connect(am.gain); o.connect(f); f.connect(am); am.connect(g); o.start(); l.start(); nodes.push(o, l);
+        const s = a.ac.createBufferSource(); s.buffer = a.noise; s.loop = true; const f2 = filt(a, 'lowpass', 120); s.connect(f2); f2.connect(g); s.start(); nodes.push(s); }
+      return { set(v, k = 0.5) { const tt = a.ac.currentTime; g.gain.cancelScheduledValues(tt); g.gain.setTargetAtTime(v, tt, k); }, stop() { const tt = a.ac.currentTime; g.gain.setTargetAtTime(0, tt, 0.4); setTimeout(() => nodes.forEach((n) => { try { n.stop(); } catch (e) { } }), 2000); } };
+    },
+    // ---- ambiente natural ----
+    bird(pan = 0, vol = 0.03) { const a = A(); if (!a) return; const t = a.ac.currentTime, n = 2 + ((Math.random() * 4) | 0), f0 = 2600 + Math.random() * 1600;
+      for (let i = 0; i < n; i++) { const tt = t + i * (0.09 + Math.random() * 0.07), o = a.ac.createOscillator(); o.frequency.setValueAtTime(f0 * (1 + Math.random() * 0.25), tt); o.frequency.exponentialRampToValueAtTime(f0 * (0.7 + Math.random() * 0.5), tt + 0.06); const e = env(a, tt, vol, 0.005, 0.07); o.connect(e); out(a, e, pan); o.start(tt); o.stop(tt + 0.09); } },
+    cricket(pan = 0, vol = 0.012) { const a = A(); if (!a) return; const t = a.ac.currentTime; for (let k = 0; k < 3; k++) for (let i = 0; i < 4; i++) { const tt = t + k * 0.42 + i * 0.03, o = a.ac.createOscillator(); o.frequency.value = 4300 + Math.random() * 120; const e = env(a, tt, vol, 0.003, 0.022); o.connect(e); out(a, e, pan); o.start(tt); o.stop(tt + 0.03); } },
+    dog(pan = 0, vol = 0.05) { const a = A(); if (!a) return; const t = a.ac.currentTime, n = 1 + ((Math.random() * 3) | 0);
+      for (let i = 0; i < n; i++) { const tt = t + i * 0.32, o = a.ac.createOscillator(); o.type = 'sawtooth'; o.frequency.setValueAtTime(420, tt); o.frequency.exponentialRampToValueAtTime(260, tt + 0.12); const f = filt(a, 'bandpass', 900, 1.6), f2 = filt(a, 'lowpass', 1600), e = env(a, tt, vol, 0.01, 0.16); o.connect(f); f.connect(f2); f2.connect(e); out(a, e, pan); o.start(tt); o.stop(tt + 0.2); } },
+    gust(vol = 0.05) { const a = A(); if (!a) return; const t = a.ac.currentTime, n = noiseSrc(a, t, 3.2), f = filt(a, 'bandpass', 300, 0.6); f.frequency.setValueAtTime(260, t); f.frequency.linearRampToValueAtTime(620, t + 1.4); f.frequency.linearRampToValueAtTime(240, t + 3.1); const e = env(a, t, vol, 1.2, 3.2); n.connect(f); f.connect(e); out(a, e, Math.random() * 1.4 - 0.7); },
+  };
+})();
+
+// el ambiente de partida añade la vida del sitio: pájaros, grillos, perros, campana y rachas; la batalla lejana suena menos
+(() => {
+  const up0 = Ambience.update.bind(Ambience);
+  let natT = 0;
+  Ambience.update = function () {
+    if (!this.on || !AUDIO.ok || AUDIO.ctx.state !== 'running') return;
+    const t = AUDIO.ctx.currentTime;
+    if (t >= this.nextT) { if (Math.random() < 0.55) up0(); else this.nextT = t + 4 + Math.random() * 7; }
+    if (t < natT) return;
+    natT = t + 1.6 + Math.random() * 3.5;
+    const th = Env.th || {}, night = (th.stars || 0) > 0.2 || (th.sunI || 2) < 1.2, map = MapSys.id || '', pan = Math.random() * 1.6 - 0.8, r = Math.random();
+    if (AUDIO.indoor > 0.6 || th.rain) return;
+    if (night) { if (r < 0.7) CS.cricket(pan); else if (r < 0.85) CS.dog(pan, 0.025); else CS.gust(0.035); }
+    else if (r < 0.55) CS.bird(pan, 0.02 + Math.random() * 0.02);
+    else if (r < 0.66) CS.dog(pan, 0.03);
+    else if (r < 0.9) CS.gust(0.04);
+    else if (/pueblo|corcovado/.test(map) && Math.random() < 0.5) CS.bell(220 + Math.random() * 120, 0.5, pan);
+  };
+})();
 // ---- 17_replay.js ----
 // =====================================================================
 // KILLCAM — búfer circular (30 Hz) con la pose de cada soldado y cuerpo,
@@ -17437,7 +17672,7 @@ function boot() {
 }
 // ganchos para pruebas automatizadas (no afectan el juego)
 window.__COW = {
-  gloveHandGeo, classKeys, setClass, curClassKey, className, linkSlots, MODES_RANGE: MODES.range, THREE, PartBatch, weaponGeometry, _wmCache, buildWeaponModel, SoldierView, Mannequin, PART_NAMES, SKEL, Fighter, OPERATORS, CAMOS, HELMETS, FACES, VESTS, PACKS, PADS, WSKINS, classLoadout, makeBlock, PAT, OnlineUI, BUS, G, VM, Smoke, Streaks, Progress, CONFIG, Rules, Env, UI, PHYS, MapSys, CAM, Input, Replay, FX, Props, NET, Combat, Weapons, MODES, MAPS, Corpses, Grenades, WorldItems, BotNoise, L, Tags, LADDER, Zombies, ZombieBrain, Inv, ITEMS, AUDIO, Renderer, Post, DmgNums, Camp, Campaign, Scenes, SCENES, CAMPAIGN, Store, weaponIconURL, Ballistics, BAL,
+  gloveHandGeo, classKeys, setClass, curClassKey, className, linkSlots, MODES_RANGE: MODES.range, THREE, PartBatch, weaponGeometry, _wmCache, buildWeaponModel, SoldierView, Mannequin, PART_NAMES, SKEL, Fighter, OPERATORS, CAMOS, HELMETS, FACES, VESTS, PACKS, PADS, WSKINS, classLoadout, makeBlock, PAT, OnlineUI, BUS, G, VM, Smoke, Streaks, Progress, CONFIG, Rules, Env, UI, PHYS, MapSys, CAM, Input, Replay, FX, Props, NET, Combat, Weapons, MODES, MAPS, Corpses, Grenades, WorldItems, BotNoise, L, Tags, LADDER, Zombies, ZombieBrain, Inv, ITEMS, AUDIO, CS, Renderer, Post, DmgNums, Camp, Campaign, Scenes, SCENES, CAMPAIGN, Store, weaponIconURL, Ballistics, BAL,
   simulate(sec, viewEvery = 4) {
     const n = Math.round(sec / STEP);
     for (let i = 0; i < n; i++) {
