@@ -122,7 +122,15 @@ const UI = {
       <div class="mainfoot">
         <span class="langsw"><button data-act="lang" data-v="es" class="${LANG === 'es' ? 'on' : ''}">ES</button><button data-act="lang" data-v="en" class="${LANG === 'en' ? 'on' : ''}">EN</button></span>
         <span>${T('version')} ${CONFIG.VERSION}</span>
-      </div></div><div></div></div>`;
+      </div></div>${this.htmlMainSide()}</div>`;
+  },
+  // menú principal: ficha discreta abajo a la derecha (próxima misión y clase en uso)
+  htmlMainSide() {
+    let nx = null; try { nx = Camp.next(); } catch (e) { nx = null; }
+    const lo = loFor(curClassKey(), Progress.level(), { wskins: G.settings.wskins }), W = CONFIG.WEAPONS[lo.primary];
+    const camp = nx ? `<div class="ms-card"><small>${L({ es: 'Próxima misión', en: 'Next mission' })}</small><b>${escapeHtml(L(nx.title))}</b><span>${escapeHtml(campHead(nx))}</span>
+      <button class="btn small primary" data-act="camp_play" data-v="${nx.id}">${Object.keys(Camp.data().done || {}).length ? T('camp_continue') : T('camp_begin')}</button></div>` : '';
+    return `<div class="mainside">${camp}<button class="ms-card ms-cls" data-act="go" data-s="soldier"><small>${L({ es: 'Clase en uso', en: 'Current class' })}</small><b>${escapeHtml(className(curClassKey()))}</b><span>${escapeHtml(L(W.name))} · ${escapeHtml(L(CONFIG.PERKS[lo.perk]))}</span></button></div>`;
   },
   htmlPlay() {
     const s = G.settings, M = MODES[s.lastMode], MP = MAPS[s.lastMap] || MAPS[MAP_ORDER[0]];
@@ -287,8 +295,8 @@ const UI = {
         return `<button class="gs-opt ${lo.att[cur] === a ? 'on' : ''} ${full ? 'full' : ''}" data-act="lo_att" data-k="${cur}" data-v="${a}" ${locked ? 'disabled' : ''}><b>${escapeHtml(L(it))}</b><small>${escapeHtml(L(it.d))}</small>${locked ? `<small class="lock">🔒 ${T('gs_wneed', { n: need })}</small>` : ''}</button>`; }).join('') : '';
       let nxL = 0, nxN = []; for (let l = wi.level + 1; l <= CONFIG.WLVL.max; l++) { const n = Progress.attUnlocksAt(P, l); if (n.length) { nxL = l; nxN = n; break; } }
       right = `<h3 class="lo-h">${cur ? escapeHtml(L(CONFIG.ATTACH.slotNames[cur])) : ''}</h3><div class="gs-opts">${opts}</div>
-        <h3 class="lo-h">${T('gs_stats')}</h3>${this.cmpBars(P, lo.att, lo.perk)}<p class="note" style="margin-top:8px">${T('cmp_legend')}</p>
-        ${nxL ? `<p class="note mastery">${T('gs_next', { n: nxL, a: escapeHtml(nxN.join(', ')) })}</p>` : ''}`;
+        ${nxL ? `<p class="note mastery">${T('gs_next', { n: nxL, a: escapeHtml(nxN.join(', ')) })}</p>` : ''}
+        ${used ? `<button class="btn small gs-reset" data-act="lo_att_reset">${L({ es: 'Quitar todos los accesorios', en: 'Strip all attachments' })}</button>` : ''}`;
     } else {
       const cur2 = lo.att.skin || 'none';
       const row = (sk, name, sub, pct, ok, cls = '') => { const sw = WSKINS[sk].sw;
@@ -303,16 +311,29 @@ const UI = {
           <span class="gs-lv">${T('gs_wlevel')} ${wi.level}<span class="wxbar"><i style="width:${wpct}%"></i></span><small>${wi.need ? T('gs_wxp', { a: wi.into, b: wi.need, n: wi.level + 1 }) : T('gs_wmax')}</small></span></div>
         <div class="lo-rank"><span class="pickct ${used >= CONFIG.ATTACH.pick ? 'full' : ''}">${used}/${CONFIG.ATTACH.pick} ${T('attachments').toLowerCase()}</span></div></header>
       <div class="lo-body"><aside class="lo-left"><h3 class="lo-h">${T('gs_weapons')}</h3>${weaps}</aside>
-        <div class="lo-stage"><canvas id="preview"></canvas><span class="lo-hint">${T('lo_rotate')}</span></div>
-        <aside class="lo-right"><div class="seg tabs gs-tabs"><button data-act="gs_tab" data-v="att" class="${tab === 'att' ? 'on' : ''}">${T('gs_att')}</button><button data-act="gs_tab" data-v="camo" class="${tab === 'camo' ? 'on' : ''}">${T('gs_camo')} · ${nDone}/${WCH.length}</button></div>${right}</aside></div>
+        <div class="lo-stage"><canvas id="preview"></canvas><span class="lo-hint">${T('lo_rotate')}</span>
+          <div class="gs-sheet"><div class="gs-stats"><small class="rl">${T('gs_stats')}</small>${this.cmpBars(P, lo.att, lo.perk)}</div>${this.specSheet(P, lo.att)}</div></div>
+        <aside class="lo-right"><div class="seg tabs gs-tabs"><button data-act="gs_tab" data-v="att" class="${tab === 'att' ? 'on' : ''}">${T('gs_att')}</button><button data-act="gs_tab" data-v="camo" class="${tab === 'camo' ? 'on' : ''}">${T('gs_camo')} <small>${nDone}/${WCH.length}</small></button></div>${right}</aside></div>
       <div class="gs-tiles">${tiles}</div></div></div>`;
+  },
+  // ficha técnica del arma: cifras reales del reglamento (cadencia, cargador, alcance, recarga, velocidad)
+  specSheet(id, att) {
+    let W = CONFIG.WEAPONS[id]; try { W = weaponStats(id, att, G.settings.loadout && G.settings.loadout.perk) || W; } catch (e) { W = CONFIG.WEAPONS[id]; }
+    const rpm = W.fireRate ? Math.round(W.fireRate * 60) : 0, rows = [
+      [L({ es: 'Impacto', en: 'Impact' }), Math.round(W.damage * (W.pellets || 1))],
+      [L({ es: 'Cadencia', en: 'Rate' }), rpm ? rpm + ' d/min' : '—'],
+      [L({ es: 'Cargador', en: 'Magazine' }), W.mag ? W.mag + ' + ' + (W.reserve || 0) : '—'],
+      [L({ es: 'Alcance eficaz', en: 'Effective range' }), W.fall0 ? W.fall0 + ' m' : '—'],
+      [L({ es: 'Velocidad', en: 'Muzzle vel.' }), W.mv ? W.mv + ' m/s' : '—'],
+      [L({ es: 'Recarga', en: 'Reload' }), W.reload ? W.reload.toFixed(1) + ' s' : '—']];
+    return `<dl class="gs-spec">${rows.map(([k, v]) => `<dt>${escapeHtml(k)}</dt><dd>${v}</dd>`).join('')}</dl>`;
   },
   // barras comparativas del armero: gris = de fábrica, color = tu configuración
   cmpBars(id, att, perk) {
     const before = weaponBars(id, defaultAtt(id), perk), after = weaponBars(id, att, perk);
     const rows = [['dmg', 'st_dmg'], ['rate', 'st_rate'], ['range', 'st_range'], ['ctl', 'st_ctl'], ['acc', 'st_acc'], ['mob', 'st_mob']];
     return `<div class="cmp">${rows.map(([k, l]) => { const d = Math.round((after[k] - before[k]) * 100);
-      return `<span class="cl">${T(l)}</span><span class="cbar"><i class="b" style="width:${Math.round(before[k] * 100)}%"></i><i class="a ${d > 0 ? 'up' : d < 0 ? 'down' : ''}" style="width:${Math.round(after[k] * 100)}%"></i></span><span class="cv ${d > 0 ? 'up' : d < 0 ? 'down' : ''}">${d > 0 ? '+' : ''}${d || ''}</span>`; }).join('')}</div>`;
+      return `<span class="cl">${T(l)}</span><span class="cbar"><i class="b" style="width:${Math.round(before[k] * 100)}%"></i><i class="a ${d > 0 ? 'up' : d < 0 ? 'down' : ''}" style="width:${Math.round(after[k] * 100)}%"></i></span><span class="cv ${d > 0 ? 'up' : d < 0 ? 'down' : ''}">${Math.round(after[k] * 100)}${d ? `<em>${d > 0 ? '+' : ''}${d}</em>` : ''}</span>`; }).join('')}</div>`;
   },
   htmlKit() {
     const s = G.settings, lvl = Progress.level(), lock = (n) => `<small class="lock">🔒 ${T('locked_lvl', { n })}</small>`;
@@ -366,9 +387,12 @@ const UI = {
       return `<div class="field"><span class="lbl">${T(kind)} <small class="pkn">${Object.keys(cat).filter((k) => Progress.has(kind, k, lvl)).length}/${Object.keys(cat).length}</small></span><div class="picker"><button class="arrow" data-act="pick" data-k="${kind}" data-d="-1" aria-label="anterior">‹</button><span class="pv">${escapeHtml(L(cur))}</span><button class="arrow" data-act="pick" data-k="${kind}" data-d="1" aria-label="siguiente">›</button></div></div>`; };
     const ops = Object.keys(OPERATORS).map((k) => { const O = OPERATORS[k], ok = Progress.has('operator', k, lvl);
       return `<button class="card op ${c.op === k ? 'on' : ''}" data-act="op" data-v="${k}" ${ok ? '' : 'disabled'}><i class="opstrip" style="background:linear-gradient(90deg,${CAMOS[O.set.camo].base} 0 25%,${CAMOS[O.set.camo].c[0]} 25% 50%,${CAMOS[O.set.camo].c[1]} 50% 75%,${CAMOS[O.set.camo].c[2]} 75%)"></i><b>${escapeHtml(L(O))}</b><span class="d">${escapeHtml(L(O.d))}</span>${ok ? '' : lock(CONFIG.UNLOCK.operator[k])}</button>`; }).join('');
-    return `<h3 style="margin-top:0">${T('operators')}</h3><p class="note">${T('op_lead')}</p><div class="cards" style="margin-top:10px">${ops}</div>
-      <div class="actions" style="margin-top:8px"><button class="btn small" data-act="op" data-v="">${T('op_free')}</button></div>
-      <h3>${T('cosmetics')}</h3><div style="display:grid;gap:16px">
+    const lt = this.lookTab === 'parts' ? 'parts' : 'ops', curOp = c.op && OPERATORS[c.op] ? L(OPERATORS[c.op]) : L({ es: 'Uniforme libre', en: 'Free uniform' });
+    const head = `<div class="lk-head"><div class="seg lk-tabs"><button data-act="look_tab" data-v="ops" class="${lt === 'ops' ? 'on' : ''}">${T('operators')}</button><button data-act="look_tab" data-v="parts" class="${lt === 'parts' ? 'on' : ''}">${T('cosmetics')}</button></div>
+      <span class="lk-cur">${escapeHtml(curOp)}</span><button class="btn small" data-act="look_rand">${L({ es: 'Al azar', en: 'Random' })}</button></div>`;
+    if (lt === 'ops') return `${head}<p class="note">${T('op_lead')}</p><div class="cards lk-ops">${ops}</div>
+      <div class="actions" style="margin-top:8px"><button class="btn small" data-act="op" data-v="">${T('op_free')}</button></div>`;
+    return `${head}<div class="lk-parts">
         <div class="field"><span class="lbl">${T('camo')} · ${escapeHtml(L(CAMOS[c.camo]))}</span><div class="swatches">${camo}</div></div>
         ${pk('helmet', HELMETS)}${pk('face', FACES)}${pk('vest', VESTS)}${pk('pack', PACKS)}${pk('pads', PADS)}
         <div class="field"><span class="lbl">${T('skin')}</span><div class="swatches">${skin}</div></div></div>`;
@@ -494,6 +518,9 @@ const UI = {
         if (v !== fac && cur[k] === fac && attCount(P, cur) >= CONFIG.ATTACH.pick) { this.toast(T('att_full', { n: CONFIG.ATTACH.pick }), 1800); break; }
         lo.att = { ...cur, [k]: v }; this.loadoutChanged(); break;
       }
+      case 'lo_att_reset': { const lo = s.loadout; if (lo && lo.primary) { lo.att = defaultAtt(lo.primary); this.loadoutChanged(); } break; }
+      case 'look_tab': this.lookTab = b.dataset.v; this.render(); break;
+      case 'look_rand': this.randomLook(); break;
       case 'lo_skin': { const P = s.loadout.primary; s.wskins = { ...(s.wskins || {}), [P]: b.dataset.v }; this.loadoutChanged(); break; }
       case 'stab': this.soldierTab = b.dataset.v; this.render(); break;
       case 'op': {
@@ -578,6 +605,14 @@ const UI = {
     if (this.el.radar) this.el.radar.style.display = s.showRadar === false ? 'none' : '';
     if (this.el.compass) this.el.compass.hidden = s.showCompass === false;
     this.layoutHud();
+  },
+  // aspecto al azar: solo piezas ya desbloqueadas; deja el uniforme libre
+  randomLook() {
+    const c = G.settings.custom, lvl = Progress.level(), any = (a) => a[(Math.random() * a.length) | 0];
+    for (const [kind, cat] of [['helmet', HELMETS], ['face', FACES], ['vest', VESTS], ['pack', PACKS], ['pads', PADS], ['camo', CAMOS]]) {
+      const keys = Object.keys(cat).filter((k) => Progress.has(kind, k, lvl)); if (keys.length) c[kind] = any(keys);
+    }
+    c.skin = (Math.random() * SKINS.length) | 0; c.op = null; saveSettings(); NET._lo = null; this.render();
   },
   pickItem(kind, d) {
     const cat = { helmet: HELMETS, face: FACES, vest: VESTS, pack: PACKS, pads: PADS }[kind]; if (!cat) return;

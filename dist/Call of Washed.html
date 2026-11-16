@@ -1224,7 +1224,7 @@ kbd { font-family: var(--f-type); font-weight: 400; }
 #ammo-strip.prog b { background: var(--h-cream); }
 #slots { gap: 10px; margin-top: 2px; }
 #slots b, #slots b.cur { clip-path: none; background: none; height: auto; padding: 0; font: 10px var(--f-type); letter-spacing: .1em; border: 0; box-shadow: none; }
-#slots b { color: var(--h-faint); } #slots b.cur { color: var(--h-cream); }
+#slots b { color: rgba(239,230,204,.45); } #slots b.cur { color: var(--h-cream); }
 #slots b kbd { background: none; border: 0; color: inherit; font-family: var(--f-type); }
 .wkeys { display: none; }
 
@@ -1246,6 +1246,167 @@ kbd { font-family: var(--f-type); font-weight: 400; }
 #weapon .wkeys { display: none !important; }
 #status .hpwrap { display: flex; flex-direction: row-reverse; justify-content: flex-end; align-items: center; gap: 10px; }
 #status .hpbar { margin: 0; align-self: center; }
+/* ---------- 3.4.0: menú de campaña ----------
+   El menú deja el papel y pasa a la misma familia que el HUD minimalista: paneles oscuros de estuche de campaña,
+   texto crema, filetes de latón y rojo solo para lo urgente. Se conservan las tipografías de época.
+   Truco: dentro de los paneles se redefinen las tintas del expediente (--ink*, --stamp) para que todas las reglas
+   antiguas pasen solas a crema y latón. */
+#menu .panel, #overlay .panel, #menu .lo-left, #menu .pl-right, #menu .lo-right, #menu .lo-mid, #menu .pl-modecard, #menu .profile, #menu .mainside {
+  --ink: #efe6cc; --ink2: rgba(239,230,204,.8); --ink3: rgba(239,230,204,.52); --stamp: #d6b25e;
+  --text: #efe6cc; --muted: rgba(239,230,204,.55); --line: rgba(239,230,204,.09); --line2: rgba(214,178,94,.3);
+}
+#menu .panel, #overlay .panel, #menu .lo-left, #menu .pl-right, #menu .lo-right {
+  background: linear-gradient(180deg, rgba(32,30,24,.88), rgba(15,14,11,.92)); color: var(--ink);
+  border: 1px solid rgba(214,178,94,.16); border-top: 1px solid rgba(214,178,94,.5);
+  box-shadow: 0 14px 34px rgba(0,0,0,.5); backdrop-filter: blur(6px); }
+#menu .panel::before, #overlay .panel::before { content: none; display: none; }
+#menu .panel h3, #overlay .panel h3, #menu .lo-h { color: var(--brass2); border-bottom: 1px solid rgba(214,178,94,.22); letter-spacing: .24em; font-size: 12px; }
+#menu .note, #overlay .note, #menu .panel p.lead, #overlay .panel p.lead { color: rgba(239,230,204,.66); font-size: 14px; }
+
+/* ---- cabecera de cada pantalla ---- */
+.lo-top { border-bottom: 1px solid rgba(214,178,94,.18); padding-bottom: 10px; }
+.lo-top h2 { font-family: var(--f-logo); font-weight: 700; letter-spacing: .08em; color: #efe6cc; }
+.lo-top .btn { background: none; border: 1px solid rgba(239,230,204,.25); color: rgba(239,230,204,.8); }
+.lo-top .btn:hover { border-color: var(--brass2); color: var(--brass2); }
+#menu .lo-top .seg.tabs { background: none; border: 0; border-bottom: 1px solid rgba(239,230,204,.12); gap: 4px; }
+#menu .lo-top .seg.tabs button { background: none; border: 0; color: rgba(239,230,204,.55); position: relative; padding-bottom: 6px; }
+#menu .lo-top .seg.tabs button.on { background: none; color: #efe6cc; }
+#menu .lo-top .seg.tabs button.on::after { content: ''; position: absolute; left: 12%; right: 12%; bottom: -1px; height: 2px; background: var(--brass2); }
+
+/* ---- botones ---- */
+#menu .panel .btn, #overlay .panel .btn, #menu .pl-right .btn, #menu .lo-left .btn, #menu .lo-right .btn, #menu .lo-mid .btn, #menu .mainside .btn {
+  color: #efe6cc; background: rgba(239,230,204,.04); border: 1px solid rgba(239,230,204,.22); }
+#menu .panel .btn:hover, #overlay .panel .btn:hover, #menu .pl-right .btn:hover, #menu .lo-right .btn:hover, #menu .lo-mid .btn:hover { border-color: var(--brass2); color: var(--brass2); background: rgba(214,178,94,.06); }
+.btn.primary, #menu .panel .btn.primary, #overlay .panel .btn.primary, #menu .pl-right .btn.primary, #menu .lo-mid .btn.primary, #menu .mainside .btn.primary {
+  background: linear-gradient(180deg, #d9b765, #b38e3d); color: #1b1710; border: 0; box-shadow: 0 2px 10px rgba(0,0,0,.4); text-shadow: none; letter-spacing: .2em; }
+.btn.primary:hover, #menu .pl-right .btn.primary:hover, #menu .mainside .btn.primary:hover, #menu .lo-mid .btn.primary:hover { background: linear-gradient(180deg, #e8c877, #c49b46); color: #1b1710; }
+
+/* ---- selectores y entradas ---- */
+#menu .seg, #overlay .seg { background: rgba(0,0,0,.25); border-color: rgba(239,230,204,.16); }
+#menu .seg button, #overlay .seg button { color: rgba(239,230,204,.72); border-right-color: rgba(239,230,204,.1); }
+#menu .seg button.on, #overlay .seg button.on { background: rgba(214,178,94,.9); color: #1b1710; }
+#menu input[type=text], #menu textarea { background: rgba(0,0,0,.35); color: #efe6cc; border: 1px solid rgba(239,230,204,.2); }
+#menu input[type=text]:focus { border-color: var(--brass2); outline: none; }
+#menu .panel kbd, #menu .pl-right kbd { background: rgba(239,230,204,.06); color: #efe6cc; border-color: rgba(239,230,204,.25); }
+input[type=range] { accent-color: #d6b25e; }
+
+/* ---- fichas y renglones: un solo lenguaje ---- */
+#menu .card, #overlay .card, #menu .pl-mode, #menu .lo-cls, #menu .lo-opt, #menu .gs-opt, #menu .chrow, #menu .cm-row, #menu .lo-rowmain, #menu .lo-static {
+  background: rgba(239,230,204,.035); border: 1px solid rgba(239,230,204,.08); border-left: 2px solid transparent; color: #efe6cc; box-shadow: none; }
+#menu .card:hover, #menu .pl-mode:hover, #menu .lo-cls:hover, #menu .lo-opt:hover, #menu .gs-opt:hover, #menu .cm-row:hover, #menu .lo-rowmain:hover { background: rgba(239,230,204,.07); border-color: rgba(214,178,94,.3); }
+#menu .card.on, #overlay .card.on, #menu .pl-mode.on, #menu .lo-cls.on, #menu .lo-opt.on, #menu .gs-opt.on, #menu .chrow.on, #menu .lo-rowmain.on {
+  background: linear-gradient(90deg, rgba(214,178,94,.17), rgba(214,178,94,.02)); border-color: rgba(214,178,94,.28); border-left-color: var(--brass2); box-shadow: none; }
+#menu .card.on b, #menu .pl-mode.on b, #menu .lo-cls.on b, #menu .lo-opt.on b, #menu .gs-opt.on b, #menu .lo-cls.on i, #menu .pl-mode.on i { color: var(--brass2); }
+#menu .card b, #overlay .card b { font-size: 17px; line-height: 1.15; overflow-wrap: normal; hyphens: auto; }
+#menu .card[disabled], #menu .lo-opt[disabled], #menu .gs-opt[disabled] { opacity: .42; }
+#menu .sbar { background: rgba(239,230,204,.1); } #menu .sbar i { background: rgba(239,230,204,.6); } #menu .card.on .sbar i { background: var(--brass2); }
+#menu .lo-sub { color: rgba(239,230,204,.45); font-family: var(--f-type); letter-spacing: .2em; }
+
+/* ---- preparar partida, campaña ---- */
+#menu .pl-modecard { background: rgba(15,14,11,.85); border: 1px solid rgba(214,178,94,.16); color: #efe6cc; }
+#menu .pl-modecard .pl-chips em, .pl-chips em { color: rgba(239,230,204,.75); border-color: rgba(239,230,204,.2); }
+.pl-hero { border: 1px solid rgba(214,178,94,.35); box-shadow: 0 10px 26px rgba(0,0,0,.5); }
+#menu .pl-map { background: rgba(15,14,11,.85); border: 1px solid rgba(239,230,204,.1); color: #efe6cc; }
+#menu .pl-map.on { border-color: var(--brass2); box-shadow: 0 0 0 1px var(--brass2); }
+#menu .cm-row { background: rgba(15,14,11,.86); }
+#menu .cm-row .cm-code, #menu .cm-row em.ok { color: var(--brass2); } #menu .cm-row em.done { color: #9cc27a; }
+#menu .cm-next { background: rgba(214,178,94,.07); border-left-color: var(--brass2); }
+
+/* ---- menú principal ---- */
+.mitem { color: #efe6cc; }
+.mitem::before { content: ''; left: 10px; width: 8px; height: 1.5px; background: var(--brass2); }
+.mitem:hover, .mitem:focus-visible { background: linear-gradient(90deg, rgba(214,178,94,.16), rgba(214,178,94,0)); }
+.mitem:hover span, .mitem:focus-visible span { color: var(--brass2); }
+.mitem.camp span { color: var(--brass2); }
+#menu .profile { background: rgba(15,14,11,.72); border: 0; border-left: 2px solid var(--brass2); box-shadow: none; backdrop-filter: blur(4px); color: #efe6cc; }
+#menu .profile b { color: #efe6cc; } #menu .profile span { color: rgba(239,230,204,.6); }
+.mainside { align-self: end; justify-self: end; display: grid; gap: 10px; width: min(320px, 100%); margin: 0 clamp(0px, 3vw, 40px) 30px 0; }
+.ms-card { display: grid; gap: 4px; text-align: left; padding: 12px 14px; background: rgba(15,14,11,.74); border: 0; border-top: 1px solid rgba(214,178,94,.5); backdrop-filter: blur(5px); color: #efe6cc; font: inherit; }
+.ms-card small { font: 11px var(--f-type); letter-spacing: .24em; color: var(--brass2); text-transform: uppercase; }
+.ms-card b { font: 400 20px var(--f-fell); letter-spacing: .04em; }
+.ms-card span { font: 12px var(--f-type); color: rgba(239,230,204,.6); line-height: 1.4; }
+.ms-card .btn { justify-self: start; margin-top: 6px; }
+button.ms-card { cursor: pointer; } button.ms-card:hover { background: rgba(30,28,22,.86); } button.ms-card:hover b { color: var(--brass2); }
+
+/* ---- soldado: equipo ---- */
+.lo-stage { border: 1px solid rgba(214,178,94,.16); background: radial-gradient(ellipse at 50% 40%, rgba(214,178,94,.1), transparent 62%), radial-gradient(ellipse at 50% 100%, rgba(0,0,0,.55), transparent 70%), rgba(10,9,7,.82); }
+.lo-hint { font-family: var(--f-type); color: rgba(239,230,204,.4); }
+#menu .lo-clshead i { color: var(--brass2); }
+#menu .lo-rowmain s { color: rgba(239,230,204,.4); }
+#menu .lo-rowmain:hover s { color: var(--brass2); }
+#menu .atts em { background: rgba(214,178,94,.1); border: 1px solid rgba(214,178,94,.25); color: #e6d6a8; font-style: normal; font-family: var(--f-type); }
+#menu .lo-name label { font-family: var(--f-type); color: rgba(239,230,204,.55); }
+
+/* ---- soldado: aspecto ---- */
+.lk-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.lk-head .lk-tabs { flex: 0 0 auto; }
+.lk-head .lk-tabs button { padding: 7px 14px; }
+.lk-cur { flex: 1; font: 12px var(--f-type); letter-spacing: .14em; color: var(--brass2); text-transform: uppercase; text-align: right; }
+.cards.lk-ops { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; margin-top: 10px; }
+.cards.lk-ops .card.op { padding: 10px 12px; }
+.cards.lk-ops .card.op b { font-size: 16px; }
+.cards.lk-ops .card.op .d { font-size: 12px; }
+.lk-parts { display: grid; gap: 16px; }
+.lk-parts .field { display: grid; grid-template-columns: 150px 1fr; align-items: center; gap: 12px; }
+.lk-parts .picker .pv { flex: 1; min-width: 0; font-family: var(--f-type); font-weight: 400; color: #efe6cc; border-color: rgba(239,230,204,.15); background: rgba(0,0,0,.25); }
+.lk-parts .picker button.arrow { color: #efe6cc; border-color: rgba(239,230,204,.2); background: rgba(239,230,204,.04); }
+.lk-parts .picker button.arrow:hover { color: var(--brass2); border-color: var(--brass2); }
+.swatch { border-color: rgba(239,230,204,.2); border-radius: 2px; }
+.swatch.on { outline: 2px solid var(--brass2); outline-offset: 2px; }
+@media (max-width: 760px) { .lk-parts .field { grid-template-columns: 1fr; } }
+
+/* ---- armero ---- */
+#menu .lo.gs .lo-top .gs-wname b { font-family: var(--f-logo); }
+.gs-wname { color: rgba(239,230,204,.55); }
+.gs-lv { color: var(--brass2); }
+.wxbar { background: rgba(239,230,204,.12); } .wxbar i { background: var(--brass2); }
+.pickct { color: var(--brass2); border-color: rgba(214,178,94,.4); font-family: var(--f-type); }
+/* filtro de clases de arma legible */
+#menu .wc-bar button { background: none; border: 1px solid rgba(239,230,204,.16); color: rgba(239,230,204,.7); font-family: var(--f-type); font-weight: 400; }
+#menu .wc-bar button:hover { border-color: var(--brass2); color: var(--brass2); }
+#menu .wc-bar button.on { background: var(--brass2); border-color: var(--brass2); color: #1b1710; }
+/* lista de armas: silueta arriba, nombre en una línea */
+#menu .lo.gs .lo-opt { grid-template-columns: 1fr; gap: 2px; padding: 8px 10px; }
+#menu .lo.gs .lo-opt img, #menu .lo.gs .lo-opt .noic { grid-row: auto; width: 100%; height: 34px; object-position: left center; }
+#menu .lo.gs .lo-opt b { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#menu .lo.gs .lo-opt small { font-size: 11px; }
+/* pestañas accesorios / camuflajes en una línea */
+.gs-tabs button { white-space: nowrap; } .gs-tabs button small { opacity: .7; margin-left: 4px; }
+/* ficha técnica y barras sobre el escenario */
+.gs-sheet { position: absolute; left: 14px; right: 14px; bottom: 12px; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 22px; align-items: end; pointer-events: none;
+  padding-top: 26px; background: linear-gradient(180deg, transparent, rgba(8,7,5,.75) 30%); }
+.gs-stats .rl { display: block; font: 10px var(--f-type); letter-spacing: .26em; color: var(--brass2); margin-bottom: 6px; text-transform: uppercase; }
+.gs-sheet .cmp { gap: 4px 10px; }
+.gs-sheet .cmp .cl { font: 10px var(--f-type); letter-spacing: .14em; color: rgba(239,230,204,.62); }
+.gs-sheet .cmp .cbar { height: 4px; background: rgba(239,230,204,.1); }
+.gs-sheet .cmp .cbar i.b { background: rgba(239,230,204,.3); }
+.gs-sheet .cmp .cbar i.a { background: #efe6cc; height: 100%; top: 0; opacity: .85; }
+.gs-sheet .cmp .cbar i.a.up { background: #9cc27a; } .gs-sheet .cmp .cbar i.a.down { background: #e0604c; }
+.cmp .cv { font: 700 12px var(--f-sten, var(--f-cond)); color: rgba(239,230,204,.85); min-width: 46px; white-space: nowrap; }
+.cmp .cv em { font: 10px var(--f-type); margin-left: 4px; font-style: normal; }
+.cmp .cv.up em { color: #9cc27a; } .cmp .cv.down em { color: #e0604c; }
+.gs-spec { display: grid; grid-template-columns: auto auto; gap: 3px 12px; margin: 0; justify-content: end; }
+.gs-spec dt { font: 10px var(--f-type); letter-spacing: .14em; color: rgba(239,230,204,.55); text-transform: uppercase; align-self: center; }
+.gs-spec dd { margin: 0; font: 700 15px var(--f-sten, var(--f-cond)); color: #efe6cc; text-align: right; letter-spacing: .04em; }
+.gs-reset { margin-top: 12px; width: 100%; }
+/* ranuras: barra fina, sin cajas */
+.gs-tiles { gap: 2px; border-top: 1px solid rgba(214,178,94,.18); padding-top: 8px; }
+.gs-tile { background: none; border: 0; border-bottom: 2px solid rgba(239,230,204,.1); padding: 6px 10px 8px; }
+.gs-tile small { font: 10px var(--f-type); letter-spacing: .22em; color: rgba(239,230,204,.45); }
+.gs-tile b { font: 400 14px var(--f-type); color: rgba(239,230,204,.45); text-transform: none; letter-spacing: .04em; }
+.gs-tile.set b { color: #efe6cc; } .gs-tile.set small { color: var(--brass2); }
+.gs-tile:hover { background: rgba(239,230,204,.04); }
+.gs-tile.sel { background: linear-gradient(0deg, rgba(214,178,94,.14), transparent); border-bottom-color: var(--brass2); }
+@media (max-width: 1100px) { .gs-sheet { position: static; grid-template-columns: 1fr; background: rgba(8,7,5,.8); padding: 10px; } }
+/* ajustes finos tras las capturas */
+#menu .pl-mode b { font-size: 17px; line-height: 1.1; }
+.lo.gs .lo-top { flex-wrap: nowrap; }
+.lo.gs .lo-top h2 { font-size: 30px; }
+.lo.gs .gs-wname { flex-wrap: nowrap; min-width: 0; overflow: hidden; gap: 10px; }
+.lo.gs .gs-wname b { font-size: 22px; white-space: nowrap; }
+.lo.gs .gs-wname > span:not(.gs-lv):not(.stars) { white-space: nowrap; font-size: 12px; }
+.lo.gs .gs-lv small { display: none; }
+.lo.gs .lo-rank { flex: 0 0 auto; }
 </style>
 <div id="app">
   <div id="gl"></div>
@@ -1317,7 +1478,7 @@ import * as CANNON from 'cannon-es';
 const CONFIG = {
   GAME_NAME: 'CALL OF WASHED',
   GAME_TAG: { es: 'La Conflagración · 1939–1945', en: 'The Conflagration · 1939–1945' },
-  VERSION: '3.3.0', TITLE_EN: 'WarTime',
+  VERSION: '3.4.0', TITLE_EN: 'WarTime',
 
   SIM_HZ: 60,               // timestep fijo de la simulación
   PHYS_SUBSTEPS: 2,         // sub-pasos de cannon por tick (120 Hz efectivos)
@@ -15160,7 +15321,15 @@ const UI = {
       <div class="mainfoot">
         <span class="langsw"><button data-act="lang" data-v="es" class="${LANG === 'es' ? 'on' : ''}">ES</button><button data-act="lang" data-v="en" class="${LANG === 'en' ? 'on' : ''}">EN</button></span>
         <span>${T('version')} ${CONFIG.VERSION}</span>
-      </div></div><div></div></div>`;
+      </div></div>${this.htmlMainSide()}</div>`;
+  },
+  // menú principal: ficha discreta abajo a la derecha (próxima misión y clase en uso)
+  htmlMainSide() {
+    let nx = null; try { nx = Camp.next(); } catch (e) { nx = null; }
+    const lo = loFor(curClassKey(), Progress.level(), { wskins: G.settings.wskins }), W = CONFIG.WEAPONS[lo.primary];
+    const camp = nx ? `<div class="ms-card"><small>${L({ es: 'Próxima misión', en: 'Next mission' })}</small><b>${escapeHtml(L(nx.title))}</b><span>${escapeHtml(campHead(nx))}</span>
+      <button class="btn small primary" data-act="camp_play" data-v="${nx.id}">${Object.keys(Camp.data().done || {}).length ? T('camp_continue') : T('camp_begin')}</button></div>` : '';
+    return `<div class="mainside">${camp}<button class="ms-card ms-cls" data-act="go" data-s="soldier"><small>${L({ es: 'Clase en uso', en: 'Current class' })}</small><b>${escapeHtml(className(curClassKey()))}</b><span>${escapeHtml(L(W.name))} · ${escapeHtml(L(CONFIG.PERKS[lo.perk]))}</span></button></div>`;
   },
   htmlPlay() {
     const s = G.settings, M = MODES[s.lastMode], MP = MAPS[s.lastMap] || MAPS[MAP_ORDER[0]];
@@ -15325,8 +15494,8 @@ const UI = {
         return `<button class="gs-opt ${lo.att[cur] === a ? 'on' : ''} ${full ? 'full' : ''}" data-act="lo_att" data-k="${cur}" data-v="${a}" ${locked ? 'disabled' : ''}><b>${escapeHtml(L(it))}</b><small>${escapeHtml(L(it.d))}</small>${locked ? `<small class="lock">🔒 ${T('gs_wneed', { n: need })}</small>` : ''}</button>`; }).join('') : '';
       let nxL = 0, nxN = []; for (let l = wi.level + 1; l <= CONFIG.WLVL.max; l++) { const n = Progress.attUnlocksAt(P, l); if (n.length) { nxL = l; nxN = n; break; } }
       right = `<h3 class="lo-h">${cur ? escapeHtml(L(CONFIG.ATTACH.slotNames[cur])) : ''}</h3><div class="gs-opts">${opts}</div>
-        <h3 class="lo-h">${T('gs_stats')}</h3>${this.cmpBars(P, lo.att, lo.perk)}<p class="note" style="margin-top:8px">${T('cmp_legend')}</p>
-        ${nxL ? `<p class="note mastery">${T('gs_next', { n: nxL, a: escapeHtml(nxN.join(', ')) })}</p>` : ''}`;
+        ${nxL ? `<p class="note mastery">${T('gs_next', { n: nxL, a: escapeHtml(nxN.join(', ')) })}</p>` : ''}
+        ${used ? `<button class="btn small gs-reset" data-act="lo_att_reset">${L({ es: 'Quitar todos los accesorios', en: 'Strip all attachments' })}</button>` : ''}`;
     } else {
       const cur2 = lo.att.skin || 'none';
       const row = (sk, name, sub, pct, ok, cls = '') => { const sw = WSKINS[sk].sw;
@@ -15341,16 +15510,29 @@ const UI = {
           <span class="gs-lv">${T('gs_wlevel')} ${wi.level}<span class="wxbar"><i style="width:${wpct}%"></i></span><small>${wi.need ? T('gs_wxp', { a: wi.into, b: wi.need, n: wi.level + 1 }) : T('gs_wmax')}</small></span></div>
         <div class="lo-rank"><span class="pickct ${used >= CONFIG.ATTACH.pick ? 'full' : ''}">${used}/${CONFIG.ATTACH.pick} ${T('attachments').toLowerCase()}</span></div></header>
       <div class="lo-body"><aside class="lo-left"><h3 class="lo-h">${T('gs_weapons')}</h3>${weaps}</aside>
-        <div class="lo-stage"><canvas id="preview"></canvas><span class="lo-hint">${T('lo_rotate')}</span></div>
-        <aside class="lo-right"><div class="seg tabs gs-tabs"><button data-act="gs_tab" data-v="att" class="${tab === 'att' ? 'on' : ''}">${T('gs_att')}</button><button data-act="gs_tab" data-v="camo" class="${tab === 'camo' ? 'on' : ''}">${T('gs_camo')} · ${nDone}/${WCH.length}</button></div>${right}</aside></div>
+        <div class="lo-stage"><canvas id="preview"></canvas><span class="lo-hint">${T('lo_rotate')}</span>
+          <div class="gs-sheet"><div class="gs-stats"><small class="rl">${T('gs_stats')}</small>${this.cmpBars(P, lo.att, lo.perk)}</div>${this.specSheet(P, lo.att)}</div></div>
+        <aside class="lo-right"><div class="seg tabs gs-tabs"><button data-act="gs_tab" data-v="att" class="${tab === 'att' ? 'on' : ''}">${T('gs_att')}</button><button data-act="gs_tab" data-v="camo" class="${tab === 'camo' ? 'on' : ''}">${T('gs_camo')} <small>${nDone}/${WCH.length}</small></button></div>${right}</aside></div>
       <div class="gs-tiles">${tiles}</div></div></div>`;
+  },
+  // ficha técnica del arma: cifras reales del reglamento (cadencia, cargador, alcance, recarga, velocidad)
+  specSheet(id, att) {
+    let W = CONFIG.WEAPONS[id]; try { W = weaponStats(id, att, G.settings.loadout && G.settings.loadout.perk) || W; } catch (e) { W = CONFIG.WEAPONS[id]; }
+    const rpm = W.fireRate ? Math.round(W.fireRate * 60) : 0, rows = [
+      [L({ es: 'Impacto', en: 'Impact' }), Math.round(W.damage * (W.pellets || 1))],
+      [L({ es: 'Cadencia', en: 'Rate' }), rpm ? rpm + ' d/min' : '—'],
+      [L({ es: 'Cargador', en: 'Magazine' }), W.mag ? W.mag + ' + ' + (W.reserve || 0) : '—'],
+      [L({ es: 'Alcance eficaz', en: 'Effective range' }), W.fall0 ? W.fall0 + ' m' : '—'],
+      [L({ es: 'Velocidad', en: 'Muzzle vel.' }), W.mv ? W.mv + ' m/s' : '—'],
+      [L({ es: 'Recarga', en: 'Reload' }), W.reload ? W.reload.toFixed(1) + ' s' : '—']];
+    return `<dl class="gs-spec">${rows.map(([k, v]) => `<dt>${escapeHtml(k)}</dt><dd>${v}</dd>`).join('')}</dl>`;
   },
   // barras comparativas del armero: gris = de fábrica, color = tu configuración
   cmpBars(id, att, perk) {
     const before = weaponBars(id, defaultAtt(id), perk), after = weaponBars(id, att, perk);
     const rows = [['dmg', 'st_dmg'], ['rate', 'st_rate'], ['range', 'st_range'], ['ctl', 'st_ctl'], ['acc', 'st_acc'], ['mob', 'st_mob']];
     return `<div class="cmp">${rows.map(([k, l]) => { const d = Math.round((after[k] - before[k]) * 100);
-      return `<span class="cl">${T(l)}</span><span class="cbar"><i class="b" style="width:${Math.round(before[k] * 100)}%"></i><i class="a ${d > 0 ? 'up' : d < 0 ? 'down' : ''}" style="width:${Math.round(after[k] * 100)}%"></i></span><span class="cv ${d > 0 ? 'up' : d < 0 ? 'down' : ''}">${d > 0 ? '+' : ''}${d || ''}</span>`; }).join('')}</div>`;
+      return `<span class="cl">${T(l)}</span><span class="cbar"><i class="b" style="width:${Math.round(before[k] * 100)}%"></i><i class="a ${d > 0 ? 'up' : d < 0 ? 'down' : ''}" style="width:${Math.round(after[k] * 100)}%"></i></span><span class="cv ${d > 0 ? 'up' : d < 0 ? 'down' : ''}">${Math.round(after[k] * 100)}${d ? `<em>${d > 0 ? '+' : ''}${d}</em>` : ''}</span>`; }).join('')}</div>`;
   },
   htmlKit() {
     const s = G.settings, lvl = Progress.level(), lock = (n) => `<small class="lock">🔒 ${T('locked_lvl', { n })}</small>`;
@@ -15404,9 +15586,12 @@ const UI = {
       return `<div class="field"><span class="lbl">${T(kind)} <small class="pkn">${Object.keys(cat).filter((k) => Progress.has(kind, k, lvl)).length}/${Object.keys(cat).length}</small></span><div class="picker"><button class="arrow" data-act="pick" data-k="${kind}" data-d="-1" aria-label="anterior">‹</button><span class="pv">${escapeHtml(L(cur))}</span><button class="arrow" data-act="pick" data-k="${kind}" data-d="1" aria-label="siguiente">›</button></div></div>`; };
     const ops = Object.keys(OPERATORS).map((k) => { const O = OPERATORS[k], ok = Progress.has('operator', k, lvl);
       return `<button class="card op ${c.op === k ? 'on' : ''}" data-act="op" data-v="${k}" ${ok ? '' : 'disabled'}><i class="opstrip" style="background:linear-gradient(90deg,${CAMOS[O.set.camo].base} 0 25%,${CAMOS[O.set.camo].c[0]} 25% 50%,${CAMOS[O.set.camo].c[1]} 50% 75%,${CAMOS[O.set.camo].c[2]} 75%)"></i><b>${escapeHtml(L(O))}</b><span class="d">${escapeHtml(L(O.d))}</span>${ok ? '' : lock(CONFIG.UNLOCK.operator[k])}</button>`; }).join('');
-    return `<h3 style="margin-top:0">${T('operators')}</h3><p class="note">${T('op_lead')}</p><div class="cards" style="margin-top:10px">${ops}</div>
-      <div class="actions" style="margin-top:8px"><button class="btn small" data-act="op" data-v="">${T('op_free')}</button></div>
-      <h3>${T('cosmetics')}</h3><div style="display:grid;gap:16px">
+    const lt = this.lookTab === 'parts' ? 'parts' : 'ops', curOp = c.op && OPERATORS[c.op] ? L(OPERATORS[c.op]) : L({ es: 'Uniforme libre', en: 'Free uniform' });
+    const head = `<div class="lk-head"><div class="seg lk-tabs"><button data-act="look_tab" data-v="ops" class="${lt === 'ops' ? 'on' : ''}">${T('operators')}</button><button data-act="look_tab" data-v="parts" class="${lt === 'parts' ? 'on' : ''}">${T('cosmetics')}</button></div>
+      <span class="lk-cur">${escapeHtml(curOp)}</span><button class="btn small" data-act="look_rand">${L({ es: 'Al azar', en: 'Random' })}</button></div>`;
+    if (lt === 'ops') return `${head}<p class="note">${T('op_lead')}</p><div class="cards lk-ops">${ops}</div>
+      <div class="actions" style="margin-top:8px"><button class="btn small" data-act="op" data-v="">${T('op_free')}</button></div>`;
+    return `${head}<div class="lk-parts">
         <div class="field"><span class="lbl">${T('camo')} · ${escapeHtml(L(CAMOS[c.camo]))}</span><div class="swatches">${camo}</div></div>
         ${pk('helmet', HELMETS)}${pk('face', FACES)}${pk('vest', VESTS)}${pk('pack', PACKS)}${pk('pads', PADS)}
         <div class="field"><span class="lbl">${T('skin')}</span><div class="swatches">${skin}</div></div></div>`;
@@ -15532,6 +15717,9 @@ const UI = {
         if (v !== fac && cur[k] === fac && attCount(P, cur) >= CONFIG.ATTACH.pick) { this.toast(T('att_full', { n: CONFIG.ATTACH.pick }), 1800); break; }
         lo.att = { ...cur, [k]: v }; this.loadoutChanged(); break;
       }
+      case 'lo_att_reset': { const lo = s.loadout; if (lo && lo.primary) { lo.att = defaultAtt(lo.primary); this.loadoutChanged(); } break; }
+      case 'look_tab': this.lookTab = b.dataset.v; this.render(); break;
+      case 'look_rand': this.randomLook(); break;
       case 'lo_skin': { const P = s.loadout.primary; s.wskins = { ...(s.wskins || {}), [P]: b.dataset.v }; this.loadoutChanged(); break; }
       case 'stab': this.soldierTab = b.dataset.v; this.render(); break;
       case 'op': {
@@ -15616,6 +15804,14 @@ const UI = {
     if (this.el.radar) this.el.radar.style.display = s.showRadar === false ? 'none' : '';
     if (this.el.compass) this.el.compass.hidden = s.showCompass === false;
     this.layoutHud();
+  },
+  // aspecto al azar: solo piezas ya desbloqueadas; deja el uniforme libre
+  randomLook() {
+    const c = G.settings.custom, lvl = Progress.level(), any = (a) => a[(Math.random() * a.length) | 0];
+    for (const [kind, cat] of [['helmet', HELMETS], ['face', FACES], ['vest', VESTS], ['pack', PACKS], ['pads', PADS], ['camo', CAMOS]]) {
+      const keys = Object.keys(cat).filter((k) => Progress.has(kind, k, lvl)); if (keys.length) c[kind] = any(keys);
+    }
+    c.skin = (Math.random() * SKINS.length) | 0; c.op = null; saveSettings(); NET._lo = null; this.render();
   },
   pickItem(kind, d) {
     const cat = { helmet: HELMETS, face: FACES, vest: VESTS, pack: PACKS, pads: PADS }[kind]; if (!cat) return;

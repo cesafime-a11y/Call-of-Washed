@@ -1,0 +1,161 @@
+/* ---------- 3.4.0: menú de campaña ----------
+   El menú deja el papel y pasa a la misma familia que el HUD minimalista: paneles oscuros de estuche de campaña,
+   texto crema, filetes de latón y rojo solo para lo urgente. Se conservan las tipografías de época.
+   Truco: dentro de los paneles se redefinen las tintas del expediente (--ink*, --stamp) para que todas las reglas
+   antiguas pasen solas a crema y latón. */
+#menu .panel, #overlay .panel, #menu .lo-left, #menu .pl-right, #menu .lo-right, #menu .lo-mid, #menu .pl-modecard, #menu .profile, #menu .mainside {
+  --ink: #efe6cc; --ink2: rgba(239,230,204,.8); --ink3: rgba(239,230,204,.52); --stamp: #d6b25e;
+  --text: #efe6cc; --muted: rgba(239,230,204,.55); --line: rgba(239,230,204,.09); --line2: rgba(214,178,94,.3);
+}
+#menu .panel, #overlay .panel, #menu .lo-left, #menu .pl-right, #menu .lo-right {
+  background: linear-gradient(180deg, rgba(32,30,24,.88), rgba(15,14,11,.92)); color: var(--ink);
+  border: 1px solid rgba(214,178,94,.16); border-top: 1px solid rgba(214,178,94,.5);
+  box-shadow: 0 14px 34px rgba(0,0,0,.5); backdrop-filter: blur(6px); }
+#menu .panel::before, #overlay .panel::before { content: none; display: none; }
+#menu .panel h3, #overlay .panel h3, #menu .lo-h { color: var(--brass2); border-bottom: 1px solid rgba(214,178,94,.22); letter-spacing: .24em; font-size: 12px; }
+#menu .note, #overlay .note, #menu .panel p.lead, #overlay .panel p.lead { color: rgba(239,230,204,.66); font-size: 14px; }
+
+/* ---- cabecera de cada pantalla ---- */
+.lo-top { border-bottom: 1px solid rgba(214,178,94,.18); padding-bottom: 10px; }
+.lo-top h2 { font-family: var(--f-logo); font-weight: 700; letter-spacing: .08em; color: #efe6cc; }
+.lo-top .btn { background: none; border: 1px solid rgba(239,230,204,.25); color: rgba(239,230,204,.8); }
+.lo-top .btn:hover { border-color: var(--brass2); color: var(--brass2); }
+#menu .lo-top .seg.tabs { background: none; border: 0; border-bottom: 1px solid rgba(239,230,204,.12); gap: 4px; }
+#menu .lo-top .seg.tabs button { background: none; border: 0; color: rgba(239,230,204,.55); position: relative; padding-bottom: 6px; }
+#menu .lo-top .seg.tabs button.on { background: none; color: #efe6cc; }
+#menu .lo-top .seg.tabs button.on::after { content: ''; position: absolute; left: 12%; right: 12%; bottom: -1px; height: 2px; background: var(--brass2); }
+
+/* ---- botones ---- */
+#menu .panel .btn, #overlay .panel .btn, #menu .pl-right .btn, #menu .lo-left .btn, #menu .lo-right .btn, #menu .lo-mid .btn, #menu .mainside .btn {
+  color: #efe6cc; background: rgba(239,230,204,.04); border: 1px solid rgba(239,230,204,.22); }
+#menu .panel .btn:hover, #overlay .panel .btn:hover, #menu .pl-right .btn:hover, #menu .lo-right .btn:hover, #menu .lo-mid .btn:hover { border-color: var(--brass2); color: var(--brass2); background: rgba(214,178,94,.06); }
+.btn.primary, #menu .panel .btn.primary, #overlay .panel .btn.primary, #menu .pl-right .btn.primary, #menu .lo-mid .btn.primary, #menu .mainside .btn.primary {
+  background: linear-gradient(180deg, #d9b765, #b38e3d); color: #1b1710; border: 0; box-shadow: 0 2px 10px rgba(0,0,0,.4); text-shadow: none; letter-spacing: .2em; }
+.btn.primary:hover, #menu .pl-right .btn.primary:hover, #menu .mainside .btn.primary:hover, #menu .lo-mid .btn.primary:hover { background: linear-gradient(180deg, #e8c877, #c49b46); color: #1b1710; }
+
+/* ---- selectores y entradas ---- */
+#menu .seg, #overlay .seg { background: rgba(0,0,0,.25); border-color: rgba(239,230,204,.16); }
+#menu .seg button, #overlay .seg button { color: rgba(239,230,204,.72); border-right-color: rgba(239,230,204,.1); }
+#menu .seg button.on, #overlay .seg button.on { background: rgba(214,178,94,.9); color: #1b1710; }
+#menu input[type=text], #menu textarea { background: rgba(0,0,0,.35); color: #efe6cc; border: 1px solid rgba(239,230,204,.2); }
+#menu input[type=text]:focus { border-color: var(--brass2); outline: none; }
+#menu .panel kbd, #menu .pl-right kbd { background: rgba(239,230,204,.06); color: #efe6cc; border-color: rgba(239,230,204,.25); }
+input[type=range] { accent-color: #d6b25e; }
+
+/* ---- fichas y renglones: un solo lenguaje ---- */
+#menu .card, #overlay .card, #menu .pl-mode, #menu .lo-cls, #menu .lo-opt, #menu .gs-opt, #menu .chrow, #menu .cm-row, #menu .lo-rowmain, #menu .lo-static {
+  background: rgba(239,230,204,.035); border: 1px solid rgba(239,230,204,.08); border-left: 2px solid transparent; color: #efe6cc; box-shadow: none; }
+#menu .card:hover, #menu .pl-mode:hover, #menu .lo-cls:hover, #menu .lo-opt:hover, #menu .gs-opt:hover, #menu .cm-row:hover, #menu .lo-rowmain:hover { background: rgba(239,230,204,.07); border-color: rgba(214,178,94,.3); }
+#menu .card.on, #overlay .card.on, #menu .pl-mode.on, #menu .lo-cls.on, #menu .lo-opt.on, #menu .gs-opt.on, #menu .chrow.on, #menu .lo-rowmain.on {
+  background: linear-gradient(90deg, rgba(214,178,94,.17), rgba(214,178,94,.02)); border-color: rgba(214,178,94,.28); border-left-color: var(--brass2); box-shadow: none; }
+#menu .card.on b, #menu .pl-mode.on b, #menu .lo-cls.on b, #menu .lo-opt.on b, #menu .gs-opt.on b, #menu .lo-cls.on i, #menu .pl-mode.on i { color: var(--brass2); }
+#menu .card b, #overlay .card b { font-size: 17px; line-height: 1.15; overflow-wrap: normal; hyphens: auto; }
+#menu .card[disabled], #menu .lo-opt[disabled], #menu .gs-opt[disabled] { opacity: .42; }
+#menu .sbar { background: rgba(239,230,204,.1); } #menu .sbar i { background: rgba(239,230,204,.6); } #menu .card.on .sbar i { background: var(--brass2); }
+#menu .lo-sub { color: rgba(239,230,204,.45); font-family: var(--f-type); letter-spacing: .2em; }
+
+/* ---- preparar partida, campaña ---- */
+#menu .pl-modecard { background: rgba(15,14,11,.85); border: 1px solid rgba(214,178,94,.16); color: #efe6cc; }
+#menu .pl-modecard .pl-chips em, .pl-chips em { color: rgba(239,230,204,.75); border-color: rgba(239,230,204,.2); }
+.pl-hero { border: 1px solid rgba(214,178,94,.35); box-shadow: 0 10px 26px rgba(0,0,0,.5); }
+#menu .pl-map { background: rgba(15,14,11,.85); border: 1px solid rgba(239,230,204,.1); color: #efe6cc; }
+#menu .pl-map.on { border-color: var(--brass2); box-shadow: 0 0 0 1px var(--brass2); }
+#menu .cm-row { background: rgba(15,14,11,.86); }
+#menu .cm-row .cm-code, #menu .cm-row em.ok { color: var(--brass2); } #menu .cm-row em.done { color: #9cc27a; }
+#menu .cm-next { background: rgba(214,178,94,.07); border-left-color: var(--brass2); }
+
+/* ---- menú principal ---- */
+.mitem { color: #efe6cc; }
+.mitem::before { content: ''; left: 10px; width: 8px; height: 1.5px; background: var(--brass2); }
+.mitem:hover, .mitem:focus-visible { background: linear-gradient(90deg, rgba(214,178,94,.16), rgba(214,178,94,0)); }
+.mitem:hover span, .mitem:focus-visible span { color: var(--brass2); }
+.mitem.camp span { color: var(--brass2); }
+#menu .profile { background: rgba(15,14,11,.72); border: 0; border-left: 2px solid var(--brass2); box-shadow: none; backdrop-filter: blur(4px); color: #efe6cc; }
+#menu .profile b { color: #efe6cc; } #menu .profile span { color: rgba(239,230,204,.6); }
+.mainside { align-self: end; justify-self: end; display: grid; gap: 10px; width: min(320px, 100%); margin: 0 clamp(0px, 3vw, 40px) 30px 0; }
+.ms-card { display: grid; gap: 4px; text-align: left; padding: 12px 14px; background: rgba(15,14,11,.74); border: 0; border-top: 1px solid rgba(214,178,94,.5); backdrop-filter: blur(5px); color: #efe6cc; font: inherit; }
+.ms-card small { font: 11px var(--f-type); letter-spacing: .24em; color: var(--brass2); text-transform: uppercase; }
+.ms-card b { font: 400 20px var(--f-fell); letter-spacing: .04em; }
+.ms-card span { font: 12px var(--f-type); color: rgba(239,230,204,.6); line-height: 1.4; }
+.ms-card .btn { justify-self: start; margin-top: 6px; }
+button.ms-card { cursor: pointer; } button.ms-card:hover { background: rgba(30,28,22,.86); } button.ms-card:hover b { color: var(--brass2); }
+
+/* ---- soldado: equipo ---- */
+.lo-stage { border: 1px solid rgba(214,178,94,.16); background: radial-gradient(ellipse at 50% 40%, rgba(214,178,94,.1), transparent 62%), radial-gradient(ellipse at 50% 100%, rgba(0,0,0,.55), transparent 70%), rgba(10,9,7,.82); }
+.lo-hint { font-family: var(--f-type); color: rgba(239,230,204,.4); }
+#menu .lo-clshead i { color: var(--brass2); }
+#menu .lo-rowmain s { color: rgba(239,230,204,.4); }
+#menu .lo-rowmain:hover s { color: var(--brass2); }
+#menu .atts em { background: rgba(214,178,94,.1); border: 1px solid rgba(214,178,94,.25); color: #e6d6a8; font-style: normal; font-family: var(--f-type); }
+#menu .lo-name label { font-family: var(--f-type); color: rgba(239,230,204,.55); }
+
+/* ---- soldado: aspecto ---- */
+.lk-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.lk-head .lk-tabs { flex: 0 0 auto; }
+.lk-head .lk-tabs button { padding: 7px 14px; }
+.lk-cur { flex: 1; font: 12px var(--f-type); letter-spacing: .14em; color: var(--brass2); text-transform: uppercase; text-align: right; }
+.cards.lk-ops { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; margin-top: 10px; }
+.cards.lk-ops .card.op { padding: 10px 12px; }
+.cards.lk-ops .card.op b { font-size: 16px; }
+.cards.lk-ops .card.op .d { font-size: 12px; }
+.lk-parts { display: grid; gap: 16px; }
+.lk-parts .field { display: grid; grid-template-columns: 150px 1fr; align-items: center; gap: 12px; }
+.lk-parts .picker .pv { flex: 1; min-width: 0; font-family: var(--f-type); font-weight: 400; color: #efe6cc; border-color: rgba(239,230,204,.15); background: rgba(0,0,0,.25); }
+.lk-parts .picker button.arrow { color: #efe6cc; border-color: rgba(239,230,204,.2); background: rgba(239,230,204,.04); }
+.lk-parts .picker button.arrow:hover { color: var(--brass2); border-color: var(--brass2); }
+.swatch { border-color: rgba(239,230,204,.2); border-radius: 2px; }
+.swatch.on { outline: 2px solid var(--brass2); outline-offset: 2px; }
+@media (max-width: 760px) { .lk-parts .field { grid-template-columns: 1fr; } }
+
+/* ---- armero ---- */
+#menu .lo.gs .lo-top .gs-wname b { font-family: var(--f-logo); }
+.gs-wname { color: rgba(239,230,204,.55); }
+.gs-lv { color: var(--brass2); }
+.wxbar { background: rgba(239,230,204,.12); } .wxbar i { background: var(--brass2); }
+.pickct { color: var(--brass2); border-color: rgba(214,178,94,.4); font-family: var(--f-type); }
+/* filtro de clases de arma legible */
+#menu .wc-bar button { background: none; border: 1px solid rgba(239,230,204,.16); color: rgba(239,230,204,.7); font-family: var(--f-type); font-weight: 400; }
+#menu .wc-bar button:hover { border-color: var(--brass2); color: var(--brass2); }
+#menu .wc-bar button.on { background: var(--brass2); border-color: var(--brass2); color: #1b1710; }
+/* lista de armas: silueta arriba, nombre en una línea */
+#menu .lo.gs .lo-opt { grid-template-columns: 1fr; gap: 2px; padding: 8px 10px; }
+#menu .lo.gs .lo-opt img, #menu .lo.gs .lo-opt .noic { grid-row: auto; width: 100%; height: 34px; object-position: left center; }
+#menu .lo.gs .lo-opt b { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#menu .lo.gs .lo-opt small { font-size: 11px; }
+/* pestañas accesorios / camuflajes en una línea */
+.gs-tabs button { white-space: nowrap; } .gs-tabs button small { opacity: .7; margin-left: 4px; }
+/* ficha técnica y barras sobre el escenario */
+.gs-sheet { position: absolute; left: 14px; right: 14px; bottom: 12px; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 22px; align-items: end; pointer-events: none;
+  padding-top: 26px; background: linear-gradient(180deg, transparent, rgba(8,7,5,.75) 30%); }
+.gs-stats .rl { display: block; font: 10px var(--f-type); letter-spacing: .26em; color: var(--brass2); margin-bottom: 6px; text-transform: uppercase; }
+.gs-sheet .cmp { gap: 4px 10px; }
+.gs-sheet .cmp .cl { font: 10px var(--f-type); letter-spacing: .14em; color: rgba(239,230,204,.62); }
+.gs-sheet .cmp .cbar { height: 4px; background: rgba(239,230,204,.1); }
+.gs-sheet .cmp .cbar i.b { background: rgba(239,230,204,.3); }
+.gs-sheet .cmp .cbar i.a { background: #efe6cc; height: 100%; top: 0; opacity: .85; }
+.gs-sheet .cmp .cbar i.a.up { background: #9cc27a; } .gs-sheet .cmp .cbar i.a.down { background: #e0604c; }
+.cmp .cv { font: 700 12px var(--f-sten, var(--f-cond)); color: rgba(239,230,204,.85); min-width: 46px; white-space: nowrap; }
+.cmp .cv em { font: 10px var(--f-type); margin-left: 4px; font-style: normal; }
+.cmp .cv.up em { color: #9cc27a; } .cmp .cv.down em { color: #e0604c; }
+.gs-spec { display: grid; grid-template-columns: auto auto; gap: 3px 12px; margin: 0; justify-content: end; }
+.gs-spec dt { font: 10px var(--f-type); letter-spacing: .14em; color: rgba(239,230,204,.55); text-transform: uppercase; align-self: center; }
+.gs-spec dd { margin: 0; font: 700 15px var(--f-sten, var(--f-cond)); color: #efe6cc; text-align: right; letter-spacing: .04em; }
+.gs-reset { margin-top: 12px; width: 100%; }
+/* ranuras: barra fina, sin cajas */
+.gs-tiles { gap: 2px; border-top: 1px solid rgba(214,178,94,.18); padding-top: 8px; }
+.gs-tile { background: none; border: 0; border-bottom: 2px solid rgba(239,230,204,.1); padding: 6px 10px 8px; }
+.gs-tile small { font: 10px var(--f-type); letter-spacing: .22em; color: rgba(239,230,204,.45); }
+.gs-tile b { font: 400 14px var(--f-type); color: rgba(239,230,204,.45); text-transform: none; letter-spacing: .04em; }
+.gs-tile.set b { color: #efe6cc; } .gs-tile.set small { color: var(--brass2); }
+.gs-tile:hover { background: rgba(239,230,204,.04); }
+.gs-tile.sel { background: linear-gradient(0deg, rgba(214,178,94,.14), transparent); border-bottom-color: var(--brass2); }
+@media (max-width: 1100px) { .gs-sheet { position: static; grid-template-columns: 1fr; background: rgba(8,7,5,.8); padding: 10px; } }
+/* ajustes finos tras las capturas */
+#menu .pl-mode b { font-size: 17px; line-height: 1.1; }
+.lo.gs .lo-top { flex-wrap: nowrap; }
+.lo.gs .lo-top h2 { font-size: 30px; }
+.lo.gs .gs-wname { flex-wrap: nowrap; min-width: 0; overflow: hidden; gap: 10px; }
+.lo.gs .gs-wname b { font-size: 22px; white-space: nowrap; }
+.lo.gs .gs-wname > span:not(.gs-lv):not(.stars) { white-space: nowrap; font-size: 12px; }
+.lo.gs .gs-lv small { display: none; }
+.lo.gs .lo-rank { flex: 0 0 auto; }
