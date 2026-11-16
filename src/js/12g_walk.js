@@ -60,7 +60,7 @@ const SceneWalk = {
     const el = Scenes.el.use; let best = null, ba = 9;
     if (S.uses && !S.line && !S.choice && !(S.busy > 0)) for (const u of S.uses) {
       if (u.done || (u.avail && !u.avail(S))) continue;
-      const p = u.pos(S), d = p.distanceTo(S.eye); if (d > (u.d || 1.8)) continue;
+      const p = u.pos(S), d = p.distanceTo(S.eye); if (d > (u.d || 1.8) + (S.walk && S.walk.on ? 0 : 0.8)) continue;   // sentado no puede acercarse: más alcance
       const a = Scenes.angleTo(p), lim = (u.r || 0.3) + 0.12 / Math.max(0.4, d); if (a < lim && a < ba) { ba = a; best = u; }
     }
     if (best !== S.useT) {
@@ -93,6 +93,6 @@ Step.uses = function (list, need, goalFn) {
 };
 // ir a un sitio a pie
 Step.reach = function (x, z, rad, es, en, yMin) {
-  return { kind: 'reach', at: { x, z, yMin }, enter() { if (es) Scenes.setGoal(L({ es, en })); },
+  return { kind: 'reach', at: { x, z, yMin, rad }, enter() { if (es) Scenes.setGoal(L({ es, en })); },
     tick(S) { const W = S.walk; if (!W) return true; if (yMin != null && W.p.y < yMin) return false; if (Math.hypot(W.p.x - x, W.p.z - z) < rad) { Scenes.setGoal(null); return true; } return false; } };
 };

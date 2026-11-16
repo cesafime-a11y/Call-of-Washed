@@ -13800,7 +13800,7 @@ const SceneWalk = {
     const el = Scenes.el.use; let best = null, ba = 9;
     if (S.uses && !S.line && !S.choice && !(S.busy > 0)) for (const u of S.uses) {
       if (u.done || (u.avail && !u.avail(S))) continue;
-      const p = u.pos(S), d = p.distanceTo(S.eye); if (d > (u.d || 1.8)) continue;
+      const p = u.pos(S), d = p.distanceTo(S.eye); if (d > (u.d || 1.8) + (S.walk && S.walk.on ? 0 : 0.8)) continue;   // sentado no puede acercarse: más alcance
       const a = Scenes.angleTo(p), lim = (u.r || 0.3) + 0.12 / Math.max(0.4, d); if (a < lim && a < ba) { ba = a; best = u; }
     }
     if (best !== S.useT) {
@@ -13833,7 +13833,7 @@ Step.uses = function (list, need, goalFn) {
 };
 // ir a un sitio a pie
 Step.reach = function (x, z, rad, es, en, yMin) {
-  return { kind: 'reach', at: { x, z, yMin }, enter() { if (es) Scenes.setGoal(L({ es, en })); },
+  return { kind: 'reach', at: { x, z, yMin, rad }, enter() { if (es) Scenes.setGoal(L({ es, en })); },
     tick(S) { const W = S.walk; if (!W) return true; if (yMin != null && W.p.y < yMin) return false; if (Math.hypot(W.p.x - x, W.p.z - z) < rad) { Scenes.setGoal(null); return true; } return false; } };
 };
 // ---- 12h_cap1.js ----
@@ -13930,9 +13930,9 @@ const Cap1Set = {
     for (let i = 0; i < 15; i++) { const z = STAIR.z0 + (i + 0.5) * 0.2, y = (i + 1) * 0.2; box(1.34, 0.05, 0.24, wood, 0.75, y - 0.025, z); box(1.34, y, 0.02, woodD, 0.75, y / 2, z - 0.1); }
     box(0.06, 3.2, 3.2, woodD, 1.45, 1.45, 5.8, root, { rx: -Math.atan2(3, 3) * 0 });
     // barandilla arriba (alrededor del hueco) y pasamanos de la escalera
-    box(0.05, 0.9, 3.1, woodD, 1.5, H1 + 0.45, 5.75); solid(1.45, 4.2, 1.6, 7.3, H1 - 0.2, H1 + 1.2);
+    box(0.05, 0.9, 2.5, woodD, 1.5, H1 + 0.45, 5.45); solid(1.45, 4.2, 1.6, 6.7, H1 - 0.2, H1 + 1.2);   // la barandilla acaba antes del rellano: hay que poder salir de la escalera
     box(1.5, 0.9, 0.05, woodD, 0.75, H1 + 0.45, 4.22); solid(0, 4.15, 1.55, 4.3, H1 - 0.2, H1 + 1.2);
-    for (let i = 0; i < 8; i++) box(0.035, 0.9, 0.035, woodD, 1.5, i * 0.38 + 0.6 + 0.45, 4.6 + i * 0.36);
+    for (let i = 0; i < 6; i++) box(0.035, 0.9, 0.035, woodD, 1.5, i * 0.38 + 0.6 + 0.45, 4.6 + i * 0.36);
     // la escalera choca con el resto del zaguán por debajo de su altura (no se puede atravesar de lado)
     // (se resuelve en el suelo: fuera de la escalera la altura es 0 o 3)
 
@@ -13951,7 +13951,7 @@ const Cap1Set = {
     // pasillo: perchero y la puerta de la calle
     box(0.06, 2.1, 1.0, 0x4a3018, 4.08, 1.05, 7.4); box(0.08, 0.08, 0.08, brass, 4.15, 1.05, 7.1, root, { m: 0.7, r: 0.3 });
     // sala: sofá, mesa camilla, aparador
-    furn(0.8, 0.8, 2.0, 0x5a4a3a, 6.55, 0, 2.6); furn(0.9, 0.72, 0.9, wood, 8.0, 0, 2.2); furn(1.6, 0.9, 0.5, walnut, 8.0, 0, 0.35);
+    furn(2.0, 0.8, 0.8, 0x5a4a3a, 8.1, 0, 3.5);   // el sofá contra la pared del fondo: antes tapaba la puerta de la sala furn(0.9, 0.72, 0.9, wood, 8.0, 0, 2.2); furn(1.6, 0.9, 0.5, walnut, 8.0, 0, 0.35);
     // despacho = cuarto de coser: el banco de trabajo de ella (tapete verde, lámpara de brazo), la silla, la máquina de coser
     furn(1.5, 0.78, 0.7, walnut, 9.2, 0, 6.6); box(1.1, 0.012, 0.5, 0x2e5a36, 9.15, 0.79, 6.55);
     const benchTop = 0.796;
@@ -14276,6 +14276,7 @@ const Cap1Audio = {
     viaje: [{ es: 'Y el último, el undécimo: el pequeño reloj de viaje de latón con tapa, sobre la mesilla del lado izquierdo de la cama de matrimonio. Del lado de ella.', en: 'And the last, the eleventh: the small brass travel clock with a lid, on the nightstand on the left side of the double bed. Her side.' },
       { es: 'Junto a un vaso de agua que nadie había vuelto a llenar en catorce meses, pero que nadie había retirado tampoco.', en: 'Next to a glass of water nobody had refilled in fourteen months, but that nobody had taken away either.' }],
   };
+  const CLK_ROOM = { pasillo: 'pasillo', sala: 'sala', despacho: 'despacho', escalera: 'escalera', bano: 'baño (arriba)', desp1: 'despertador 1 (cuarto del padre)', desp2: 'despertador 2 (cuarto del padre)', abuelo: 'el del abuelo (cuarto del padre)', suyo: 'su cuarto (arriba)' };
   const order = ['cocina', 'pasillo', 'sala', 'despacho', 'escalera', 'bano', 'desp1', 'desp2', 'abuelo', 'suyo', 'viaje'];
   const windUse = (id) => ({
     id, d: id === 'escalera' ? 2.2 : 1.7, r: 0.32,
@@ -14295,7 +14296,7 @@ const Cap1Audio = {
       Cap1Set.build(S);
       MODES.campaign.noAmbience = true; Ambience.stop();
       Cap1Set.light(S, 'day');
-      sit(S, 2.0, 1.62, 2.9, 0, -0.05);
+      sit(S, 2.0, 1.62, 3.45, 0, -0.05);
     },
     update(S, dt) {
       Cap1Set.update(S, dt);
@@ -14307,13 +14308,13 @@ const Cap1Audio = {
     steps: [
       Step.card({ es: 'Parte I · Cuerda', en: 'Part I · Winding' }, { es: 'Once relojes', en: 'Eleven Clocks' }, head),
       // ======== A · los once relojes ========
-      Step.run((S) => { S.where = 'house'; walkHouse(S, 2.0, 0, 2.9, 0); }),
+      Step.run((S) => { S.where = 'house'; walkHouse(S, 2.0, 0, 3.45, 0); }),
       Step.fade(0, 2.0, false),
       SAY('El primero era el de la cocina, porque era el que más se atrasaba.', 'The first was the kitchen one, because it was the one that ran slowest.'),
       Step.goal('Muévete con <kbd>WASD</kbd>. Acércate al reloj de la cocina y pulsa <kbd>E</kbd> para darle cuerda.', 'Move with <kbd>WASD</kbd>. Go up to the kitchen clock and press <kbd>E</kbd> to wind it.'),
       Step.uses([windUse('cocina')], 1, null),
       SAY('Once relojes. Les daba cuerda a todos, cada sábado, en el mismo orden.', 'Eleven clocks. He wound them all, every Saturday, in the same order.'),
-      Step.uses(order.slice(1).map(windUse), 10, (n, k) => L({ es: `Da cuerda a los once relojes de la casa · ${n + 1}/11`, en: `Wind the eleven clocks in the house · ${n + 1}/11` }) + `<small>${L(n >= 9 ? { es: 'El último es el de ella: la mesilla izquierda de la cama de matrimonio, arriba.', en: 'The last one is hers: the left nightstand of the double bed, upstairs.' } : { es: 'Planta baja: pasillo, sala, despacho y escalera. Arriba: baño, la habitación de su padre y su cuarto.', en: 'Ground floor: hallway, sitting room, study and stairs. Upstairs: bathroom, his father’s room and his own room.' })}</small>`),
+      Step.uses(order.slice(1).map(windUse), 10, (n, k) => L({ es: `Da cuerda a los once relojes de la casa · ${n + 1}/11`, en: `Wind the eleven clocks in the house · ${n + 1}/11` }) + `<small>${L(n >= 9 ? { es: 'El último es el de ella: la mesilla izquierda de la cama de matrimonio, arriba.', en: 'The last one is hers: the left nightstand of the double bed, upstairs.' } : { es: 'Faltan: ' + order.slice(1, 10).filter((id) => !((Scenes.S && Scenes.S.flags.wound) || {})[id]).map((id) => CLK_ROOM[id]).join(', ') + '. El reloj de viaje de ella va el último.', en: 'Still to wind: ' + order.slice(1, 10).filter((id) => !((Scenes.S && Scenes.S.flags.wound) || {})[id]).map((id) => CLK_ROOM[id]).join(', ') + '. Her travel clock comes last.' })}</small>`),
       // el vaso de agua
       Step.run((S) => { sit(S, 9.0, S.set.H1 + 1.15, 3.2, -Math.PI / 2 - 0.35, -0.45, 1.3); }),
       SAY('Cuando terminó con el undécimo se quedó un momento sentado en el borde de la cama de su madre. No lo hacía siempre. Solo a veces. Se sentaba y miraba el vaso de agua.', 'When he had finished with the eleventh he stayed a moment sitting on the edge of his mother’s bed. He didn’t always. Only sometimes. He sat and looked at the glass of water.'),
@@ -16011,7 +16012,7 @@ const Cap4Set = {
         [{ es: 'Unos cuatro minutos.', en: 'About four minutes.' }, { es: 'Algo menos de diecisiete minutos. Las once en punto.', en: 'A little under seventeen minutes. Eleven o’clock exactly.' }, { es: 'Más de una hora.', en: 'More than an hour.' }], 1,
         [{ es: 'Demasiado poco. Doce horas son 720 minutos para una vuelta entera. Haz la cuenta otra vez.', en: 'Too little. Twelve hours is 720 minutes for a full turn. Do the sum again.' }, { es: '', en: '' }, { es: 'Demasiado. Cuatro milímetros en un círculo de veintidós centímetros. Otra vez.', en: 'Too much. Four millimetres on a twenty-two-centimetre circle. Again.' }]),
       SAY('Las once en punto. La hora exacta a la que el general Montúfar estaría en la tarima, debajo de la esfera sur, estrechando la mano a los vardeneses. La hora exacta a la que la campana grande daría la primera campanada.', 'Eleven o’clock exactly. The exact time General Montúfar would be on the platform, under the south face, shaking hands with the Vardenese. The exact time the great bell would strike the first stroke.'),
-      Step.run((S) => { const F = C(S); S.eye.copy(F.plate.localToWorld(V(-0.02, 0.24, 0.17))); S.yawC = S.yaw = Input.state.yaw = Math.PI; S.pitch = Input.state.pitch = -1.0; S.yawR = 0.7; S.pitchMin = -1.4; }),
+      Step.run((S) => { const F = C(S); S.eye.copy(F.plate.localToWorld(V(-0.02, 0.26, 0.26))); S.yawC = S.yaw = Input.state.yaw = Math.PI; S.pitch = Input.state.pitch = -0.9; S.yawR = 1.2; S.pitchMin = -1.55; }),
       SAY('Y entonces, porque lo miraba todo, porque no podía dejar de mirarlo todo, miró el mecanismo del reloj.', 'And then, because he looked at everything, because he couldn’t stop looking at everything, he looked at the watch movement.'),
       Step.find([
         { pos: (S) => C(S).plate.localToWorld(V(-0.03, 0.012, 0)), r: 0.07, text: { es: 'Un calibre suizo corriente, de los años diez, de puente de tres cuartos. Pero alguien lo había rehecho a mano. Las ruedas repulidas con ese brillo apagado que deja la piedra de Arkansas y que ninguna máquina deja.', en: 'An ordinary Swiss calibre from the teens, three-quarter plate. But someone had rebuilt it by hand. The wheels re-polished with that soft, dull gleam an Arkansas stone leaves and no machine does.' } },
@@ -16647,8 +16648,8 @@ const Cap6Set = {
   const walkOut = (S, x, z, yaw) => CampUtil.walk(S, x, 0, z, yaw, { floor: C(S).floorOut, speed: 2.2 });
   // la última madrugada: el jugador puede irse… o no
   const leaveStep = {
-    enter(S) { const F = C(S); F.left = false; S.uses = [{ id: 'quedarse', d: 1.8, r: 0.5, pos: () => F.mat.position, label: { es: 'Volver al colchón', en: 'Go back to the mattress' }, use() { F.stay = true; } }].map((u) => ({ ...u, done: false })); S._q = [];
-      Scenes.setGoal(L({ es: 'Si quieres, vete: baja por el camino hasta la carretera. El camión de leche pasa a las seis por el kilómetro cuarenta y dos.', en: 'If you want, leave: go down the track to the road. The milk lorry passes kilometre forty-two at six.' })); },
+    enter(S) { const F = C(S); F.left = false; S.uses = [{ id: 'quedarse', d: 2.6, r: 0.6, pos: () => V(7, 1.4, -13.4), label: { es: 'Volver adentro, al colchón', en: 'Go back inside, to the mattress' }, use() { F.stay = true; } }].map((u) => ({ ...u, done: false })); S._q = [];
+      Scenes.setGoal(L({ es: 'Si quieres, vete: baja por el camino hasta la carretera. El camión de leche pasa a las seis por el kilómetro cuarenta y dos. Si no, vuelve adentro por la puerta principal.', en: 'If you want, leave: go down the track to the road. The milk lorry passes kilometre forty-two at six. If not, go back in through the main door.' })); },
     tick(S) { const F = C(S); if (F.stay) { S.uses = null; Scenes.setGoal(null); return true; } const W = S.walk; if (W && W.on && W.p.z > 168) { F.left = true; S.uses = null; Scenes.setGoal(null); return true; } return false; } };
 
   SCENES.cap6 = {

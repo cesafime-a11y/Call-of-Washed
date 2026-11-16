@@ -175,8 +175,8 @@ const Cap6Set = {
   const walkOut = (S, x, z, yaw) => CampUtil.walk(S, x, 0, z, yaw, { floor: C(S).floorOut, speed: 2.2 });
   // la última madrugada: el jugador puede irse… o no
   const leaveStep = {
-    enter(S) { const F = C(S); F.left = false; S.uses = [{ id: 'quedarse', d: 1.8, r: 0.5, pos: () => F.mat.position, label: { es: 'Volver al colchón', en: 'Go back to the mattress' }, use() { F.stay = true; } }].map((u) => ({ ...u, done: false })); S._q = [];
-      Scenes.setGoal(L({ es: 'Si quieres, vete: baja por el camino hasta la carretera. El camión de leche pasa a las seis por el kilómetro cuarenta y dos.', en: 'If you want, leave: go down the track to the road. The milk lorry passes kilometre forty-two at six.' })); },
+    enter(S) { const F = C(S); F.left = false; S.uses = [{ id: 'quedarse', d: 2.6, r: 0.6, pos: () => V(7, 1.4, -13.4), label: { es: 'Volver adentro, al colchón', en: 'Go back inside, to the mattress' }, use() { F.stay = true; } }].map((u) => ({ ...u, done: false })); S._q = [];
+      Scenes.setGoal(L({ es: 'Si quieres, vete: baja por el camino hasta la carretera. El camión de leche pasa a las seis por el kilómetro cuarenta y dos. Si no, vuelve adentro por la puerta principal.', en: 'If you want, leave: go down the track to the road. The milk lorry passes kilometre forty-two at six. If not, go back in through the main door.' })); },
     tick(S) { const F = C(S); if (F.stay) { S.uses = null; Scenes.setGoal(null); return true; } const W = S.walk; if (W && W.on && W.p.z > 168) { F.left = true; S.uses = null; Scenes.setGoal(null); return true; } return false; } };
 
   SCENES.cap6 = {
