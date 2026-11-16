@@ -1,0 +1,75 @@
+/* ---------- 2.13.0: inventario y equipamiento del modo Cárcel ----------
+   Panel oscuro sobre la partida (que sigue corriendo), rejilla de bolsillos a la derecha,
+   equipamiento y armas a la izquierda, detalle del objeto elegido debajo de la rejilla. */
+#inv { position: absolute; inset: 0; z-index: 30; display: none; place-items: center; background: radial-gradient(120% 100% at 50% 50%, rgba(0,0,0,.35), rgba(0,0,0,.72)); font-family: var(--f-cond); padding: 16px; }
+#inv.on { display: grid; }
+.invbox { width: min(860px, 100%); max-height: 100%; overflow: auto; background: rgba(14,15,12,.9); border: 1px solid var(--line2); box-shadow: 0 20px 60px rgba(0,0,0,.6); backdrop-filter: blur(6px); }
+.invbox header { display: flex; align-items: baseline; gap: 14px; padding: 14px 18px 10px; border-bottom: 1px solid var(--line); }
+.invbox header b { font-size: 22px; letter-spacing: .3em; }
+.invbox header .sub { font-size: 12px; letter-spacing: .22em; color: var(--danger); text-transform: uppercase; }
+.invbox header .x { margin-left: auto; background: none; border: 0; color: var(--muted); font: 600 14px var(--f-cond); letter-spacing: .1em; cursor: pointer; }
+.invmain { display: grid; grid-template-columns: 280px 1fr; gap: 0; }
+.invbox .col { padding: 14px 18px 16px; }
+.invbox .col.eq { border-right: 1px solid var(--line); }
+.invbox h4 { font-size: 11px; letter-spacing: .32em; color: var(--muted); margin: 6px 0 10px; display: flex; justify-content: space-between; }
+.invbox h4 span { color: var(--text); letter-spacing: .1em; }
+.outfit { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 2px 10px; border-bottom: 1px dashed var(--line); margin-bottom: 10px; }
+.outfit small, .eslot small { font-size: 11px; letter-spacing: .24em; color: var(--muted); text-transform: uppercase; }
+.outfit b { font-size: 16px; color: #9ec8c4; letter-spacing: .04em; }
+.eslot { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: rgba(255,255,255,.04); border: 1px solid var(--line); padding: 6px 8px; margin-bottom: 8px; cursor: pointer; color: var(--text); font-family: inherit; }
+.eslot.empty { opacity: .55; border-style: dashed; }
+.eslot.on, .eslot:hover { border-color: var(--accent); }
+.eslot.light { cursor: default; }
+.eslot .ic { width: 38px; height: 38px; flex: none; display: grid; place-items: center; background: rgba(0,0,0,.35); }
+.eslot .ic svg { width: 34px; height: 34px; }
+.eslot .tx { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; }
+.eslot .tx b { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.bbar { display: inline-block; flex: 1; height: 4px; background: rgba(255,255,255,.14); }
+.bbar i { display: block; height: 100%; background: #f0d890; }
+.wrow { display: grid; grid-template-columns: 36px 1fr auto; align-items: center; gap: 8px; padding: 4px 2px; border-bottom: 1px solid rgba(255,255,255,.06); font-size: 15px; }
+.wrow svg { width: 34px; height: 34px; }
+.wrow b { font-variant-numeric: tabular-nums; color: var(--accent2); }
+.cells { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.cell { position: relative; aspect-ratio: 1; background: rgba(255,255,255,.05); border: 1px solid var(--line); display: grid; place-items: center; padding: 0; color: var(--text); cursor: pointer; font-family: inherit; }
+.cell svg { width: 72%; height: 72%; }
+.cell b { position: absolute; right: 5px; bottom: 3px; font-size: 15px; text-shadow: 0 1px 2px #000; }
+.cell u { position: absolute; left: 4px; top: 3px; text-decoration: none; font-size: 11px; background: var(--accent); color: #111; padding: 0 4px; font-weight: 700; }
+.cell.empty { cursor: default; }
+.cell.lock { cursor: default; background: repeating-linear-gradient(45deg, rgba(255,255,255,.02) 0 6px, rgba(255,255,255,.05) 6px 12px); border-style: dashed; opacity: .55; }
+.cell:not(.empty):not(.lock):hover, .cell.on { border-color: var(--accent); background: rgba(217,164,65,.12); }
+.cell.k-heal { box-shadow: inset 0 -2px 0 rgba(184,50,42,.7); }
+.cell.k-ammo { box-shadow: inset 0 -2px 0 rgba(201,162,58,.7); }
+.cell.k-gear { box-shadow: inset 0 -2px 0 rgba(120,160,200,.7); }
+.cell.k-throw { box-shadow: inset 0 -2px 0 rgba(230,130,60,.7); }
+.detail { display: flex; gap: 14px; margin-top: 14px; min-height: 104px; padding: 12px; background: rgba(0,0,0,.28); border: 1px solid var(--line); }
+.detail .hint { color: var(--muted); font-size: 15px; align-self: center; }
+.detail .dico { width: 72px; height: 72px; flex: none; background: rgba(255,255,255,.04); display: grid; place-items: center; }
+.detail .dico svg { width: 60px; height: 60px; }
+.detail .dtx b { font-size: 19px; letter-spacing: .04em; }
+.detail .dtx p { font: 400 14px/1.35 var(--f-body); color: #c8c3b0; margin: 4px 0 10px; }
+.detail .btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.detail .btn { background: var(--accent); color: #141410; border: 0; padding: 6px 14px; font: 700 14px var(--f-cond); letter-spacing: .12em; text-transform: uppercase; cursor: pointer; }
+.detail .btn.ghost { background: none; color: var(--text); border: 1px solid var(--line2); }
+.busy { margin-top: 10px; color: var(--accent2); font-size: 14px; letter-spacing: .14em; text-transform: uppercase; }
+.invbox footer { display: flex; gap: 18px; flex-wrap: wrap; padding: 10px 18px 12px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; letter-spacing: .08em; }
+@media (max-width: 680px) { .invmain { grid-template-columns: 1fr; } .invbox .col.eq { border-right: 0; border-bottom: 1px solid var(--line); } .cells { grid-template-columns: repeat(4, 1fr); } }
+
+/* chips del modo Cárcel sobre la vida: linterna con pilas, curas, arrojable y bolsillos */
+#invHud { position: absolute; left: 18px; bottom: calc(118px * var(--hs, 1)); display: flex; flex-direction: column; gap: 5px; font: 600 14px var(--f-cond); letter-spacing: .06em; color: rgba(255,255,255,.86); text-shadow: var(--hud-soft); pointer-events: none; }
+#invHud > span { display: flex; align-items: center; gap: 7px; }
+#invHud > span.none { opacity: .4; }
+#invHud kbd { font-size: 11px; padding: 0 5px; }
+#invHud b { color: var(--accent2); }
+#invHud .bat em { width: 22px; height: 22px; display: inline-grid; }
+#invHud .bat em svg { width: 22px; height: 22px; }
+#invHud .bat.off em { opacity: .4; }
+#invHud .cells { display: inline-flex; gap: 2px; }
+#invHud .cells i { width: 6px; height: 11px; border: 1px solid rgba(255,255,255,.55); }
+#invHud .cells i.f { background: #f0d890; border-color: #f0d890; }
+#invHud .bat.low .cells i.f { background: var(--danger); border-color: var(--danger); }
+#invUse { position: absolute; left: 50%; top: calc(50% + 46px); transform: translateX(-50%); display: none; text-align: center; pointer-events: none; }
+#invUse svg { width: 56px; height: 56px; transform: rotate(-90deg); display: block; margin: 0 auto; }
+#invUse circle { fill: none; stroke-width: 4; }
+#invUse .bg { stroke: rgba(255,255,255,.18); }
+#invUse .fg { stroke: #e8e0c8; stroke-dasharray: 170; stroke-dashoffset: 170; }
+#invUse b { display: block; margin-top: 4px; font: 600 15px var(--f-cond); letter-spacing: .16em; text-transform: uppercase; color: #f2ecd8; text-shadow: var(--hud-soft); }

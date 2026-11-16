@@ -1,0 +1,4 @@
+const { open } = require('./lib');
+(async () => { const t = Date.now(); try { const { browser, page, logs } = await open(); console.log('boot ms', Date.now() - t, logs.slice(0, 5).join('\n'));
+  const r = await page.evaluate(() => { const C = window.__COW, o = {}; for (const id of ['rifle', 'smg', 'sniper', 'dbl', 'mg2', 'pistol']) { const t = performance.now(); const g = C.buildWeaponModel(id, true, null); o[id] = [Math.round(performance.now() - t), g.children[0].geometry.attributes.position.count / 3 | 0]; const t2 = performance.now(); const g2 = C.buildWeaponModel(id, false, null); o[id].push(Math.round(performance.now() - t2), g2.children[0].geometry.attributes.position.count / 3 | 0); } return o; });
+  console.log(JSON.stringify(r)); await browser.close(); } catch (e) { console.log('FAIL', e.message.slice(0, 300)); process.exit(1); } })();

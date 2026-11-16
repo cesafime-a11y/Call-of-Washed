@@ -1,0 +1,24 @@
+/* ---------- v2.5: brújula, ícono del arma, vida segmentada, números de daño, opciones de HUD ---------- */
+:root { --ha: 1; }
+#compass { left: 50%; top: calc(80px + env(safe-area-inset-top, 0px)); width: 520px; height: 40px; transform: translateX(-50%) scale(var(--hs)); transform-origin: 50% 0;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 16%, #000 84%, transparent); mask-image: linear-gradient(90deg, transparent, #000 16%, #000 84%, transparent); filter: drop-shadow(0 2px 4px rgba(0,0,0,.7)); }
+#radar, #score, #killfeed, #status, #compass { opacity: var(--ha); }
+#weapon { opacity: var(--ha); }
+#weapon.idle { opacity: calc(var(--ha) * .52); }
+#w-icon { height: 34px; max-width: 150px; object-fit: contain; filter: brightness(1.25) saturate(.7) drop-shadow(0 2px 4px rgba(0,0,0,.8)); margin-bottom: -2px; }
+#w-icon[hidden] { display: none; }
+.hpbar { position: relative; height: 12px; }
+.hpbar::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 1.5px), rgba(12,13,10,.9) calc(10% - 1.5px) 10%); }
+#hp-ghost { display: block; position: absolute; left: 0; top: 0; bottom: 0; width: 100%; background: var(--danger); opacity: .6; transition: width .7s ease .35s; }
+#hp-fill { z-index: 1; background: linear-gradient(90deg, #cfd9bf, var(--text)); }
+#hp-fill.mid { background: linear-gradient(90deg, #e0b24a, var(--accent2)); }
+#hp-num { transition: color .2s; }
+#hp-num.low { color: var(--danger); }
+/* números de daño: capa propia por encima del HUD; posición, escala y opacidad las pone DmgNums.update() cada cuadro */
+#dmgnums { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 11; }
+.dn { position: absolute; left: 0; top: 0; font: italic 900 34px var(--f-cond); letter-spacing: .03em; font-variant-numeric: tabular-nums; white-space: nowrap; color: #fff; text-shadow: 0 2px 0 rgba(0,0,0,.75), 1px 0 0 #000c, -1px 0 0 #000c, 0 -1px 0 #000c, 0 0 8px rgba(0,0,0,.7); opacity: 0; will-change: transform, opacity; }
+.dn::before { content: ''; position: absolute; left: -14px; right: -14px; top: 4px; bottom: 2px; z-index: -1; border-radius: 6px; background: linear-gradient(90deg, transparent, rgba(8,9,7,.5) 25%, rgba(8,9,7,.5) 75%, transparent); }
+.dn.head { color: #ffc23a; font-size: 40px; text-shadow: 0 2px 0 rgba(0,0,0,.75), 1px 0 0 #000c, -1px 0 0 #000c, 0 -1px 0 #000c, 0 0 9px rgba(255,170,40,.7); }
+.dn.kill { color: #ff3b30; font-size: 46px; text-shadow: 0 2px 0 rgba(0,0,0,.75), 1px 0 0 #000c, -1px 0 0 #000c, 0 -1px 0 #000c, 0 0 10px rgba(255,40,30,.85); }
+.pvmode { margin-top: -2px; }
+

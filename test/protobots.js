@@ -1,0 +1,11 @@
+const { open } = require('./lib');
+(async () => { const dir = process.argv[2]; const { browser, page, logs } = await open(undefined, { w: 1280, h: 720 });
+  await page.evaluate(() => { window.__COW_TEST = true; const C = window.__COW, { G, UI } = C; G.settings.goreChosen = true; G.settings.cam = 'first'; UI.launch({ mode: 'tdm', map: 'pueblo', bots: 7, difficulty: 'normal', team: 0 }); C.simulate(6);
+    const me = G.local; me.invulnT = 999; const ids = ['rifle', 'smg', 'tsmg', 'dbl', 'mg2', 'dmr']; let k = 0; const fw = { x: -Math.sin(C.Input.state.yaw), z: -Math.cos(C.Input.state.yaw) };
+    G.fighters.forEach((f) => { if (f === me) return; f.ai && (f.ai.frozen = true); if (k < 6) { const id = ids[k]; f.loadout = C.classLoadout('custom', { primary: id, secondary: 'pistol', att: {}, perk: 'ammo' }, 99); f.resetState && f.resetState(); f.weapon = null; f.setWeapon(id); f.switchT = 0; f.team = me.team; f.pos.set(me.pos.x + fw.x * 4.5 + fw.z * (k - 2.5) * 1.1, me.pos.y, me.pos.z + fw.z * 4.5 - fw.x * (k - 2.5) * 1.1); f.vel.set(0, 0, 0); f.yaw = C.Input.state.yaw + Math.PI * 0.75; k++; } else f.pos.set(me.pos.x + 300, 0, me.pos.z + 300); });
+    C.Input.state.pitch = -0.05; C.simulate(0.05); document.getElementById('hud').style.display = 'none'; });
+  await page.waitForTimeout(800); await page.screenshot({ path: dir + '/bots.png' });
+  await page.evaluate(() => { const C = window.__COW, me = C.G.local; me.loadout = C.classLoadout('custom', { primary: 'smg', secondary: 'pistol', att: {}, perk: 'ammo' }, 99); me.resetState(); me.weapon = null; me.setWeapon('smg'); me.switchT = 0; C.simulate(1); me.inv.smg.mag = 3; me.tryReload ? me.tryReload() : (C.Input.state.reload = true); C.simulate(0.05); C.Input.state.reload = false; const tot = me.reloadTotal || 2; C.simulate(tot * 0.3); window.__rl = [me.reloadT, me.reloadTotal]; });
+  console.log(JSON.stringify(await page.evaluate(() => window.__rl)));
+  await page.waitForTimeout(500); await page.screenshot({ path: dir + '/reload.png' });
+  console.log(logs.filter(l => !/GPU stall|ERR_FAILED/.test(l)).slice(0, 8).join('\n')); await browser.close(); })();

@@ -1,0 +1,32 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Call of Washed</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=Special+Elite&family=Stardos+Stencil:wght@400;700&family=IM+Fell+English+SC&family=IM+Fell+English:ital@0;1&display=swap">
+<style>
+@@css@@
+</style>
+@@include html/body.html@@
+<script>
+  // Si el motor 3D no carga (sin red o CDN bloqueado), mostrar un mensaje en lugar de una pantalla vacía.
+  window.__cowBootTimer = setTimeout(function () {
+    if (window.__cowBooted) return;
+    var e = document.getElementById('boot-err');
+    if (e) { e.hidden = false; e.textContent = 'No se pudo cargar el motor 3D (Three.js / cannon-es desde cdn.jsdelivr.net). Revisa tu conexión y recarga la página.'; }
+    var m = document.getElementById('boot-msg'); if (m) m.textContent = 'ALGO SALIÓ MAL';
+  }, 15000);
+  window.addEventListener('error', function (ev) {
+    if (window.__cowBooted) return;
+    var e = document.getElementById('boot-err');
+    if (e) { e.hidden = false; e.textContent = 'Error al iniciar: ' + (ev.message || ev.error); }
+  });
+</script>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","cannon-es":"https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"}}
+</script>
+<script type="module">
+@@modules@@
+</script>
+
+</body></html>

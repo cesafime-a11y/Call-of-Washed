@@ -1,0 +1,74 @@
+/* ---------- v2.8.1: rediseño del HUD ----------
+   Paneles de cristal oscuro con esquinas cortadas, filete de color por equipo, barra de vida con brillo
+   y tarjeta de arma simétrica. Solo cambia la piel: ningún elemento se mueve de sitio. */
+:root { --hud-glass: linear-gradient(180deg, rgba(24,26,19,.78), rgba(9,10,7,.7)); --cut: 9px; }
+
+/* marcador: dos tarjetas de equipo y un reloj trapezoidal al centro */
+#score { width: 560px; gap: 0; filter: drop-shadow(0 4px 10px rgba(0,0,0,.45)); }
+.tscore { --tc: var(--friend); position: relative; border: 0; padding: 7px 16px 8px; background: var(--hud-glass); gap: 4px; }
+.tscore.mine { --tc: var(--friend); border: 0; clip-path: polygon(0 0, 100% 0, calc(100% - var(--cut)) 100%, 0 100%); padding-right: 22px; }
+.tscore.them { --tc: var(--enemy); border: 0; clip-path: polygon(var(--cut) 0, 100% 0, 100% 100%, 0 100%); padding-left: 22px; }
+.tscore::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, var(--tc), transparent 85%); }
+.tscore.them::before { background: linear-gradient(270deg, var(--tc), transparent 85%); }
+.tscore .tn { font-size: 12px; letter-spacing: .28em; color: var(--tc); text-shadow: 0 0 10px color-mix(in srgb, var(--tc) 45%, transparent); }
+.tscore b { font-size: 32px; letter-spacing: .02em; text-shadow: 0 2px 8px rgba(0,0,0,.6); }
+.tscore .tbar { height: 4px; background: rgba(231,226,208,.1); border-radius: 2px; overflow: hidden; }
+.tscore .tbar i { border-radius: 2px; box-shadow: 0 0 8px currentColor; }
+.pips i { width: 16px; height: 5px; border-radius: 1px; }
+.alive i { border-radius: 1px; }
+.timer { position: relative; z-index: 1; min-width: 104px; padding: 5px 18px 6px; font-size: 30px; letter-spacing: .08em; border: 0; background: linear-gradient(180deg, rgba(38,41,30,.9), rgba(12,13,9,.85)); clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 100%, 12px 100%); }
+.timer::after { content: ''; position: absolute; left: 22px; right: 22px; bottom: 0; height: 2px; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+.timer small { font-size: 10.5px; letter-spacing: .26em; color: var(--accent2); }
+.dom { border-width: 2px; border-radius: 3px; box-shadow: 0 2px 8px rgba(0,0,0,.5); }
+.ladrow span { clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%); border: 0; background: var(--hud-glass); padding: 2px 14px; }
+.ladrow i { border-radius: 1px; }
+
+/* minimapa: anillo doble */
+#radar { border-radius: 50%; box-shadow: 0 0 0 2px rgba(222,214,186,.34), 0 0 0 6px rgba(10,11,8,.6), 0 0 0 7px rgba(222,214,186,.14), 0 8px 22px rgba(0,0,0,.55); }
+
+/* parte de bajas */
+.kf { gap: 9px; padding: 4px 12px 4px 14px; background: linear-gradient(270deg, rgba(14,15,11,.82), rgba(14,15,11,.5) 75%, rgba(14,15,11,0)); clip-path: polygon(8px 0, 100% 0, 100% 100%, 0 100%); border-right: 2px solid rgba(222,214,186,.28); font-size: 15.5px; }
+.kf.me { background: linear-gradient(270deg, rgba(74,56,18,.9), rgba(60,46,16,.55) 75%, rgba(60,46,16,0)); border-right-color: var(--accent2); box-shadow: none; }
+.kf .how { font-size: 11.5px; letter-spacing: .12em; }
+
+/* tarjeta de estado: espejo de la tarjeta de arma */
+#status { gap: 7px; }
+.hpwrap { padding: 8px 26px 8px 14px; background: linear-gradient(90deg, rgba(10,11,8,.78) 0%, rgba(10,11,8,.66) 74%, rgba(10,11,8,0)); border-left: 3px solid var(--accent); gap: 12px; position: relative; }
+.hpwrap::after { content: 'HP'; position: absolute; left: 14px; top: 3px; font: 700 10px var(--f-cond); letter-spacing: .3em; color: var(--muted); }
+.hpbar { width: 244px; height: 12px; margin-top: 8px; border: 0; border-radius: 1px; background: rgba(231,226,208,.1); box-shadow: inset 0 0 0 1px rgba(222,214,186,.22); transform: skewX(-18deg); }
+.hpbar::after { background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 2px), rgba(10,11,8,.92) calc(10% - 2px) 10%); }
+#hp-fill { background: linear-gradient(90deg, #d6e2c2, #f2f0dc); box-shadow: 0 0 10px rgba(240,236,214,.55); }
+#hp-fill.mid { background: linear-gradient(90deg, #e0b24a, #f3cf7a); box-shadow: 0 0 10px rgba(240,196,106,.6); }
+#hp-fill.low { background: linear-gradient(90deg, #b03a2a, #e0584a); box-shadow: 0 0 12px rgba(224,88,74,.75); }
+#hp-ghost { opacity: .5; }
+#hp-num { font-size: 34px; line-height: .9; min-width: 58px; margin-top: 6px; letter-spacing: .02em; font-variant-numeric: tabular-nums; }
+.chips { gap: 5px; padding-left: 3px; }
+.chip { border: 0; background: var(--hud-glass); clip-path: polygon(5px 0, 100% 0, calc(100% - 5px) 100%, 0 100%); padding: 3px 12px 3px 11px; font-size: 14px; }
+#streak-box .sk { border: 0; background: var(--hud-glass); clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%); padding: 4px 14px; }
+#streak-box .pips i { border-radius: 1px; }
+
+/* tarjeta de arma: cifra grande con filete y brillo */
+#weapon .wcard { padding: 9px 14px 9px 30px; background: linear-gradient(90deg, rgba(10,11,8,0), rgba(10,11,8,.66) 26%, rgba(10,11,8,.8)); border-right-width: 3px; gap: 4px; }
+#w-name { font-size: 16px; letter-spacing: .16em; color: var(--text); }
+#w-mode { font-size: 11px; letter-spacing: .24em; color: var(--accent); }
+#ammo-mag { font-size: 58px; letter-spacing: -.01em; text-shadow: 0 2px 10px rgba(0,0,0,.7), 0 0 24px rgba(240,196,106,.12); font-variant-numeric: tabular-nums; }
+#ammo-res { font-size: 24px; font-variant-numeric: tabular-nums; }
+#reloadbar { height: 4px; border-radius: 2px; }
+#slots { gap: 4px; }
+#slots b { border: 0; background: rgba(231,226,208,.08); clip-path: polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%); height: 22px; padding: 0 9px; }
+#slots b.cur { background: linear-gradient(180deg, var(--accent2), var(--accent)); color: #17140c; }
+.kchip { border: 0; background: var(--hud-glass); clip-path: polygon(5px 0, 100% 0, calc(100% - 5px) 100%, 0 100%); padding: 3px 11px; }
+
+/* retícula: un poco más fina y con aire en el centro */
+#crosshair i { box-shadow: 0 0 0 1px rgba(0,0,0,.4), 0 0 6px rgba(0,0,0,.35); }
+#crosshair i:nth-child(1), #crosshair i:nth-child(2) { width: 2px; height: 9px; }
+#crosshair i:nth-child(3), #crosshair i:nth-child(4) { height: 2px; width: 9px; }
+
+/* avisos centrales, muerte, observador, notificaciones */
+#prompt, #spectate { border: 0; background: var(--hud-glass); clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%); padding: 7px 22px; }
+#death .dk { border: 0; background: var(--hud-glass); border-top: 2px solid var(--enemy); clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%); padding: 12px 34px; }
+#death .dk b { font-size: 30px; text-shadow: 0 0 18px rgba(255,90,72,.35); }
+.medalpop .mi { border-radius: 50%; box-shadow: 0 0 0 2px rgba(240,196,106,.5), 0 4px 14px rgba(0,0,0,.6); }
+.toast { clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%); background: var(--hud-glass); border: 0; border-left: 3px solid var(--accent); }
+#net-ind, #fps { border: 0; background: var(--hud-glass); }
+.rngbox { background: var(--hud-glass); border: 0; border-top: 2px solid var(--accent); clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%); }

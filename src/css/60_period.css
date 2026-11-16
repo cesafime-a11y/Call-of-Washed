@@ -1,0 +1,138 @@
+/* Fase 1 · Época (1939–1945): el menú es un expediente de campaña. Papel envejecido, tinta, máquina de escribir,
+   sellos de caucho y latón como único brillo. Va al final para imponerse sobre la piel táctica anterior;
+   el HUD de juego conserva su legibilidad y solo hereda los colores. */
+:root {
+  --paper: #e6dcc3; --paper2: #d8cba9; --paper3: #c9b98f; --ink: #2a241b; --ink2: #4b4232; --ink3: #7a6c52;
+  --stamp: #9c2b22; --brass: #b8913f; --brass2: #d6b25e; --olive: #4e5638;
+  --accent: #c49a46; --accent2: #e0bd6a;
+  --f-logo: 'Stardos Stencil', 'Black Ops One', 'Impact', sans-serif;
+  --f-fell: 'IM Fell English SC', 'IM Fell English', Georgia, 'Times New Roman', serif;
+  --f-serif: 'IM Fell English', Georgia, 'Times New Roman', serif;
+  --f-type: 'Special Elite', 'Courier New', 'Courier', monospace;
+}
+/* ---------- carga: tarjeta de telegrama ---------- */
+#boot { background: radial-gradient(120% 90% at 50% 30%, #2b261c 0%, #14120d 75%); }
+#boot p { font-family: var(--f-type); color: var(--brass2); letter-spacing: .25em; }
+#boot .bar { background: rgba(214,178,94,.18); } #boot .bar i { background: var(--brass2); }
+
+/* ---------- fondo del menú: sepia y viñeta de foto antigua ---------- */
+#menu { background:
+  radial-gradient(130% 110% at 70% 40%, rgba(40,32,20,0) 30%, rgba(18,14,9,.7) 100%),
+  linear-gradient(90deg, rgba(24,19,12,.93) 0%, rgba(30,24,15,.72) 40%, rgba(40,32,20,.18) 74%, rgba(40,32,20,0) 100%); }
+#menu::before { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: -1; backdrop-filter: sepia(.55) saturate(.7) contrast(1.05); }
+
+/* ---------- logotipo: estarcido sobre caja de munición ---------- */
+.logo .l1 { font-family: var(--f-type); letter-spacing: .5em; color: var(--paper3); }
+.logo .l2 { font-family: var(--f-logo); font-weight: 700; letter-spacing: .04em; color: var(--paper); text-shadow: 0 2px 0 rgba(0,0,0,.45); }
+.logo .l3 { font-family: var(--f-fell); color: var(--brass2); letter-spacing: .14em; }
+.logo .tag { font-family: var(--f-type); color: var(--brass2); letter-spacing: .22em; }
+
+/* ---------- menú principal: índice mecanografiado ---------- */
+.mitem { font-family: var(--f-fell); font-weight: 400; letter-spacing: .06em; color: var(--paper); border-left: 0; padding: 7px 14px 7px 30px; position: relative; }
+.mitem::before { content: '§'; position: absolute; left: 8px; top: 50%; transform: translateY(-50%); font: 400 18px var(--f-serif); color: var(--brass); opacity: 0; transition: opacity .12s; }
+.mitem small { font-family: var(--f-type); font-weight: 400; letter-spacing: .1em; color: var(--paper3); }
+.mitem:hover, .mitem:focus-visible { background: linear-gradient(90deg, rgba(196,154,70,.2), rgba(196,154,70,0)); padding-left: 34px; }
+.mitem:hover::before, .mitem:focus-visible::before { opacity: 1; }
+.mitem.camp span { color: var(--brass2); }
+.mainfoot { font-family: var(--f-type); font-weight: 400; color: var(--paper3); }
+.langsw { border-color: rgba(214,178,94,.45); } .langsw button { font-family: var(--f-type); } .langsw button.on { background: var(--brass); color: var(--ink); }
+
+/* ---------- paneles: hoja de papel sobre la mesa ---------- */
+#menu .panel, #overlay .panel, #menu .lo-left, #menu .pl-right, #menu .lo-right {
+  background: linear-gradient(180deg, rgba(255,250,235,.03), rgba(0,0,0,.05)), repeating-linear-gradient(0deg, transparent 0 27px, rgba(75,66,50,.08) 27px 28px), var(--paper);
+  color: var(--ink); border: 1px solid #b7a67e; box-shadow: 0 10px 30px rgba(0,0,0,.45), inset 0 0 60px rgba(120,96,50,.25); backdrop-filter: none; }
+#menu .lo-left, #menu .pl-right, #menu .lo-right { padding: 14px 16px; }
+#menu .panel::before, #overlay .panel::before { width: 74px; height: 22px; left: auto; right: 16px; top: 12px; border: 2px solid var(--stamp); border-radius: 3px; transform: rotate(-6deg); opacity: .55;
+  content: 'C. o. W.'; font: 700 11px/18px var(--f-type); letter-spacing: .2em; color: var(--stamp); text-align: center; }
+#menu .panel h2, #overlay .panel h2, .lo-top h2 { font-family: var(--f-fell); font-weight: 400; letter-spacing: .06em; }
+#menu .panel h2, #overlay .panel h2 { color: var(--ink); }
+#menu .panel h3, #overlay .panel h3, #menu .lo-h { font-family: var(--f-type); font-weight: 400; color: var(--stamp); letter-spacing: .2em; border-bottom: 1px dashed rgba(156,43,34,.45); padding-bottom: 4px; }
+#menu .panel p.lead, #overlay .panel p.lead, #menu .note, #overlay .note { color: var(--ink2); font-family: var(--f-serif); font-size: 15px; }
+#menu .panel p.lead.big, #overlay .panel p.lead.big { color: var(--ink); font-family: var(--f-fell); }
+#menu .lbl, #menu .field > label, #overlay .lbl { font-family: var(--f-type); font-weight: 400; color: var(--ink3); }
+#menu .panel, #overlay .panel, #menu .lo-left, #menu .pl-right, #menu .lo-right { --text: var(--ink); --muted: var(--ink3); --line: rgba(75,66,50,.25); --line2: rgba(75,66,50,.5); }
+.lo-top h2 { color: var(--paper); }
+.lo-rank span { font-family: var(--f-type); color: var(--paper3); }
+
+/* ---------- botones: sellos y etiquetas de latón ---------- */
+.btn { font-family: var(--f-type); font-weight: 400; letter-spacing: .14em; border-radius: 2px; }
+#menu .panel .btn, #overlay .panel .btn, #menu .pl-right .btn, #menu .lo-left .btn, #menu .lo-right .btn { color: var(--ink); background: rgba(75,66,50,.06); border: 1px solid rgba(75,66,50,.5); }
+#menu .panel .btn:hover, #overlay .panel .btn:hover, #menu .pl-right .btn:hover { background: rgba(75,66,50,.14); border-color: var(--ink); }
+.btn.primary, #menu .panel .btn.primary, #overlay .panel .btn.primary, #menu .pl-right .btn.primary { background: var(--stamp); color: #f4ead2; border: 2px solid #6e1d17; box-shadow: inset 0 0 0 2px rgba(244,234,210,.25); text-shadow: 0 1px 0 rgba(0,0,0,.3); }
+.btn.primary:hover, #menu .pl-right .btn.primary:hover { background: #b33428; }
+.btn.small { font-size: 13px; }
+.lo-top .btn { color: var(--paper); border-color: rgba(214,178,94,.5); background: rgba(20,16,10,.5); }
+
+/* ---------- selectores, tarjetas y barras ---------- */
+#menu .seg, #overlay .seg { border-color: rgba(75,66,50,.5); background: rgba(255,250,235,.25); }
+#menu .seg button, #overlay .seg button { font-family: var(--f-type); font-weight: 400; color: var(--ink); border-right-color: rgba(75,66,50,.25); }
+#menu .seg button.on, #overlay .seg button.on { background: var(--ink); color: var(--paper); }
+#menu .card, #overlay .card { background: rgba(255,250,235,.35); border-color: rgba(75,66,50,.3); color: var(--ink); }
+#menu .card:hover { background: rgba(255,250,235,.6); }
+#menu .card.on, #overlay .card.on { border-color: var(--stamp); background: rgba(156,43,34,.08); box-shadow: inset 3px 0 0 var(--stamp); }
+#menu .card b, #overlay .card b { font-family: var(--f-fell); font-weight: 400; letter-spacing: .04em; }
+#menu .card span, #overlay .card span { color: var(--ink2); }
+#menu .card.weap .cls { color: var(--stamp); font-family: var(--f-type); font-weight: 400; }
+#menu .sbar { background: rgba(75,66,50,.18); } #menu .sbar i { background: var(--ink2); } #menu .card.on .sbar i { background: var(--stamp); }
+#menu input[type=text] { font-family: var(--f-type); background: rgba(255,250,235,.5); color: var(--ink); border-color: rgba(75,66,50,.5); }
+input[type=range] { accent-color: var(--stamp); }
+kbd { font-family: var(--f-type); font-weight: 400; }
+#menu .panel kbd, #menu .pl-right kbd { background: rgba(75,66,50,.1); color: var(--ink); border-color: rgba(75,66,50,.45); }
+
+/* ---------- ficha del mapa: foto de reconocimiento ---------- */
+.pl-hero { border: 6px solid var(--paper); box-shadow: 0 8px 22px rgba(0,0,0,.5); filter: sepia(.45) contrast(1.05); }
+.pl-hero-txt small { font-family: var(--f-type); color: var(--brass2); }
+.pl-hero h1 { font-family: var(--f-fell); font-weight: 400; letter-spacing: .05em; color: var(--paper); }
+.pl-chips em { font-family: var(--f-type); font-style: normal; }
+
+/* ---------- pausa ---------- */
+#overlay { background: rgba(20,16,10,.62); }
+
+/* ---------- preparar operación: fichas de modo y de mapa ---------- */
+#menu .pl-mode { background: rgba(255,250,235,.35); border-color: rgba(75,66,50,.3); color: var(--ink); }
+#menu .pl-mode i { color: var(--ink3); } #menu .pl-mode b { font-family: var(--f-fell); font-weight: 400; letter-spacing: .04em; }
+#menu .pl-mode small { font-family: var(--f-type); font-weight: 400; color: var(--ink3); }
+#menu .pl-mode:hover { background: rgba(255,250,235,.6); }
+#menu .pl-mode.on { border-left-color: var(--stamp); background: rgba(156,43,34,.1); } #menu .pl-mode.on i { color: var(--stamp); }
+#menu .pl-map { background: var(--paper); border: 4px solid var(--paper); color: var(--ink); box-shadow: 0 3px 8px rgba(0,0,0,.4); }
+#menu .pl-map .th { filter: sepia(.5) contrast(1.05); }
+#menu .pl-map b { font-family: var(--f-type); font-weight: 400; letter-spacing: .04em; }
+#menu .pl-map.on { border-color: var(--paper); box-shadow: 0 0 0 2px var(--stamp), 0 3px 8px rgba(0,0,0,.4); }
+#menu .pl-modecard { background: rgba(230,220,195,.92); border-color: #b7a67e; color: var(--ink); }
+#menu .pl-modecard h3 { font-family: var(--f-fell); font-weight: 400; color: var(--ink); }
+#menu .pl-modecard p { color: var(--ink2); font-family: var(--f-serif); }
+#menu .pl-modecard .pl-chips em { color: var(--ink2); border-color: rgba(75,66,50,.4); }
+
+/* ---------- campaña: fichas de archivo ---------- */
+#menu .cm-next { background: rgba(255,250,235,.45); border-left-color: var(--stamp); }
+#menu .cm-next small { font-family: var(--f-type); font-weight: 400; color: var(--ink3); }
+#menu .cm-next b { color: var(--ink); } #menu .cm-next span { color: var(--ink2); }
+#menu .cm-part h3 { font-family: var(--f-fell); font-weight: 400; color: var(--brass2); letter-spacing: .12em; }
+#menu .cm-row { background: rgba(230,220,195,.94); border-color: #b7a67e; color: var(--ink); }
+#menu .cm-row .cm-code { font-family: var(--f-type); color: var(--stamp); }
+#menu .cm-row b { color: var(--ink); } #menu .cm-row .cm-head, #menu .cm-row .cm-type, #menu .cm-row em { color: var(--ink2); font-family: var(--f-type); font-style: normal; }
+#menu .cm-row em.ok { color: var(--stamp); } #menu .cm-row em.done { color: var(--olive); }
+#menu .cm-row:hover { border-color: var(--stamp); }
+#menu .cm-row.wip { opacity: .72; }
+/* ---------- ficha del soldado en el menú principal: cartilla militar ---------- */
+#menu .profile { background: var(--paper); color: var(--ink); border: 1px solid #b7a67e; border-left: 3px solid var(--stamp); box-shadow: 0 6px 18px rgba(0,0,0,.4); }
+#menu .profile b { font-family: var(--f-fell); font-weight: 400; color: var(--ink); letter-spacing: .06em; }
+#menu .profile span { font-family: var(--f-type); color: var(--ink3); }
+
+/* ---------- soldado y armero: fichas de clase y opciones en papel ---------- */
+#menu .lo-cls, #menu .lo-opt, #menu .gs-opt { background: rgba(255,250,235,.4); border-color: rgba(75,66,50,.3); color: var(--ink); }
+#menu .lo-cls i { color: var(--ink3); } #menu .lo-cls b, #menu .lo-opt b, #menu .gs-opt b { font-family: var(--f-fell); font-weight: 400; color: var(--ink); letter-spacing: .04em; }
+#menu .lo-cls small, #menu .lo-opt small, #menu .gs-opt small { font-family: var(--f-type); font-weight: 400; color: var(--ink3); }
+#menu .lo-cls:hover, #menu .lo-opt:hover, #menu .gs-opt:hover { background: rgba(255,250,235,.65); }
+#menu .lo-cls.on, #menu .lo-opt.on, #menu .gs-opt.on { background: rgba(156,43,34,.1); border-left-color: var(--stamp); }
+#menu .lo-cls.on b, #menu .lo-opt.on b, #menu .gs-opt.on b, #menu .lo-cls.on i { color: var(--stamp); }
+#menu .lo-clshead i { color: var(--brass2); font-family: var(--f-fell); font-weight: 400; }
+#menu .lo-clshead h3 { font-family: var(--f-fell); font-weight: 400; }
+#menu .lo-top .seg.tabs { background: rgba(20,16,10,.5); border-color: rgba(214,178,94,.45); }
+#menu .lo-top .seg.tabs button { color: var(--paper3); } #menu .lo-top .seg.tabs button.on { background: var(--paper); color: var(--ink); }
+/* 3.1.3: los nombres largos de granada no se parten a mitad de palabra */
+.lo-pair .lo-static b, .lo-pair .lo-rowmain b, .lo-pair strong { font-size: 15px; word-break: normal; overflow-wrap: normal; hyphens: manual; }
+/* 3.1.3: todas las entradas del menú principal en mayúsculas, en una línea, y que quepan en pantallas de 720 px */
+.mitem span { text-transform: uppercase; white-space: nowrap; }
+.mitem small { white-space: nowrap; text-transform: uppercase; }
+@media (max-height: 820px) { .mainnav { margin-top: 14px; gap: 0; } .mitem { padding-top: 4px; padding-bottom: 4px; } .mitem span { font-size: 20px; } }
